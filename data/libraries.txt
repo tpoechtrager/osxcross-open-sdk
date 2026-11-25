@@ -1,0 +1,47 @@
+# Install name, current version and compatibility version of every stub
+# library (.tbd).  Every value comes from a public source, named in the last
+# column (paths are inside the project of the macOS 26.5 manifest unless
+# another project is named).  Columns:
+#   name       the file name of the .tbd without ".tbd"
+#   install    the install name that a program records
+#   current    the current version; tag:<project> is the number of the tag of
+#              that project in the manifest (at most three components)
+#   compat     the compatibility version; a program records it and dyld
+#              accepts the real library if its own compatibility version is
+#              not lower, so a low value is always safe
+#   source     where the values are written
+#
+# helpers/check_libraries.py compares this table with the sources.
+#
+# name           install                                                   current      compat  source
+libSystem.B      /usr/lib/libSystem.B.dylib                                tag:Libsystem 1      Libsystem/Libsystem.xcconfig (INSTALL_PATH, DYLIB_NAME_VERSION_SUFFIX = .B, DYLIB_CURRENT_VERSION = tag); no compatibility version is set, the default is 1
+libresolv.9      /usr/lib/libresolv.9.dylib                                tag:libresolv 1.0.0  libresolv/xcodescripts/libresolv.xcconfig (INSTALL_PATH /usr/lib, PRODUCT_NAME $(TARGET_NAME).$(FRAMEWORK_VERSION), FRAMEWORK_VERSION 9); no versions are set in the project (they come from a file that is not public): the current version is the tag, the compatibility version the lowest possible
+libiconv.2       /usr/lib/libiconv.2.dylib                                 7            7       libiconv/libiconv.xcodeproj (INSTALL_PATH /usr/lib, PRODUCT_NAME $(TARGET_NAME).1 and iconv.2, DYLIB_*_VERSION = 7)
+libc++.1         /usr/lib/libc++.1.dylib                                   1.0.0        1.0.0   llvm-project: libcxx/test/libcxx/vendor/apple/system-install-properties.sh.cpp (install name, compatibility 1.0.0), libcxx/CMakeLists.txt (LIBCXX_LIBRARY_VERSION = LIBCXX_ABI_VERSION.0, "controls the linker's current_version")
+libc++abi        /usr/lib/libc++abi.dylib                                  1.0.0        1.0.0   llvm-project: libcxxabi/test/vendor/apple/system-install-properties.sh.cpp (install name, compatibility 1.0.0), libcxxabi/CMakeLists.txt (LIBCXXABI_LIBRARY_VERSION 1.0)
+libz.1           /usr/lib/libz.1.dylib                                     1.2.12       1       zlib/zlib.xcconfig (INSTALL_PATH, PRODUCT_NAME z.$(DYLIB_COMPATIBILITY_VERSION), DYLIB_*_VERSION)
+libbz2.1.0       /usr/lib/libbz2.1.0.dylib                                 1.0.8        1       bzip2/xcodeconfig/libs.xcconfig (INSTALL_PATH, DYLIB_CURRENT_VERSION; no compatibility version: default 1)
+libexpat.1       /usr/lib/libexpat.1.dylib                                 8            7       expat/expat.xcodeproj (INSTALL_PATH /usr/lib, PRODUCT_NAME $(TARGET_NAME).1, DYLIB_*_VERSION)
+libffi           /usr/lib/libffi.dylib                                     tag:libffi   1       libffi/libffi.xcodeproj (INSTALL_PATH /usr/lib, PRODUCT_NAME ffi, DYLIB_CURRENT_VERSION = CURRENT_PROJECT_VERSION)
+libedit.3        /usr/lib/libedit.3.dylib                                  3.0          2       libedit/xcodescripts/libedit.xcconfig (PRODUCT_NAME edit.3, DYLIB_*_VERSION)
+libxml2.2        /usr/lib/libxml2.2.dylib                                  10.9.0       10.0.0  libxml2/Configurations/libxml2.xcconfig
+libobjc.A        /usr/lib/libobjc.A.dylib                                  228          1       objc4/objc.xcodeproj (INSTALL_PATH $(SYSTEM_PREFIX)/usr/lib, PRODUCT_NAME objc.A, DYLIB_CURRENT_VERSION = 228)
+libutil          /usr/lib/libutil.dylib                                    1.0          1.0     libutil/libutil.xcodeproj (INSTALL_PATH /usr/lib, DYLIB_*_VERSION = 1.0)
+libpcap.A        /usr/lib/libpcap.A.dylib                                  1            1       libpcap/Makefile (-compatibility_version 1 -current_version 1 -install_name /usr/lib/libpcap.A.dylib)
+libarchive.2     /usr/lib/libarchive.2.dylib                               9.2          9       libarchive/xcodeconfig/libs.xcconfig (INSTALL_PATH, DYLIB_*_VERSION), libarchive.xcodeproj (product libarchive.2.dylib)
+libpam.2         /usr/lib/libpam.2.dylib                                   3.0.0        3.0.0   OpenPAM/openpam.xcodeproj (INSTALL_PATH /usr/lib, PRODUCT_NAME pam.2, DYLIB_*_VERSION)
+libxslt.1        /usr/lib/libxslt.1.dylib                                  3.26.0       3.0.0   libxslt/Configurations/libxslt.xcconfig
+libexslt.0       /usr/lib/libexslt.0.dylib                                 9.15.0       9.0.0   libxslt/Configurations/libexslt.xcconfig
+libcurl.4        /usr/lib/libcurl.4.dylib                                  9            7       curl/xcconfigs/libcurl-version.xcconfig (CURL_LIBRARY_VERSION 4, DYLIB_COMPATIBILITY_VERSION 7, DYLIB_CURRENT_VERSION 9)
+libncurses.5.4   /usr/lib/libncurses.5.4.dylib                             5.4          5.4     ncurses/ncurses (configure: ABI_VERSION 5.4; the Makefiles pass it as -compatibility_version and -current_version)
+libpanel.5.4     /usr/lib/libpanel.5.4.dylib                               5.4          5.4     ncurses/ncurses/panel/Makefile (MK_SHARED_LIB)
+libform.5.4      /usr/lib/libform.5.4.dylib                                5.4          5.4     ncurses/ncurses/form/Makefile (MK_SHARED_LIB)
+libmenu.5.4      /usr/lib/libmenu.5.4.dylib                                5.4          5.4     ncurses/ncurses/menu/Makefile (MK_SHARED_LIB)
+libsqlite3       /usr/lib/libsqlite3.dylib                                 3.43.2       1.0.0   sqlite.org (upstream version of the amalgamation); SQLite of the system is not an open source project of Apple: the compatibility version is the lowest possible one; the install name is the one that Xcode's documentation names for the system SQLite
+CoreFoundation   /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation       tag:CF       150     CF/Makefile (-compatibility_version 150, DSTBASE .../CoreFoundation.framework/Versions/A/CoreFoundation)
+DiskArbitration  /System/Library/Frameworks/DiskArbitration.framework/Versions/A/DiskArbitration     1            1       DiskArbitration/DiskArbitration.xcodeproj (DYLIB_*_VERSION = 1); Security/OSX/libsecurity_translocate/lib/SecTranslocateDANotification.cpp (DA_FRAMEWORK_PATH)
+SystemConfiguration /System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration tag:configd 1     configd/configd.xcodeproj (INSTALL_PATH $(SYSTEM_LIBRARY_DIR)/Frameworks, DYLIB_COMPATIBILITY_VERSION 1, DYLIB_CURRENT_VERSION = RC_ProjectSourceVersion = tag); the framework version A is the layout of every framework (CF/Makefile)
+IOKit            /System/Library/Frameworks/IOKit.framework/Versions/A/IOKit                           275.0.0      1.0.0   IOKitUser/IOKitUser.xcodeproj (DYLIB_COMPATIBILITY_VERSION 1.0.0, DYLIB_CURRENT_VERSION 275.0.0)
+Security         /System/Library/Frameworks/Security.framework/Versions/A/Security                     tag:Security 1       Security/OSX/config/security_framework_macos.xcconfig (FRAMEWORK_VERSION A, DYLIB_COMPATIBILITY_VERSION 1, DYLIB_CURRENT_VERSION = CURRENT_PROJECT_VERSION = tag)
+Foundation       /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation                1.0.0        1.0.0   dyld/cache_builder/NewSharedCacheBuilder.cpp (the install name); Foundation is not open source: both versions are the lowest possible ones
+CoreServices    /System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices            1.0.0        1.0.0   Security/OSX/libsecurity_translocate/lib/SecTranslocateLSNotification.cpp, CF/CFUtilities.c (the frameworks inside Versions/A of CoreServices.framework); CoreServices is not open source: both versions are the lowest possible ones

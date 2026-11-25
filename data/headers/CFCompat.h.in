@@ -1,0 +1,106 @@
+
+/* The text of this block is appended to CFAvailability.h of the CF project and becomes part of
+ * that file (APSL 2.0, see the notice at its top and the license directory of the SDK); it is
+ * not under the 0BSD license of the other files written for the SDK. */
+/* ---- added by the open SDK: annotation macros that headers of the other
+ * frameworks (DiskArbitration, SystemConfiguration) use, but the older
+ * CoreFoundation headers do not define ---- */
+#ifndef CF_ASSUME_NONNULL_BEGIN
+#if __has_feature(assume_nonnull)
+#define CF_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
+#define CF_ASSUME_NONNULL_END   _Pragma("clang assume_nonnull end")
+#else
+#define CF_ASSUME_NONNULL_BEGIN
+#define CF_ASSUME_NONNULL_END
+#endif
+#endif
+#ifndef CF_BRIDGED_TYPE
+#if __has_attribute(objc_bridge) && defined(__OBJC__)
+#define CF_BRIDGED_TYPE(T) __attribute__((objc_bridge(T)))
+#else
+#define CF_BRIDGED_TYPE(T)
+#endif
+#endif
+#ifndef CF_IMPLICIT_BRIDGING_ENABLED
+#if __has_feature(arc_cf_code_audited)
+#define CF_IMPLICIT_BRIDGING_ENABLED  _Pragma("clang arc_cf_code_audited begin")
+#define CF_IMPLICIT_BRIDGING_DISABLED _Pragma("clang arc_cf_code_audited end")
+#else
+#define CF_IMPLICIT_BRIDGING_ENABLED
+#define CF_IMPLICIT_BRIDGING_DISABLED
+#endif
+#endif
+#ifndef CF_SWIFT_UNAVAILABLE
+#define CF_SWIFT_UNAVAILABLE(_msg) __attribute__((availability(swift, unavailable, message=_msg)))
+#endif
+#ifndef CF_SWIFT_NAME
+#define CF_SWIFT_NAME(_name) __attribute__((swift_name(#_name)))
+#endif
+
+#ifndef CF_CLOSED_ENUM
+#define CF_CLOSED_ENUM(_type, _name) CF_ENUM(_type, _name)
+#endif
+#ifndef CF_STRING_ENUM
+#define CF_STRING_ENUM
+#endif
+
+#if __has_include(<os/availability.h>)
+#include <os/availability.h>   /* API_AVAILABLE, SPI_AVAILABLE, ... as in newer CFBase.h */
+#endif
+
+/* CF_ENUM / CF_OPTIONS with one argument (an anonymous enumeration with a
+ * fixed underlying type), as the newer headers of Security use them */
+#ifndef __OPENSDK_CF_ENUM_COMPAT
+#define __OPENSDK_CF_ENUM_COMPAT 1
+#undef CF_ENUM
+#undef CF_OPTIONS
+#define __CF_PICK(_1, _2, NAME, ...) NAME
+#if (__cplusplus && __cplusplus >= 201103L && (__has_extension(cxx_strong_enums) || __has_feature(objc_fixed_enum))) || (!__cplusplus && __has_feature(objc_fixed_enum))
+#define __CF_ENUM_2(_type, _name) enum _name : _type _name; enum _name : _type
+#define __CF_ENUM_1(_type) enum : _type
+#if (__cplusplus)
+#define __CF_OPTIONS_2(_type, _name) _type _name; enum : _type
+#else
+#define __CF_OPTIONS_2(_type, _name) enum _name : _type _name; enum _name : _type
+#endif
+#else
+#define __CF_ENUM_2(_type, _name) _type _name; enum
+#define __CF_ENUM_1(_type) enum
+#define __CF_OPTIONS_2(_type, _name) _type _name; enum
+#endif
+#define __CF_OPTIONS_1(_type) __CF_ENUM_1(_type)
+#define CF_ENUM(...) __CF_PICK(__VA_ARGS__, __CF_ENUM_2, __CF_ENUM_1)(__VA_ARGS__)
+#define CF_OPTIONS(...) __CF_PICK(__VA_ARGS__, __CF_OPTIONS_2, __CF_OPTIONS_1)(__VA_ARGS__)
+#endif
+
+/* Deprecation markers are dropped: <Availability.h> only has the combinations that
+ * the headers of the projects use. */
+/* Availability macros through <Availability.h> for any version number: the
+ * older CFAvailability.h only knows the versions it lists itself */
+#ifndef __OPENSDK_CF_AVAIL_COMPAT
+#define __OPENSDK_CF_AVAIL_COMPAT 1
+#undef CF_AVAILABLE
+#undef CF_AVAILABLE_MAC
+#undef CF_AVAILABLE_IOS
+#undef CF_DEPRECATED
+#undef CF_DEPRECATED_MAC
+#undef CF_DEPRECATED_IOS
+#undef CF_ENUM_AVAILABLE
+#undef CF_ENUM_AVAILABLE_MAC
+#undef CF_ENUM_AVAILABLE_IOS
+#undef CF_ENUM_DEPRECATED
+#undef CF_ENUM_DEPRECATED_MAC
+#undef CF_ENUM_DEPRECATED_IOS
+#define CF_AVAILABLE(_mac, _ios) __OSX_AVAILABLE_STARTING(__MAC_##_mac, __IPHONE_##_ios)
+#define CF_AVAILABLE_MAC(_mac) __OSX_AVAILABLE_STARTING(__MAC_##_mac, __IPHONE_NA)
+#define CF_AVAILABLE_IOS(_ios) __OSX_AVAILABLE_STARTING(__MAC_NA, __IPHONE_##_ios)
+#define CF_DEPRECATED(_macIntro, _macDep, _iosIntro, _iosDep, ...)
+#define CF_DEPRECATED_MAC(_macIntro, _macDep, ...)
+#define CF_DEPRECATED_IOS(_iosIntro, _iosDep, ...)
+#define CF_ENUM_AVAILABLE(_mac, _ios)
+#define CF_ENUM_AVAILABLE_MAC(_mac)
+#define CF_ENUM_AVAILABLE_IOS(_ios)
+#define CF_ENUM_DEPRECATED(_macIntro, _macDep, _iosIntro, _iosDep, ...)
+#define CF_ENUM_DEPRECATED_MAC(_macIntro, _macDep, ...)
+#define CF_ENUM_DEPRECATED_IOS(_iosIntro, _iosDep, ...)
+#endif

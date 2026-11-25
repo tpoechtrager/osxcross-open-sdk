@@ -1,0 +1,53 @@
+# Symbols of libobjc.A.dylib that compiler-generated code refers to and that
+# the public objc headers do not declare.  Mach-O names; the same for all
+# architectures.  Each symbol is named or declared in the file of objc4
+# (runtime/) after the "#"; the compiler's use of them is in clang's
+# lib/CodeGen/CGObjCMac.cpp and the ObjC ARC runtime entry points.
+_OBJC_CLASS_$_NSObject                    # objc4/runtime/objc-abi.h
+_OBJC_CLASS_$_Protocol                    # objc4/runtime/objc-runtime-new.mm
+__objc_empty_cache                        # objc4/runtime/objc-abi.h
+__objc_empty_vtable                       # objc4/runtime/objc-abi.h
+_objc_autoreleasePoolPush                 # objc4/runtime/objc-internal.h
+_objc_autoreleasePoolPop                  # objc4/runtime/objc-internal.h
+_objc_retain                              # objc4/runtime/objc-internal.h
+_objc_release                             # objc4/runtime/objc-internal.h
+_objc_autorelease                         # objc4/runtime/objc-internal.h
+_objc_alloc                               # objc4/runtime/objc-internal.h
+_objc_alloc_init                          # objc4/runtime/objc-internal.h
+_objc_opt_class                           # objc4/runtime/objc-internal.h
+_objc_opt_isKindOfClass                   # objc4/runtime/objc-internal.h
+_objc_storeStrong                         # objc4/runtime/objc-internal.h
+_objc_retainAutoreleasedReturnValue       # objc4/runtime/objc-internal.h
+_objc_unsafeClaimAutoreleasedReturnValue  # objc4/runtime/objc-internal.h
+_objc_retainAutorelease                   # objc4/runtime/objc-internal.h
+_objc_autoreleaseReturnValue              # objc4/runtime/objc-internal.h
+_objc_storeWeak                           # objc4/runtime/objc-internal.h
+_objc_loadWeakRetained                    # objc4/runtime/objc-internal.h
+_objc_destroyWeak                         # objc4/runtime/objc-internal.h
+_objc_initWeak                            # objc4/runtime/objc-internal.h
+_objc_copyWeak                            # objc4/runtime/objc-internal.h
+_objc_moveWeak                            # objc4/runtime/objc-internal.h
+_objc_retainBlock                         # objc4/runtime/objc-abi.h
+_objc_enumerationMutation                 # objc4/runtime/runtime.h
+_objc_exception_throw                     # objc4/runtime/objc-exception.h
+_objc_begin_catch                         # objc4/runtime/objc-exception.h
+_objc_end_catch                           # objc4/runtime/objc-exception.h
+_objc_exception_rethrow                   # objc4/runtime/objc-exception.h
+___objc_personality_v0                    # objc4/runtime/objc-abi.h
+_objc_sync_enter                          # objc4/runtime/objc-sync.h
+_objc_sync_exit                           # objc4/runtime/objc-sync.h
+_objc_setProperty                         # objc4/runtime/objc-abi.h
+_objc_getProperty                         # objc4/runtime/objc-abi.h
+_objc_copyStruct                          # objc4/runtime/objc-abi.h
+_objc_msgSendSuper2                       # objc4/runtime/objc-abi.h
+_objc_msgSendSuper2_stret                 # objc4/runtime/objc-abi.h
+_objc_msgSend_stret                       # objc4/runtime/message.h
+_objc_msgSend_fpret                       # objc4/runtime/message.h
+_objc_msgSend_fp2ret                      # objc4/runtime/message.h
+_objc_allocWithZone                       # objc4/runtime/objc-internal.h
+_objc_ehtype_vtable                       # objc4/runtime/objc-abi.h
+_OBJC_EHTYPE_id                           # objc4/runtime/objc-abi.h
+_objc_opt_new                             # objc4/runtime/objc-internal.h
+_objc_opt_self                            # objc4/runtime/objc-internal.h
+_objc_opt_respondsToSelector              # objc4/runtime/objc-internal.h
+_objc_release_x0                          # objc4/runtime/objc-abi.h

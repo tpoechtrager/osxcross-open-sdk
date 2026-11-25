@@ -1,0 +1,19 @@
+# Symbols that the headers declare and that libSystem.B.tbd must not list,
+# although a name search of the sources finds them.  Each group says why.
+#
+# Mach-O names (leading underscore included).
+#
+# C11 <stdatomic.h> (clang, GCC): atomic_thread_fence and atomic_signal_fence
+# are macros or builtins of the compiler.  Libc and libplatform only call them
+# (Libc/gen/clock_gettime.c); no project of the release defines them.  Without
+# this entry the symbols would depend on which compiler's <stdatomic.h> the
+# host has.
+_atomic_thread_fence
+_atomic_signal_fence
+#
+# __dso_handle, declared by os/log.h (and by xnu's libkern/os/log.h, which
+# os/log.h follows): the link editor defines it itself in every image
+# (cctools/ld/symbols.c, setup_link_editor_symbol("___dso_handle")); libSystem
+# does not export it.  Listed in the .tbd, it would make a program refer to
+# libSystem for it.
+___dso_handle

@@ -1,0 +1,11 @@
+# Symbols that the libc++ headers of LLVM 20 and later need from libc++.1.dylib
+# but that the ABI list of the same release (libcxx/lib/abi/*.abilist) does not
+# contain for x86_64.  Source: libcxx/src/charconv.cpp (lines 79-88) defines
+# the two instantiations __from_chars_floating_point<float> and <double> in the
+# library, and the arm64 list libcxx/lib/abi/arm64-apple-darwin.libcxxabi.v1.
+# stable.exceptions.nonew.abilist names them; the x86_64 list still names the
+# older non-template function.  The headers (libcxx/include/__charconv/
+# from_chars_floating_point.h) refer to the template instantiation.  One mangled
+# name per line, the same for all architectures.
+__ZNSt3__127__from_chars_floating_pointIdEENS_19__from_chars_resultIT_EEPKcS5_NS_12chars_formatE
+__ZNSt3__127__from_chars_floating_pointIfEENS_19__from_chars_resultIT_EEPKcS5_NS_12chars_formatE

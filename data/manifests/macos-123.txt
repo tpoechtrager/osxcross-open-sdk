@@ -1,0 +1,53 @@
+# osxcross-open-sdk: pinned sources for macOS 12.3
+# release: tag from release.json of distribution-macOS macos-123; fixed: not in
+# release.json, the tag of the previous manifest is kept.
+# <project> <tag> <commit> <origin>
+AvailabilityVersions AvailabilityVersions-138.7 e106352b737e65fe0c9f73b958716183aeac2dfe fixed
+Libc Libc-1507.100.9 dbde50970329ace8793fca2b63d708d280c33d88 release
+Libinfo Libinfo-554 08464e6ee3aba18baa2b80c3bff0d59b889c73bd release
+Libm Libm-2026 17a5f9daa3f5679f7536b26f133b40cc078753c3 fixed
+Libnotify Libnotify-301 b195a1fabbb54c2cdee313f5521cb9ca77a75f1f release
+Librpcsvc Librpcsvc-26 9d7ef347aeb5b575dbd29a934804797f440e02ac release
+Libsystem Libsystem-1311.100.3 52b4a66f10aefad9a87b6d87c1ea241004433a39 release
+launchd launchd-842.92.1 49a9c79b2949192dfca697b1054245cdfb645788 fixed
+architecture architecture-280.100.2 d4e6c2ede7ed5dade069db15d4afa4a57f041f6e release
+bootstrap_cmds bootstrap_cmds-122 c04368b288ba86e811b9bdec271457750e5865d7 release
+copyfile copyfile-180.100.3 966213aa968b900ac685e18e71465001b4779572 release
+cctools cctools-1024.3 483f452caad0ebe3fbe198d3f8c2b1bea848df6c fixed
+libiconv libiconv-61 b13a26c90e1fc9630bffb4d289116e21945fde75 release
+zlib zlib-77 64cfdab06b3bfd0cb259fe5ce5dbba5cf6321f12 release
+bzip2 bzip2-45 f399c6a949536b48488e5fc06511fd9b7f157783 release
+expat expat-28 cf003517c5d1b37e531d29e24a9a8c19037e9415 release
+libffi libffi-30 ec7f0d080167b5fda1edcda07325548e1d4818cc release
+libedit libedit-55 487ddf227bc2d5c6ddfaa7b88683611e3f923e53 release
+libxml2 libxml2-35.6 dd6e9a5d6309c8769ab47a6ad4e71d9ec90be3eb release
+CF CF-1153.18 dc54c6bb1c1e5e0b9486c1d26dd5bef110b20bf3 fixed
+CarbonHeaders CarbonHeaders-18.1 214a9ae7ab3c0c78ddb50328ca226e6313c4c782 fixed
+CommonCrypto CommonCrypto-60191.100.1 06c4e37bc508d502031035d8606ade275d6c0d82 release
+DiskArbitration DiskArbitration-367.101.3 46d9c934e5de4109d24b214255e4be59cfb4006a release
+configd configd-1163.100.19.0.2 0f24bda150a0cdbcabd6d9fe919bf6ba1dfb1f68 release
+IOKitUser IOKitUser-1955.100.5 ae22ee22a1f768a5375c1f2ef6766e60a39b7d9c release
+Security Security-60158.100.133 67353d4e01e66f254b4c9ceb24b959ecf7586e82 release
+ncurses ncurses-57 179d5ea7b69ba798d17f8af41d5435ed47a4da22 release
+libutil libutil-62 b36e40d6d6369120d033a5e4c382b8d19b8bc43f release
+libpcap libpcap-110 9be9afe74ebeef3eb417e8925b0f22af27da9940 release
+libarchive libarchive-103 fa17841b5cb6fb55bfb7370f71255e6e3c7953ac release
+OpenPAM OpenPAM-29 c339dd928a28dd6312cb153d69f4958e42ac0211 release
+libxslt libxslt-18.5 d8df7bfc5670b2cd87f694a2df6c853502e7439e release
+curl curl-134 df2b18c616e76e22e49881cb91d126af2f4b754b release
+mDNSResponder mDNSResponder-1557.101.2 872dddad5c5a660c9ae5859f5633479f19dca212 release
+dyld dyld-955 3b91053f0406045e58e00a5f1368fcaf62500065 release
+libclosure libclosure-79.1 f665fecc8b9eba7319281509eabe8acd3bb90b6f release
+libdispatch libdispatch-1325.100.36 c5a8b9353b880a6f31cc24f631578a4b05222868 release
+libmalloc libmalloc-374.100.5 afadff2bfedcffd6c56fbd3f1bdd46cfe69c8530 release
+libplatform libplatform-273.100.5 5aa14932bb35b701c64bf7cab9dd26bae741b0fe release
+libpthread libpthread-486.100.11 cf9e1c7e611440e511af230905be2cfefc5c6121 release
+libresolv libresolv-68 690279d62d9e89a9ad1687c36f3cbd33e8c4f1ca release
+libunwind libunwind-201 f709eccad023ec32db53d40146d07805cf3e4ee0 fixed
+objc4 objc4-841.13 8701d5672d3fd3cd817aeb84db1077aafe1a1604 release
+removefile removefile-60 c5c6afe6af866417f63dd82941218fa332cdd792 release
+syslog syslog-392.100.2 7647fa8f5a331b11207125883ce28278eabde1ea release
+xnu xnu-8020.101.4 e7776783b89a353188416a9a346c6cdb4928faad release
+developer_cmds developer_cmds-89 e8d73a44a7539cfa8fdc5aa4f5634aaea020661a fixed
+# sqlite: <url> <sha256 of the archive>
+sqlite https://www.sqlite.org/2023/sqlite-amalgamation-3430200.zip a17ac8792f57266847d57651c5259001d1e4e4b46be96ec0d985c953925b2a1c
