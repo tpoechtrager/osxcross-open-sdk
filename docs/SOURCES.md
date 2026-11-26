@@ -12,6 +12,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | Repairs of those headers | Own work, with a notice in each file ([details](#repairs-of-those-headers)) |
 | Install names and versions of the `.tbd` | The project files named in `data/libraries.txt` ([details](#install-names-and-versions-of-the-tbd)) |
 | Symbols of `libSystem.B.tbd` | Headers, alias lists, system calls, export lists ([details](#symbols-of-libsystembtbd)) |
+| compiler-rt builtins in `libSystem.B.tbd` | LLVM `apple_versioning.c` and `CMakeLists.txt` ([details](#compiler-rt-builtins-in-libsystembtbd)) |
 | libedit's readline layer | libedit's own install script ([details](#libedits-readline-layer)) |
 | `__exp10`, `__exp10f` in `math.h` | LLVM `RuntimeLibcalls.td` ([details](#__exp10-__exp10f-in-mathh)) |
 | Symbols of the other `.tbd` | Headers and export lists of the projects ([details](#symbols-of-the-other-tbd)) |
@@ -82,6 +83,28 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   (`Libc/xcodescripts/variants.xcconfig`).
 - The extra and excluded symbols with the file that defines them  
   (the libcalls `__exp10` and `__sincos_stret` with LLVM's `RuntimeLibcalls.td`).
+- The builtins of compiler-rt: [below](#compiler-rt-builtins-in-libsystembtbd).
+
+---
+
+### compiler-rt builtins in `libSystem.B.tbd`
+
+**Files:** `data/symbols/compiler-rt.txt`, `lib/stubs.sh`
+
+- `compiler-rt/lib/builtins/apple_versioning.c` of LLVM (the same file in LLVM 16 to 23) names the builtins
+  that libSystem has: `NOT_HERE_BEFORE_10_6` ("Symbols in libSystem.dylib in 10.6 and later") and
+  `NOT_HERE_IN_10_8_AND_EARLIER` (the `__atomic_*` functions).  Not taken over are the sections
+  `#if __powerpc__` and `#if __arm__ && __DYNAMIC__`.  That leaves 99 + 40 names.
+- That libSystem contains compiler-rt: `Libsystem/requiredlibs` of the open source release names `compiler_rt`.
+- Per architecture only what compiler-rt builds for it (`compiler-rt/lib/builtins/CMakeLists.txt`): 132 names for x86_64, 119 for arm64.
+  - The tf variants (7 names) are left out for both: they need a 128-bit floating-point type (`CRT_HAS_TF_MODE`
+    in `int_types.h`); `long double` is the x87 type on x86_64 and `double` on arm64, and Clang has no `__float128` for these targets
+    (tested with Clang 23). `Darwin-excludes/osx.txt` also lists five tf builtins.
+  - The x87 variants (12 names: `x86_80_BIT_SOURCES`) are only built for x86_64.
+  - `__enable_execute_stack` is only built for x86_64: LLVM 23 has `list(REMOVE_ITEM aarch64_SOURCES enable_execute_stack.c)`
+    "Don't build enable_execute_stack on arm64 darwin" for Apple platforms (not yet in LLVM 21).
+- A check of the result, not a source of names: `libclang_rt.osx.a` of an open source build of LLVM 23.1.6
+  defines the 92 (x86_64) and 79 (arm64) names of the first section and none of the names that are left out.
 
 ---
 

@@ -43,6 +43,18 @@ printf '# head\n_a   # source\n\n  _b\n# _c\n' > "$T/syms.txt"
 check "symbol_list skips comments and empty lines" "$(is "$(lib symbol_list "$T/syms.txt" | tr '\n' ' ')" "_a _b ")"
 check "syms_for_archs gives both architectures" "$(is "$(lib syms_for_archs "$T/syms.txt" | tr '\n' ',')" "x86_64 _a,x86_64 _b,arm64 _a,arm64 _b,")"
 
+printf '# head\n_a all\n_b x86_64   # only here\n_c arm64\n' > "$T/byarch.txt"
+check "syms_by_arch gives the symbols of each architecture" "$(is "$(lib syms_by_arch "$T/byarch.txt" | tr '\n' ',')" "x86_64 _a,x86_64 _b,arm64 _a,arm64 _c,")"
+for bad in '_a' '_a ppc' '_a all x'; do
+  printf '%s\n' "$bad" > "$T/badarch.txt"
+  check "syms_by_arch refuses the line '$bad'" "$(lib syms_by_arch "$T/badarch.txt" >/dev/null 2>&1 && echo no || echo ok)"
+done
+crt=$(lib syms_by_arch "$ROOT/data/symbols/compiler-rt.txt")
+check "compiler-rt.txt: 132 symbols for x86_64 and 119 for arm64" "$(is "$(echo "$crt" | grep -c '^x86_64 ') $(echo "$crt" | grep -c '^arm64 ')" "132 119")"
+check "  ___udivti3 for both, the x87 and arm64-less ones only for x86_64" "$(is "$(echo "$crt" | grep -E ' (___udivti3|___divxc3|___enable_execute_stack)$' | tr '\n' ',')" "x86_64 ___divxc3,x86_64 ___enable_execute_stack,x86_64 ___udivti3,arm64 ___udivti3,")"
+check "  no tf variants" "$(echo "$crt" | grep -qE '(tf|tc3)' && echo no || echo ok)"
+check "  and no duplicates" "$(is "$(echo "$crt" | sort | uniq -d | wc -l | tr -d ' ')" 0)"
+
 lib mk_lib_tbd libz.1 "$T/libz.1.tbd" <(lib syms_for_archs "$T/syms.txt") >/dev/null 2>&1
 check "mk_lib_tbd writes the install name of data/libraries.txt" "$(grep -q "^install-name: *'/usr/lib/libz.1.dylib'" "$T/libz.1.tbd" && echo ok || echo no)"
 check "  and its versions" "$(grep -q '^current-version: 1.2.12' "$T/libz.1.tbd" && grep -q '^compatibility-version: 1$' "$T/libz.1.tbd" && echo ok || echo no)"

@@ -110,6 +110,7 @@ fw_misc     fw_misc.c     c    -                          -framework,CoreFoundat
 fw_sec      fw_sec.c      c    -                          -framework,CoreFoundation,-framework,Security full
 fw_objc     fw_objc.m     objc -                          -framework,CoreFoundation,-lobjc      full
 libcalls    libcalls.c    c    -                          -                                     core
+compiler_rt compiler_rt.c c    -nodefaultlibs             -lSystem                              core
 oslog       oslog.c       c    -                          -                                     core
 oslogcxx    oslog.c       c++  -xc++                      -                                     core
 commoncrypto commoncrypto.c c  -                          -                                     full

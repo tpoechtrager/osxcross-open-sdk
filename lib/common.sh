@@ -217,6 +217,22 @@ syms_for_archs() {
   for a in $TBD_ARCHS; do symbol_list "$1" | awk -v a="$a" '{ print a " " $0 }'; done
 }
 
+# syms_by_arch FILE: the symbols of FILE as "ARCH SYMBOL" lines for TBD_ARCHS.  The
+# lines of FILE are "SYMBOL ARCH", ARCH being all or one architecture of TBD_ARCHS
+# (data/symbols/compiler-rt.txt)
+syms_by_arch() {
+  local a
+  for a in $TBD_ARCHS; do
+    data_lines "$1" | awk -v a="$a" -v archs="$TBD_ARCHS" -v file="$1" '
+      BEGIN { n = split(archs, known, " ") }
+      { good = ($2 == "all")
+        for (i = 1; i <= n; i++) if ($2 == known[i]) good = 1
+        if (NF != 2 || !good) { print "make-open-sdk.sh: " file ": bad line: " $0 > "/dev/stderr"; bad = 1; next }
+        if ($2 == "all" || $2 == a) print a " " $1 }
+      END { exit bad }' || die "$1 has a line that is not \"SYMBOL all\" or \"SYMBOL ARCH\""
+  done
+}
+
 # header_syms OUT CLANG-FLAGS HEADER...: the symbols that the HEADERs of the stage
 # declare, as "ARCH SYMBOL" lines (helpers/header_syms.py)
 header_syms() {

@@ -1,0 +1,165 @@
+# The compiler-rt builtins that libSystem exports (the ones that code generated
+# by Clang calls: 128-bit integer division, __atomic_* for objects that are not
+# lock-free, __clear_cache, ...).  They are part of libSystem because it links
+# libcompiler_rt (Libsystem/requiredlibs of the open source release).
+#
+# <symbol> <architectures>      all, x86_64 or arm64; the Mach-O name, with the underscore
+#
+# Source of the names: LLVM, compiler-rt/lib/builtins/apple_versioning.c (the
+# same in LLVM 16 to 23).  The file lists the symbols that libSystem has since
+# macOS 10.6 (NOT_HERE_BEFORE_10_6: "Symbols in libSystem.dylib in 10.6 and
+# later, but are in libgcc_s.dylib in earlier versions") and 10.9
+# (NOT_HERE_IN_10_8_AND_EARLIER: __atomic_*); every release of the SDK is
+# macOS 11 or later.  Not taken over: the sections for PowerPC (#if __powerpc__)
+# and for 32-bit ARM (#if __arm__ && __DYNAMIC__).
+# 99 + 40 names remain; 132 are for x86_64 and 119 for arm64, because an
+# architecture only gets a builtin that compiler-rt builds for it:
+#  - the tf variants (__fixtfdi, __fixunstfdi, __floatditf, __floatunditf,
+#    __powitf2, __divtc3, __multc3) are left out for both architectures.  They need
+#    a 128-bit floating-point type (CRT_HAS_TF_MODE in lib/builtins/int_types.h:
+#    long double with a 113-bit mantissa, or __float128).  long double is the
+#    x87 type on x86_64 and double on arm64, and Clang has no __float128 for
+#    these targets (Darwin-excludes/osx.txt also lists five tf builtins).
+#  - the x87 variants (x86_80_BIT_SOURCES in lib/builtins/CMakeLists.txt: the
+#    names with xf or xc3) are only built for x86_64.
+#  - __enable_execute_stack is not built for arm64 on Darwin
+#    (lib/builtins/CMakeLists.txt: "Don't build enable_execute_stack on arm64
+#    darwin"; not yet in LLVM 21, in LLVM 23).
+# docs/SOURCES.md has the details.
+
+# Builtins of compiler-rt that libSystem has since macOS 10.6 (apple_versioning.c: NOT_HERE_BEFORE_10_6, "Symbols in
+# libSystem.dylib in 10.6 and later"), without the sections for PowerPC and 32-bit ARM, without the tf variants.
+___absvdi2                all
+___absvsi2                all
+___absvti2                all
+___addvdi3                all
+___addvsi3                all
+___addvti3                all
+___ashldi3                all
+___ashlti3                all
+___ashrdi3                all
+___ashrti3                all
+___clear_cache            all
+___clzdi2                 all
+___clzsi2                 all
+___clzti2                 all
+___cmpdi2                 all
+___cmpti2                 all
+___ctzdi2                 all
+___ctzsi2                 all
+___ctzti2                 all
+___divdc3                 all
+___divdi3                 all
+___divsc3                 all
+___divti3                 all
+___divxc3                 x86_64
+___enable_execute_stack   x86_64
+___ffsdi2                 all
+___ffsti2                 all
+___fixdfdi                all
+___fixdfti                all
+___fixsfdi                all
+___fixsfti                all
+___fixunsdfdi             all
+___fixunsdfsi             all
+___fixunsdfti             all
+___fixunssfdi             all
+___fixunssfsi             all
+___fixunssfti             all
+___fixunsxfdi             x86_64
+___fixunsxfsi             x86_64
+___fixunsxfti             x86_64
+___fixxfdi                x86_64
+___fixxfti                x86_64
+___floatdidf              all
+___floatdisf              all
+___floatdixf              x86_64
+___floattidf              all
+___floattisf              all
+___floattixf              x86_64
+___floatundidf            all
+___floatundisf            all
+___floatundixf            x86_64
+___floatuntidf            all
+___floatuntisf            all
+___floatuntixf            x86_64
+___gcc_personality_v0     all
+___lshrdi3                all
+___lshrti3                all
+___moddi3                 all
+___modti3                 all
+___muldc3                 all
+___muldi3                 all
+___mulsc3                 all
+___multi3                 all
+___mulvdi3                all
+___mulvsi3                all
+___mulvti3                all
+___mulxc3                 x86_64
+___negdi2                 all
+___negti2                 all
+___negvdi2                all
+___negvsi2                all
+___negvti2                all
+___paritydi2              all
+___paritysi2              all
+___parityti2              all
+___popcountdi2            all
+___popcountsi2            all
+___popcountti2            all
+___powidf2                all
+___powisf2                all
+___powixf2                x86_64
+___subvdi3                all
+___subvsi3                all
+___subvti3                all
+___ucmpdi2                all
+___ucmpti2                all
+___udivdi3                all
+___udivmoddi4             all
+___udivmodti4             all
+___udivti3                all
+___umoddi3                all
+___umodti3                all
+
+# The atomic builtins that libSystem has since macOS 10.9 (apple_versioning.c: NOT_HERE_IN_10_8_AND_EARLIER).
+___atomic_compare_exchange     all
+___atomic_compare_exchange_1   all
+___atomic_compare_exchange_2   all
+___atomic_compare_exchange_4   all
+___atomic_compare_exchange_8   all
+___atomic_exchange             all
+___atomic_exchange_1           all
+___atomic_exchange_2           all
+___atomic_exchange_4           all
+___atomic_exchange_8           all
+___atomic_fetch_add_1          all
+___atomic_fetch_add_2          all
+___atomic_fetch_add_4          all
+___atomic_fetch_add_8          all
+___atomic_fetch_and_1          all
+___atomic_fetch_and_2          all
+___atomic_fetch_and_4          all
+___atomic_fetch_and_8          all
+___atomic_fetch_or_1           all
+___atomic_fetch_or_2           all
+___atomic_fetch_or_4           all
+___atomic_fetch_or_8           all
+___atomic_fetch_sub_1          all
+___atomic_fetch_sub_2          all
+___atomic_fetch_sub_4          all
+___atomic_fetch_sub_8          all
+___atomic_fetch_xor_1          all
+___atomic_fetch_xor_2          all
+___atomic_fetch_xor_4          all
+___atomic_fetch_xor_8          all
+___atomic_load                 all
+___atomic_load_1               all
+___atomic_load_2               all
+___atomic_load_4               all
+___atomic_load_8               all
+___atomic_store                all
+___atomic_store_1              all
+___atomic_store_2              all
+___atomic_store_4              all
+___atomic_store_8              all

@@ -17,6 +17,7 @@ step_stubs() {
     stubs_commoncrypto
     stubs_launchd
   fi
+  stubs_compiler_rt
   stubs_libsystem_tbd
   echo "libresolv"
   stubs_libresolv
@@ -86,6 +87,12 @@ stubs_launchd() {
   awk 'NR == FNR { d["_" $1] = 1; next } ($2 in d)' "$STAGE_WORK/launchd.defs" "$STAGE_WORK/launchd.all" > "$STAGE_WORK/launchd.syms"
   require_lines "$STAGE_WORK/launchd.syms" 40 "liblaunch has too few declared and defined functions"
   cat "$STAGE_WORK/launchd.syms" >> "$STAGE_WORK/libsystem.syms"
+}
+
+# stubs_compiler_rt: the builtins of compiler-rt that libSystem has (128-bit
+# integer division, __atomic_* ...), per architecture (data/symbols/compiler-rt.txt)
+stubs_compiler_rt() {
+  syms_by_arch "$DATA/symbols/compiler-rt.txt" >> "$STAGE_WORK/libsystem.syms"
 }
 
 # stubs_libsystem_tbd: libSystem.B.tbd and the links of the libraries that are
