@@ -110,13 +110,31 @@ Mac with `--ssh HOST` where possible.
   (`` `git` ``, `` `--core` ``).
 - Describe what the SDK is and does; do not argue about Apple's SDK or
   its license.
+- `docs/SOURCES.md`: each item says first what it proves (a value, a name, a behaviour),
+  then the source: project, tag or commit, file, and the fact found there. Where a value
+  follows from how open projects use it, say so ("they rely on it"), not as a result of the SDK.
+- `docs/TESTED.md`: a new entry looks like the ones there, as short as possible, with only
+  the details that matter (an option it needs, what it was tested with). No build commands,
+  no list of what was not tried, no counts.
 
 ## Commits
 
-- Subject: `<file or area>: <Imperative summary>`.
-- Body, wrapped at about 72 columns: cause first, then the fix, then side
-  effects or limits.
-- A `Testing:` section lists only what was actually run. State what was not
-  tested (macOS, BSDs, arm64 at run time).
-- No `Co-Authored-By` line and no other attribution of an AI.
+- Subject: `<file or area>: <Imperative summary>`. A commit that changes the structure
+  but not the SDK and not the behaviour starts with `Refactor:`
+  (`Refactor: lib: One function per task`).
+- Body, wrapped at about 72 columns, short: cause first, then the fix, then side effects
+  or limits. A commit of only documentation has the subject line and no body.
+- A fix of a bug says how it was found (which test or program, on which system, with
+  which compiler) and, if it was there for long, why it did not show before.
+- A change of the SDK's content says briefly what differs (which parts of the SDK, no counts),
+  in a paragraph that starts with "Compared with the previous commit, the full SDKs differ in …"
+  (and the core SDKs).
+- If a project builds (or links, or runs) now that did not before, a line
+  "Builds now: …" names it, before `Testing:`; only projects that were built.
+- A `Testing:` section lists only what was actually run, short. It does not list what
+  was not tested; only if nothing was tested, it says so.
+- No `Co-Authored-By` line and no other attribution of an AI, unless the user asks
+  for it explicitly (e.g. "Found in an audit with …").
 - There is no change log; the commit messages tell what changed and why.
+- A commit that is changed before it is pushed (amend, fixup, rebase) keeps its author and
+  committer date (`git rebase --committer-date-is-author-date`, `GIT_COMMITTER_DATE` with `--amend`).
