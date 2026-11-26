@@ -274,7 +274,7 @@ class OpenSdkJson(Tmp):
 class Manifest(Tmp):
     def test_read_and_new_offline(self):
         m = load("manifest", TOOLS)
-        base = self.write("base.txt", "# c\nxnu xnu-1 " + "a" * 40 + "\nLibm Libm-1 " + "b" * 40 + "\nAvailabilityVersions AvailabilityVersions-100 " + "c" * 40 + "\nsqlite u " + "d" * 64 + "\n")
+        base = self.write("base.txt", "# c\nxnu xnu-1 " + "a" * 40 + "\nLibm Libm-1 " + "b" * 40 + "\nAvailabilityVersions AvailabilityVersions-100 " + "c" * 40 + "\nsqlite u " + "d" * 64 + "\nxz g v1 " + "f" * 40 + "\n")
         self.assertEqual([r[0] for r in m.read_projects(base)], ["xnu", "Libm", "AvailabilityVersions"])
         rel = self.write("rel.json", json.dumps({"projects": [{"project": "xnu", "tag": "xnu-2"},
                                                          {"project": "AvailabilityVersions", "tag": "AvailabilityVersions-134"}]}))
@@ -289,6 +289,7 @@ class Manifest(Tmp):
         # AvailabilityVersions before tag 135 keeps the old tag
         self.assertEqual(d["AvailabilityVersions"][1], "AvailabilityVersions-100")
         self.assertIn("sqlite", d)
+        self.assertEqual(d["xz"][1:], list(m.read_manifest_xz(base)))
 
     def test_new_from_a_list_of_tags(self):
         # a base of "<project> <tag>" lines has no sqlite line: the newest manifest gives it
@@ -302,6 +303,7 @@ class Manifest(Tmp):
         d = {l.split()[0]: l.split() for l in read(out).splitlines() if l.strip() and not l.startswith("#")}
         self.assertEqual(d["xnu"][1], "xnu-2")
         self.assertEqual(d["sqlite"][1:], list(m.read_manifest(m.newest_manifest())[1]))
+        self.assertEqual(d["xz"][1:], list(m.read_manifest_xz(m.newest_manifest())))
 
 
 class MakeLicenses(Tmp):
@@ -483,10 +485,12 @@ class DataFileReaders(Tmp):
     def test_readers(self):
         p = self.write("s.txt", "# head\n_a   # source\n\n  _b\n# _c\n")
         self.assertEqual(data_files.read_symbols(p), ["_a", "_b"])
-        p = self.write("m.txt", "# c\nxnu xnu-1 " + "a" * 40 + " release\nsqlite https://x/s.zip " + "b" * 64 + "\n")
+        p = self.write("m.txt", "# c\nxnu xnu-1 " + "a" * 40 + " release\nsqlite https://x/s.zip " + "b" * 64 +
+                       "\nxz https://x/xz v1 " + "c" * 40 + "\n")
         rows, sq = data_files.read_manifest(p)
         self.assertEqual(rows, [["xnu", "xnu-1", "a" * 40, "release"]])
         self.assertEqual(sq, ("https://x/s.zip", "b" * 64))
+        self.assertEqual(data_files.read_manifest_xz(p), ("https://x/xz", "v1", "c" * 40))
         p = self.write("r.txt", "11.3 16.0.6 core -\n14.3 16.0.6 full,core 23D56 default\n")
         self.assertEqual(data_files.read_releases(p), [("11.3", "16.0.6", ["core"], "", False),
                                                        ("14.3", "16.0.6", ["full", "core"], "23D56", True)])
@@ -512,6 +516,11 @@ class DataFiles(unittest.TestCase):
                 if f[0] == "sqlite":
                     self.assertEqual(len(f), 3)
                     self.assertRegex(f[2], r"^[0-9a-f]{64}$")
+                    continue
+                if f[0] == "xz":
+                    self.assertEqual(len(f), 4)
+                    self.assertTrue(f[1].startswith("https://"), l)
+                    self.assertRegex(f[3], r"^[0-9a-f]{40}$")
                     continue
                 self.assertEqual(len(f), 4, l)
                 self.assertRegex(f[2], r"^[0-9a-f]{40}$", l)

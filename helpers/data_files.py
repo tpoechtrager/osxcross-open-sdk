@@ -24,14 +24,25 @@ def read_symbols(path):
 
 def read_manifest(path):
     """A manifest of data/manifests/: ([(project, tag, commit, origin...)], (url, sha256) of
-    sqlite or None).  A file of "<project> <tag>" lines gives rows of two fields."""
+    sqlite or None).  A file of "<project> <tag>" lines gives rows of two fields.  The xz
+    line is read by read_manifest_xz."""
     rows, sqlite = [], None
     for w in lines(path):
         if w[0] == "sqlite":
             sqlite = (w[1], w[2])
+        elif w[0] == "xz":
+            continue
         elif len(w) >= 2:
             rows.append(w)
     return rows, sqlite
+
+
+def read_manifest_xz(path):
+    """The xz line of a manifest: (git url, tag, commit) or None."""
+    for w in lines(path):
+        if w[0] == "xz":
+            return (w[1], w[2], w[3])
+    return None
 
 
 def read_libcxx_versions(path):

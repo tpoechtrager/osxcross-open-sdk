@@ -51,3 +51,5 @@ xnu xnu-11417.121.6 a1e26a70f38d1d7daa7b49b258e2f8538ad81650 release
 developer_cmds developer_cmds-89 e8d73a44a7539cfa8fdc5aa4f5634aaea020661a fixed
 # sqlite: <url> <sha256 of the archive>
 sqlite https://www.sqlite.org/2023/sqlite-amalgamation-3430200.zip a17ac8792f57266847d57651c5259001d1e4e4b46be96ec0d985c953925b2a1c
+# xz (liblzma): <git url> <tag> <commit>
+xz https://github.com/tukaani-project/xz v5.0.8 265e5ffb70d9c175b424621576294d28807efd9b

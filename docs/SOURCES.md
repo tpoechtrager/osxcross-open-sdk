@@ -18,6 +18,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `__exp10`, `__exp10f` in `math.h` | LLVM `RuntimeLibcalls.td` ([details](#__exp10-__exp10f-in-mathh)) |
 | Symbols of the other `.tbd` | Headers and export lists of the projects ([details](#symbols-of-the-other-tbd)) |
 | Symbols of `libiconv.2.tbd` | The public headers of libiconv ([details](#symbols-of-libiconv2tbd)) |
+| `liblzma.5.tbd` | xz 5.0.8 (upstream), libtool, libarchive ([details](#liblzma5tbd)) |
 | Symbols of libc++ and libc++abi | LLVM's ABI lists ([details](#symbols-of-libc-and-libcabi)) |
 | libc++ release of each macOS release | LLVM's availability table ([details](#libc-release-of-each-macos-release)) |
 | `TargetConditionals.h` | CarbonHeaders, compiler macros ([details](#targetconditionalsh)) |
@@ -177,6 +178,27 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
     (a C name: the symbol is `__libiconv_version`);
   - `libcharset/localcharset.h`: `locale_charset`;
   - `libcharset/libcharset.h`: `libcharset_set_relocation_prefix`.
+
+---
+
+### `liblzma.5.tbd`
+
+**Files:** `lib/libs.sh` (`libs_lzma`), `lib/fetch.sh` (`fetch_xz`), `data/manifests/` (the `xz` line), `data/libraries.txt`
+
+- Source: the tag `v5.0.8` of xz ([github.com/tukaani-project/xz](https://github.com/tukaani-project/xz)),  
+  pinned to its commit in the manifest; liblzma is in the public domain (`COPYING`).
+- Why 5.0.8: liblzma keeps the ABI of 5.0 in every later `liblzma.5`  
+  (`src/liblzma/liblzma_generic.map` of later releases lists these names under `XZ_5.0`),  
+  and the `config.h` of Apple's libarchive (apple-oss libarchive) has no `HAVE_LZMA_STREAM_ENCODER_MT`,  
+  the first function of 5.2. The releases 5.6.0 and 5.6.1 are avoided.
+- macOS has the library: `libarchive.xcodeproj` of apple-oss libarchive links `liblzma.tbd`.
+- Symbols: the functions that `lzma.h` and `lzma/*.h` of `src/liblzma/api` declare (clang AST);  
+  they are the `XZ_5.0` node of the map of xz 5.2.13.
+- No header: like the library of the system, the SDK has no `lzma.h`; a program uses the one of its own xz.
+- Install name `/usr/lib/liblzma.5.dylib` and current version 6.8: libtool's names for  
+  `-version-info 5:8:0` (`src/liblzma/Makefile.am`).
+- The compatibility version is the lowest possible one (1): Apple's build settings of liblzma are not public.
+- Only in the full SDK (step `libs`).
 
 ---
 
@@ -383,6 +405,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 **Files:** `data/manifests/`
 
 - `release.json` of distribution-macOS and `git ls-remote` of the projects (`tools/manifest.py`).
+- The `sqlite` and `xz` lines are the same in every manifest; `--new` copies them.
 
 <br>
 

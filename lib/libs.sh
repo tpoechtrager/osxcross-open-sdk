@@ -25,6 +25,7 @@ step_libs() {
   libs_libcurl
   libs_ncurses
   libs_sqlite
+  libs_lzma
 }
 
 # ext_tbd NAME CLANGFLAGS EXCLUDE-SYMFILE|- HEADER...  (NAME: a library of data/libraries.txt)
@@ -210,4 +211,21 @@ libs_sqlite() {
   sq=$(sqlite_dir)
   cp "$sq/sqlite3.h" "$sq/sqlite3ext.h" "$STAGE_INC/"
   ext_tbd libsqlite3 "" - sqlite3.h
+}
+
+# liblzma of xz (upstream, not an open source project of Apple): only the
+# stub, no header (the library of the system comes without lzma.h; a program
+# uses the lzma.h of its own xz).  The symbols are the functions that lzma.h
+# of the clone and its subheaders lzma/*.h declare (LZMA_API); the subheaders
+# can only be included through lzma.h.
+libs_lzma() {
+  local api keep
+  echo "liblzma"
+  FETCH_QUIET=1 fetch_xz
+  api=$SRC/xz/src/liblzma/api
+  keep=$(cd "$api" && ls lzma/*.h | tr '\n' ' ')
+  python3 -I "$HELPERS/header_syms.py" --flags="-I'$api'" --keep="$keep" "$STAGE" "$CLANG_PATH" \
+    "$STAGE_WORK/liblzma.5.syms" lzma.h
+  mk_lib_tbd liblzma.5 "$STAGE_LIB/liblzma.5.tbd" "$STAGE_WORK/liblzma.5.syms"
+  ln -sf liblzma.5.tbd "$STAGE_LIB/liblzma.tbd"
 }

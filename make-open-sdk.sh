@@ -78,7 +78,8 @@
 #             matches the macOS release, or --libcxx)
 #   libs      more libraries: zlib, bzip2, expat, libffi, libedit, libxml2,
 #             libobjc, libutil, libpcap, libarchive, OpenPAM, libxslt,
-#             libcurl, ncurses with panel, form and menu, sqlite3
+#             libcurl, ncurses with panel, form and menu, sqlite3,
+#             liblzma
 #             (not with --core)
 #   frameworks  CoreFoundation, DiskArbitration, SystemConfiguration, IOKit,
 #             Security and a placeholder for Foundation (not with --core)

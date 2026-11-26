@@ -76,6 +76,7 @@ check "releases lists the core releases too" "$(is "$(lib releases | head -n 1)"
 check "release_value gives the libc++ of a release" "$(is "$(lib release_value 14.3 2)" 16.0.6)"
 check "llvm_commit of a release of the table" "$(lib llvm_commit 16.0.6 | grep -Eq '^[0-9a-f]{40}$' && echo ok || echo no)"
 check "manifest_projects gives three fields" "$(lib manifest_projects "$ROOT/data/manifests/macos-265.txt" | awk 'NF != 3 { bad = 1 } END { print (NR > 10 && !bad) ? "ok" : "no" }')"
+check "manifest_xz gives the commit" "$(lib manifest_xz "$ROOT/data/manifests/macos-265.txt" 4 | grep -Eq '^[0-9a-f]{40}$' && echo ok || echo no)"
 check "manifest_sqlite gives the URL" "$(lib manifest_sqlite "$ROOT/data/manifests/macos-265.txt" 2 | grep -q '^https://.*\.zip$' && echo ok || echo no)"
 
 lib install_own_files all

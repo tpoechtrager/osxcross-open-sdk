@@ -107,8 +107,8 @@ This SDK was built by osxcross-open-sdk (make-open-sdk.sh) from open source
 code only. It is not Apple's SDK and contains no component of one: no part
 of it was taken or derived from an SDK made by Apple. Every header and stub
 library comes from the published source code of Apple's open source releases
-(github.com/apple-oss-distributions), LLVM (libc++), sqlite.org and, with the
-Swift add-on, swift.org, or was written for this SDK.
+(github.com/apple-oss-distributions), LLVM (libc++), sqlite.org, xz
+(liblzma) and, with the Swift add-on, swift.org, or was written for this SDK.
 
 OpenSDK.json lists the generator and the tag and commit of every project.
 The license texts of all projects that the SDK contains, and a list of

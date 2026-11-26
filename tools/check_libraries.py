@@ -59,6 +59,8 @@ CHECKS = {
                   ("curl/xcconfigs/libcurl-version.xcconfig", r"^DYLIB_CURRENT_VERSION = 9")],
     "libncurses.5.4": [("ncurses/ncurses/panel/Makefile", r"-compatibility_version \$\{ABI_VERSION\} -current_version \$\{ABI_VERSION\}"),
                        ("ncurses/ncurses/panel/Makefile", r"^ABI_VERSION\s*=\s*5\.4")],
+    "liblzma.5": [("xz/src/liblzma/Makefile.am", r"-version-info 5:8:0$"),
+                  ("libarchive/libarchive.xcodeproj/project.pbxproj", r"liblzma\.tbd in Frameworks")],
     "CoreFoundation": [("CF/Makefile", r"-compatibility_version 150 ")],
     "DiskArbitration": [("DiskArbitration/DiskArbitration.xcodeproj/project.pbxproj", r"DYLIB_COMPATIBILITY_VERSION = 1;"),
                         ("Security/OSX/libsecurity_translocate/lib/SecTranslocateDANotification.cpp", r"DiskArbitration\.framework/Versions/A/DiskArbitration")],

@@ -80,6 +80,7 @@ P = [
  ("Security", "Security", "APSL 2.0", "Security.framework/Headers (resolved from header_symlinks), Security.tbd", "frameworks", [], "base/Security.h"),
  ("configd", "configd", "APSL 2.0", "SystemConfiguration.framework/Headers, SystemConfiguration.tbd", "frameworks"),
  ("IOKitUser", "IOKitUser", "APSL 2.0", "IOKit.framework/Headers (IOKitLib, IOCF*, ps/, pwr_mgt/), IOKit.tbd (plus iokit/IOKit/*.h of xnu)", "frameworks"),
+ ("xz", "xz/src/liblzma/api", "Public domain (liblzma; COPYING)", "liblzma.tbd symbol names (from lzma.h and lzma/*.h)", "libs", ["../../../COPYING"]),
  ("sqlite", None, "Public domain (SQLite blessing)", "sqlite3.h, sqlite3ext.h (upstream amalgamation {version}), libsqlite3.tbd", "libs"),
  ("Swift runtime stubs", None, "Apache 2.0 with Runtime Library Exception", "usr/lib/swift/*.tbd generated from the Swift runtime dylibs of swift.org's macOS package", "swift"),
 ]

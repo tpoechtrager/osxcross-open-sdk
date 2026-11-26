@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Symbols declared in a set of headers of one library.
 
-usage: header_syms.py SDKROOT CLANG OUT [--flags "CLANG-FLAGS"] HEADER...
+usage: header_syms.py SDKROOT CLANG OUT [--flags "CLANG-FLAGS"] [--keep "PATH..."] HEADER...
 Declarations with hidden visibility are left out.  Only declarations whose
-file name (basename) matches one of the HEADERs are kept.  An error of clang in a header stops the script, because declarations
+file name (basename) matches one of the HEADERs are kept, and those of the
+files that end in one of the --keep paths (headers that HEADER includes and
+that cannot be included on their own, as lzma/*.h).  An error of clang in a header stops the script, because declarations
 after it may be missing.
 Output: lines "ARCH symbol" (ARCH = x86_64 | arm64).
 """
@@ -52,8 +54,9 @@ def is_hidden(n):
     return any(i.get("kind") == "VisibilityAttr" and i.get("visibility") == "hidden" for i in n.get("inner", []))
 
 
-def scan(sdk, clang, flags, hdrs, arch, src):
+def scan(sdk, clang, flags, hdrs, arch, src, keep=()):
     base = {os.path.basename(h) for h in hdrs}
+    tails = tuple("/" + k for k in keep)
     r = subprocess.run([clang] + target_args(clang, arch) + ["-isysroot", sdk, "-fsyntax-only",
                         "-D_DARWIN_C_SOURCE"] + shlex.split(flags) + ["-Xclang", "-ast-dump=json", src],
                        capture_output=True, text=True)
@@ -62,7 +65,7 @@ def scan(sdk, clang, flags, hdrs, arch, src):
         sys.exit("header_syms.py: clang failed for %s (%s):\n%s" % (arch, ", ".join(hdrs), r.stderr[:3000]))
     names = set()
     for n, nfile in file_of_nodes(json.loads(r.stdout)["inner"]):
-        if os.path.basename(nfile) not in base:
+        if os.path.basename(nfile) not in base and not (tails and nfile.endswith(tails)):
             continue
         if is_hidden(n):
             continue
@@ -80,6 +83,7 @@ def main(argv):
     p.add_argument("clang")
     p.add_argument("out")
     p.add_argument("--flags", default="", help="clang flags (one argument, split like a shell)")
+    p.add_argument("--keep", default="", help="more headers whose declarations count (paths, split at spaces)")
     p.add_argument("headers", nargs="+")
     a = p.parse_args(argv[1:])
     with tempfile.TemporaryDirectory() as td:
@@ -89,7 +93,7 @@ def main(argv):
             f.write("".join("#include <%s>\n" % h for h in a.headers))
         with open(a.out, "w") as f:
             for arch in ARCHS:
-                for m in sorted(scan(a.sdk, a.clang, a.flags, a.headers, arch, src)):
+                for m in sorted(scan(a.sdk, a.clang, a.flags, a.headers, arch, src, a.keep.split())):
                     f.write("%s %s\n" % (arch, m))
     return 0
 

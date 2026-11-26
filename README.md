@@ -22,7 +22,7 @@ Every file comes from one of these:
 - Apple's open source releases ([apple-oss-distributions](https://github.com/apple-oss-distributions),  
   APSL 2.0 and the licenses of the single projects), at the tags of a macOS release;
 - LLVM (`libc++` and `libc++abi`);
-- other open source projects (`sqlite3`; the Swift runtime of swift.org for the optional Swift add-on);
+- other open source projects (`sqlite3`, liblzma of `xz`; the Swift runtime of swift.org for the optional Swift add-on);
 - files written for this SDK (0BSD): a few headers and the `.tbd` stubs.
 
 [docs/SOURCES.md](docs/SOURCES.md) names the public source of every header, symbol list,  
@@ -34,8 +34,8 @@ install name and version. A real SDK was used only to test a result, never as a 
 - **GCC** (OSXCross `build_gcc.sh`): C, C++ and Fortran, for x86_64 and arm64.
 - The C library, POSIX, Mach, `pthreads`, `libdispatch`, blocks.
 - Libraries of `/usr/lib`: `zlib`, `bzip2`, `expat`, `libffi`, `libedit` (with the readline layer),  
-  `libxml2`, `libxslt`, `sqlite3`, `libcurl`, `libarchive`, `libpcap`, `OpenPAM`, `ncurses`, `libiconv`,  
-  `libresolv`, `CommonCrypto`, the launchd API, `dns_sd`.
+  `libxml2`, `libxslt`, `sqlite3`, `liblzma` (stub only, without `lzma.h`), `libcurl`, `libarchive`, `libpcap`,  
+  `OpenPAM`, `ncurses`, `libiconv`, `libresolv`, `CommonCrypto`, the launchd API, `dns_sd`.
 - `os_log` (`<os/log.h>`): the messages appear in the unified log of macOS, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).  
   Signposts, activities and `os_trace` compile and run but record nothing.
 - The frameworks `CoreFoundation`, `DiskArbitration`, `SystemConfiguration`, `Security` (including `SecureTransport`)  
@@ -137,7 +137,7 @@ The full guide, with dependencies, options, steps and tests, is in [docs/BUILDIN
   `os/signpost.h`, `os/activity.h`, `os/trace.h`, `xpc/xpc.h`, the module map, settings and `.tbd` files):  
   0BSD, so programs that include them are not affected.
 - Apple's sources: APSL 2.0 and the licenses of the single projects; `libc++`: Apache 2.0 with  
-  LLVM exceptions; `sqlite3`: public domain.
+  LLVM exceptions; `sqlite3`, `liblzma`: public domain.
 
 Every SDK carries the full license texts of each project in `usr/share/licenses/open-sdk/<project>/`,  
 with `LICENSES.md`, which names project, tag, license and the SDK files that come from it.  
@@ -148,7 +148,7 @@ This is a description of the facts, not legal advice.
 - **Symbols that macOS does not export.** A symbol is in a `.tbd` if a header declares it and  
   the open sources mention it. Some are not defined in the libSystem of every macOS release;  
   a program that uses one links but stops at start with "symbol not found".
-- **Versions.** Stubs without a public version source (`sqlite3`, `Foundation`, `CoreServices`)  
+- **Versions.** Stubs without a public version source (`sqlite3`, `liblzma`, `Foundation`, `CoreServices`)  
   have the lowest compatibility version.
 - **`CoreFoundation`** is CF-1153.18 (2018), the last one Apple published: newer CF APIs are missing.
 - **arm64e and x86_64h.** The stubs give arm64e the symbols of arm64. x86_64h is not listed:  

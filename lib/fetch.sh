@@ -6,8 +6,8 @@
 # ---------------------------------------------------------------------------
 # The sources of a macOS release are listed in data/manifests/macos-NNN.txt:
 # project, tag and commit of github.com/apple-oss-distributions, and the
-# archive of sqlite with its SHA-256.  A clone is accepted only if its tag
-# points to the commit of the manifest.  (tools/manifest.py
+# archive of sqlite with its SHA-256, and URL, tag and commit of xz (liblzma).
+# A clone is accepted only if its tag points to the commit of the manifest.  (tools/manifest.py
 # --new) writes a manifest for a new release.
 # ---------------------------------------------------------------------------
 
@@ -15,9 +15,11 @@
 # comments; helpers/data_files.py reads them the same way; data/releases.txt:
 # lib/common.sh)
 # manifest_projects FILE: "project tag commit" lines; manifest_sqlite FILE COLUMN:
-# 2 the URL, 3 the SHA-256 of the sqlite archive
-manifest_projects() { data_lines "$1" | awk '$1 != "sqlite" && NF >= 3 { print $1, $2, $3 }'; }
+# 2 the URL, 3 the SHA-256 of the sqlite archive; manifest_xz FILE COLUMN: 2 the
+# URL, 3 the tag, 4 the commit of xz
+manifest_projects() { data_lines "$1" | awk '$1 != "sqlite" && $1 != "xz" && NF >= 3 { print $1, $2, $3 }'; }
 manifest_sqlite() { data_lines "$1" | awk -v c="$2" '$1 == "sqlite" { print $c }'; }
+manifest_xz() { data_lines "$1" | awk -v c="$2" '$1 == "xz" { print $c }'; }
 # llvm_commit RELEASE: the commit of the tag of an LLVM release; llvm_releases:
 # the LLVM releases that --libcxx accepts
 llvm_commit() { data_lines "$DATA/libcxx-versions.txt" | awk -v v="$1" '$1 == "llvm" && $2 == v { print $3 }'; }
@@ -35,15 +37,16 @@ list_releases() {
   done
 }
 
-# load_manifest: set PROJECTS ("name tag commit" lines), SQLITE_URL and
-# SQLITE_SHA256 from the manifest of --macos, and the LLVM release (LIBCXX_VERSION
-# and LLVM_COMMIT).
+# load_manifest: set PROJECTS ("name tag commit" lines), SQLITE_URL,
+# SQLITE_SHA256, XZ_URL, XZ_TAG and XZ_COMMIT from the manifest of --macos, and
+# the LLVM release (LIBCXX_VERSION and LLVM_COMMIT).
 load_manifest() {
   local m=$DATA/manifests/$MACOS_REL.txt
   [ -f "$m" ] || die "no manifest for macOS $SDK_VERSION; releases with a manifest: $(list_releases | cut -f1 | tr '\n' ' ')"
   PROJECTS=$(manifest_projects "$m")
   SQLITE_URL=$(manifest_sqlite "$m" 2)
   SQLITE_SHA256=$(manifest_sqlite "$m" 3)
+  XZ_URL=$(manifest_xz "$m" 2); XZ_TAG=$(manifest_xz "$m" 3); XZ_COMMIT=$(manifest_xz "$m" 4)
   if [ -n "${OPEN_SDK_AV_TAG:-}" ]; then
     # a tag by hand cannot be in the manifest: it is not checked
     PROJECTS=$(echo "$PROJECTS" | awk -v t="$OPEN_SDK_AV_TAG" '$1 == "AvailabilityVersions" { $2 = t; $3 = "-" } { print }')
@@ -125,7 +128,7 @@ step_fetch() {
 $PROJECTS
 EOF2
   fetch_llvm
-  [ "$VARIANT" = core ] || fetch_sqlite
+  [ "$VARIANT" = core ] || { fetch_sqlite; fetch_xz; }
 }
 
 fetch_llvm() {
@@ -138,6 +141,19 @@ fetch_llvm() {
   git --git-dir="$SRC/llvm-project/.git" --work-tree="$SRC/llvm-project" sparse-checkout set libcxx libcxxabi
   git --git-dir="$SRC/llvm-project/.git" --work-tree="$SRC/llvm-project" checkout -q -f HEAD
   echo "$LLVM_TAG" > "$SRC/llvm-project/.open-sdk-tag"
+}
+
+# fetch_xz: the clone of xz (liblzma) at the tag and commit of the manifest
+fetch_xz() {
+  [ -n "$XZ_URL" ] && [ -n "$XZ_COMMIT" ] || die "the manifest of macOS $SDK_VERSION has no xz line"
+  if clone_is_current "$SRC/xz" "$XZ_TAG" "$XZ_COMMIT"; then
+    [ -n "${FETCH_QUIET:-}" ] || fetch_line xz "$XZ_TAG" present   # (the step libs calls this too)
+    return 0
+  fi
+  fetch_line xz "$XZ_TAG" cloning
+  git_pinned "$SRC/xz" "$XZ_URL" "$XZ_TAG" "$XZ_COMMIT"
+  git --git-dir="$SRC/xz/.git" --work-tree="$SRC/xz" checkout -q -f HEAD
+  echo "$XZ_TAG" > "$SRC/xz/.open-sdk-tag"
 }
 
 # sqlite_dir: the directory of the sqlite amalgamation in SRC (the name of the archive)
