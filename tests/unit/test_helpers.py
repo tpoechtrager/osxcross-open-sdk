@@ -200,6 +200,20 @@ class AvailDsl(Tmp):
         self.assertIn("version macos 14.0", t)
         self.assertNotIn("version macos 15.0", t)
 
+    def test_maccatalyst_variant_name(self):
+        # the DSL of AvailabilityVersions-138.7 names the variant iosmac (GCC does not know that name),
+        # the later tags macCatalyst; both end up as macCatalyst with the alias iosmac
+        old = "variant\t\tios\t\t\t\t\tiosmac\t\tMACCATALYST\tavailability_aliases=macCatalyst\nversion macos 14.0\n"
+        new = "variant     ios                 macCatalyst   MACCATALYST\nversion macos 14.0\n"
+        for name, text in (("old", old), ("new", new)):
+            base = self.write(name + ".dsl", text)
+            extra = self.write(name + "-extra.dsl", "")
+            out = self.path(name + "-out.dsl")
+            rc, _, err = run("avail_dsl.py", base, extra, "14.0", out)
+            self.assertEqual(rc, 0, err)
+            lines = [l.split() for l in read(out).splitlines() if l.startswith("variant")]
+            self.assertEqual(lines, [["variant", "ios", "macCatalyst", "MACCATALYST", "availability_aliases=iosmac"]])
+
 
 class CxxSite(Tmp):
     def test_template(self):

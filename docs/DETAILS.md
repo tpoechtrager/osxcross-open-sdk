@@ -59,6 +59,10 @@ The changes:
 - `mach/port.h` (macOS 26.4 and later) compiles with g++;
 - the platform `bridgeos` is removed from availability annotations (GCC does not know it), in `usr/include`  
   and in the `Headers` of the frameworks (`Security`, `SystemConfiguration`);
+- the SDKs of macOS 14.3 and older: the Mac Catalyst platform of the availability macros is named `macCatalyst`  
+  (`iosmac` stays an alias), as in the DSL of later AvailabilityVersions tags; the DSL of AvailabilityVersions-138.7  
+  names it `iosmac`, which GCC rejects (`API_UNAVAILABLE(macCatalyst)` in `Security`, `SystemConfiguration`,  
+  `IOKit`, `DiskArbitration`), while Clang accepts both;
 - CoreFoundation: an include of `CFMachPort.h` and a small block of macros in  
   `CFAvailability.h` (CF-1153.18 of 2018 lacks them);
 - CommonCrypto: `<availability.h>` is written `<Availability.h>`;

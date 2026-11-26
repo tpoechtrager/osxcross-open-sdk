@@ -75,12 +75,23 @@ def cut(base, extra, target, out):
     # libdispatch from macOS 14.4 on use it (dispatch/queue.h).
     # The same for iosmac(...): the headers of libffi (and others) say iosmac,
     # the DSL of the later tags only knows the variant name macCatalyst.
+    # The DSL of AvailabilityVersions-138.7 has it the other way round: the
+    # variant is named iosmac and macCatalyst is the alias.  The variant name
+    # is what the availability attribute gets (AvailabilityInternal.h:
+    # "iosmac,unavailable"), and GCC rejects "platform 'iosmac' is not
+    # recognised" in every header that says API_UNAVAILABLE(macCatalyst).
+    # Clang knows both names, GCC only macCatalyst, so the variant gets the
+    # name of the later tags and iosmac stays an alias.
     for i, line in enumerate(lines):
         w = words(line)
         if w[:2] == ["platform", "visionos"] and "availability_aliases=xros" not in line:
             lines[i] = line.split("#", 1)[0].rstrip() + " availability_aliases=xros"
         if w[:3] == ["variant", "ios", "macCatalyst"] and "iosmac" not in line:
             lines[i] = line.split("#", 1)[0].rstrip() + " availability_aliases=iosmac"
+        if w[:3] == ["variant", "ios", "iosmac"] and "availability_aliases=macCatalyst" in w:
+            lines[i] = " ".join(["variant", "ios", "macCatalyst"]
+                                + ["availability_aliases=iosmac" if x == "availability_aliases=macCatalyst" else x
+                                   for x in w[3:]])
     start = None
     for i, line in enumerate(lines):
         w = words(line)
