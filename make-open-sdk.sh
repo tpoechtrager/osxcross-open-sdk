@@ -19,14 +19,15 @@
 #   --macos VERSION      the SDK of another macOS release (default 26.5; the
 #                        numbers of Xcode's SDKs: 11.3 12.3 13.3 14.3 15.5 26.0 ...;
 #                        the full SDK is made for 14.3 and later, --core for 11.3
-#                        and later)
+#                        and later; data/releases.txt, --list-releases)
 #   --libcxx VERSION     libc++ of another LLVM release (default: 21.1.8 for
-#                        26.5, 16.0.6 for 14.3, see docs/LIBCXX.md)
+#                        26.5, 16.0.6 for 14.3, see data/releases.txt and
+#                        docs/LIBCXX.md)
 #   --min-deployment-target VERSION
 #                        the lowest deployment target that SDKSettings.json
-#                        names (default 11.0, the oldest release in
-#                        data/manifests/; VERSION like 10.13 or 11.0, not
-#                        above the SDK's release)
+#                        names (default 11.0, the major version of the oldest
+#                        release of data/releases.txt; VERSION like 10.13 or
+#                        11.0, not above the SDK's release)
 #   --core               only C, C++ and POSIX (the steps libs and frameworks
 #                        are left out; macOS 11.3 and later); without it (macOS
 #                        14.3 and later) the SDK also has the
@@ -58,7 +59,8 @@
 #
 # Environment (options take precedence): OPEN_SDK_WORK_DIR, OPEN_SDK_OUTPUT_DIR,
 # OPEN_SDK_CLANG, OPEN_SDK_YACC (yacc or bison -y; by default the first one
-# that works), OPEN_SDK_BUILD_VERSION (ProductBuildVersion of SystemVersion.plist),
+# that works), OPEN_SDK_BUILD_VERSION (ProductBuildVersion of SystemVersion.plist;
+# default: the one of data/releases.txt),
 # OPEN_SDK_SWIFT_PKG, OPEN_SDK_AV_TAG (AvailabilityVersions tag),
 # OPEN_SDK_MIN_DEPLOYMENT_TARGET (--min-deployment-target),
 # OPEN_SDK_BSDTAR (use bsdtar even if GNU tar exists).  No other variable is read:
@@ -99,6 +101,13 @@ unset WORK TARBALL_DIR SDK_VERSION LIBCXX_VERSION CLANG BUILD_VERSION SWIFT_PKG 
 SELF=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 HELPERS=$SELF/helpers
 DATA=$SELF/data
+ALL_STEPS="fetch host headers stubs cxx libs frameworks meta tarball swift"
+
+# the common functions and the steps (only functions and constants)
+for f in common $ALL_STEPS; do
+  # shellcheck source=/dev/null
+  . "$SELF/lib/$f.sh"
+done
 
 # abs_path PATH: PATH relative to the current directory, made absolute
 abs_path() { case $1 in /*) printf '%s\n' "$1";; *) printf '%s/%s\n' "$PWD" "$1";; esac; }
@@ -109,10 +118,12 @@ opt_value() { [ "$2" -ge 2 ] || { echo "make-open-sdk.sh: option $1 needs a valu
 WORK=${OPEN_SDK_WORK_DIR:-$SELF/build}
 OUT_DIR=${OPEN_SDK_OUTPUT_DIR:-$SELF/out}
 CLANG=${OPEN_SDK_CLANG:-clang}
-DEFAULT_MACOS=26.5
+# the defaults of --macos and --min-deployment-target (data/releases.txt)
+DEFAULT_MACOS=$(default_release)
 SDK_VERSION=$DEFAULT_MACOS
 LIBCXX_VERSION=
-MIN_DEPLOYMENT_TARGET=${OPEN_SDK_MIN_DEPLOYMENT_TARGET:-11.0}
+DEFAULT_MIN_DEPLOYMENT_TARGET=$(releases | head -n 1 | cut -d. -f1).0
+MIN_DEPLOYMENT_TARGET=${OPEN_SDK_MIN_DEPLOYMENT_TARGET:-$DEFAULT_MIN_DEPLOYMENT_TARGET}
 BUILD_VERSION=${OPEN_SDK_BUILD_VERSION:-}
 VARIANT=full
 FORCE=0
@@ -169,8 +180,9 @@ if printf '%s\n' "$MIN_DEPLOYMENT_TARGET" | grep -Eqv '^[0-9]+\.[0-9]+$'; then
   echo "make-open-sdk.sh: --min-deployment-target expects a version like 11.0, not '$MIN_DEPLOYMENT_TARGET'" >&2; exit 2
 fi
 MACOS_REL=macos-$(echo "$SDK_VERSION" | tr -d .)
-[ -n "$BUILD_VERSION" ] || [ "$SDK_VERSION" != 14.3 ] || BUILD_VERSION=23D56
-ALL_STEPS="fetch host headers stubs cxx libs frameworks meta tarball swift"
+# ProductBuildVersion of SystemVersion.plist: OPEN_SDK_BUILD_VERSION or data/releases.txt ("-": none)
+[ -n "$BUILD_VERSION" ] || BUILD_VERSION=$(release_value "$SDK_VERSION" 4)
+[ "$BUILD_VERSION" != - ] || BUILD_VERSION=
 if [ -z "$STEPS" ]; then
   STEPS="fetch host headers stubs cxx"
   [ "$VARIANT" = core ] || STEPS="$STEPS libs frameworks"
@@ -191,14 +203,6 @@ STAGE_WORK=$STAGE/work   # intermediate files, not copied
 PKG=$WORK/pkg
 [ "$VARIANT" = full ] || PKG=$WORK/pkg-core
 SDK=$PKG/MacOSX$SDK_VERSION.sdk
-# the full SDK is made for this release and later (the core SDK for every
-# release with a manifest)
-FULL_SDK_MIN_MACOS=14.3
-
-for f in common $ALL_STEPS; do
-  # shellcheck source=/dev/null
-  . "$SELF/lib/$f.sh"
-done
 
 # check_min_target: the minimum must not be above the SDK's release (called
 # after load_manifest, so that an unknown release is reported first)
@@ -209,13 +213,13 @@ check_min_target() {
   fi
 }
 
-# check_full_release: the full SDK is made for FULL_SDK_MIN_MACOS and later (the
-# core SDK for every release with a manifest).  Called after load_manifest, like
-# check_min_target.
+# check_full_release: the variants of a release are in data/releases.txt (the
+# full SDK from macOS 14.3 on, the core SDK for every release).  Called after
+# load_manifest, like check_min_target.
 check_full_release() {
   [ "$VARIANT" = core ] && return 0
-  if version_lt "$SDK_VERSION" "$FULL_SDK_MIN_MACOS"; then
-    echo "make-open-sdk.sh: the full SDK is made for macOS $FULL_SDK_MIN_MACOS and later; use --core for macOS $SDK_VERSION" >&2
+  if ! releases full | grep -qxF "$SDK_VERSION"; then
+    echo "make-open-sdk.sh: the full SDK is made for macOS $(releases full | head -n 1) and later; use --core for macOS $SDK_VERSION" >&2
     exit 2
   fi
 }

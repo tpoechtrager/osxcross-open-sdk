@@ -125,6 +125,28 @@ data_lines() { sed 's/#.*//' "$1" | awk 'NF'; }
 # symbol_list FILE: the symbols of a symbol list or export list, one per line
 symbol_list() { data_lines "$1" | awk '{ print $1 }'; }
 
+# data/releases.txt: release_value RELEASE COLUMN (2: the default libc++,
+# 3: the variants, 4: ProductBuildVersion); releases [VARIANT]: the releases in
+# the order of the file (only those with VARIANT); default_release: the
+# release that is built without --macos
+release_value() { data_lines "$DATA/releases.txt" | awk -v r="$1" -v c="$2" '$1 == r { print $c }'; }
+releases() { data_lines "$DATA/releases.txt" | awk -v v="${1:-}" 'v == "" || index("," $3 ",", "," v ",") { print $1 }'; }
+default_release() { data_lines "$DATA/releases.txt" | awk '$5 == "default" { print $1 }'; }
+
+# data/own-files.txt: install_own_files VARIANT copies the files of VARIANT
+# (all or full) that are "copied" from data/headers/<path> to the stage;
+# install_own_file PATH copies one file (a "fallback")
+install_own_file() {
+  mkdir -p "$(dirname "$STAGE/$1")"
+  cp "$DATA/headers/$1" "$STAGE/$1"
+}
+install_own_files() {
+  local p
+  for p in $(data_lines "$DATA/own-files.txt" | awk -v v="$1" '$2 == v && $3 == "copied" { print $1 }'); do
+    install_own_file "$p"
+  done
+}
+
 # data/libraries.txt: install name, current and compatibility version of the
 # stub libraries.  lib_field NAME COLUMN, lib_current NAME.
 lib_field() { data_lines "$DATA/libraries.txt" | awk -v n="$1" -v c="$2" '$1 == n { print $c }'; }

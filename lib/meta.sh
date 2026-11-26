@@ -92,6 +92,7 @@ EOF
   echo "OpenSDK.json"
   # shellcheck disable=SC2086
   python3 -I "$HELPERS/open_sdk_json.py" "$M/OpenSDK.json" "$STAGE_WORK/projects.tsv" \
+    --own-files "$DATA/own-files.txt" --own-headers "$DATA/headers" \
     generator_commit="$GENERATOR_COMMIT" \
     macos_version="$V" macos_release="$MACOS_REL" variant="$VARIANT" libcxx="$LIBCXX_VERSION" $sq
   echo "README.LICENSE.txt"

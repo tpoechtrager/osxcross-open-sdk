@@ -66,8 +66,8 @@ and OpenBSD 8.0.
 
 | Option | Meaning |
 |---|---|
-| `--macos VERSION` | another macOS release (`--list-releases`; default 26.5; full SDK from 14.3, core SDK from 11.3) |
-| `--min-deployment-target VERSION` | lowest deployment target in `SDKSettings.json` (default 11.0) |
+| `--macos VERSION` | another macOS release (`--list-releases`, `data/releases.txt`; default 26.5; full SDK from 14.3, core SDK from 11.3) |
+| `--min-deployment-target VERSION` | lowest deployment target in `SDKSettings.json` (default 11.0, from `data/releases.txt`) |
 | `--core` | the core SDK (no `libs` and `frameworks` steps) |
 | `--libcxx VERSION` | libc++ of another LLVM release (16.0.6 to 22.1.8, see [libc++](LIBCXX.md)) |
 | `--clang PATH` | the clang that builds the host tools and parses the headers |
@@ -118,6 +118,7 @@ and their x86_64 programs ran on macOS 26.0.
 ## New macOS releases
 
 `helpers/manifest.py --new <version>` writes the manifest of a release from distribution-macOS.  
-Then add the libc++ release to `data/libcxx-versions.txt` and the versions of the other platforms  
+Then add a line to `data/releases.txt` (libc++ release, variants, `ProductBuildVersion` with its source),  
+the LLVM release to `data/libcxx-versions.txt` if it is new, and the versions of the other platforms  
 to `data/availability-extra.dsl`, build, check with `tests/sdk-check.sh` and `tests/run.sh`,  
 and update the docs.

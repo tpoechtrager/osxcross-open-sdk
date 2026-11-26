@@ -24,7 +24,8 @@ At run time macOS loads its own libraries.
 ## Headers written for this SDK
 
 There is no open source header for these, so they are written for this SDK (0BSD; the sources of every  
-name and value are in [SOURCES.md](SOURCES.md)):
+name and value are in [SOURCES.md](SOURCES.md); `data/own-files.txt` lists every file of the SDK that  
+the generator wrote, and `data/headers/` has these headers by their path in the SDK):
 
 - `TargetConditionals.h`: the target macros of macOS, with the CPU taken from the compiler's predefined macros.
 - `architecture/arm64/fenv.h`: the C99 interface only, with the bit positions from the Arm Architecture  

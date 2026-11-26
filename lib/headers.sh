@@ -106,7 +106,8 @@ step_headers() {
   cp "$SRC/libunwind/libunwind/include/mach-o/compact_unwind_encoding.h" "$STAGE_INC/mach-o/"
   cp "$SRC"/Libm/Source/{math,fenv,complex}.h "$STAGE_INC/"
   # Libm-2026 predates arm64 macOS: use the ARM variants for arm64 too
-  # (<fenv.h> assumes a 32-bit VFP: arm64 gets its own header, data/headers/fenv-arm64.h)
+  # (<fenv.h> assumes a 32-bit VFP: arm64 gets its own header architecture/arm64/fenv.h,
+  # data/own-files.txt)
   sed_inplace "$STAGE_INC/math.h" 's/defined(__arm__)/defined(__arm__) || defined(__arm64__)/'
   sed_inplace "$STAGE_INC/complex.h" 's/defined(__arm__)/defined(__arm__) || defined(__arm64__)/'
   perl -pi -e 's/^#elif defined\(__arm__\)$/#elif defined(__arm64__) || defined(__aarch64__)\n#include "architecture\/arm64\/fenv.h"\n#elif defined(__arm__)/' "$STAGE_INC/fenv.h"
@@ -114,7 +115,6 @@ step_headers() {
   add_notice "$STAGE_INC/complex.h" "the ARM branches are also used for arm64"
   add_notice "$STAGE_INC/fenv.h" "a branch for arm64 added that includes architecture/arm64/fenv.h"
   mkdir -p "$STAGE_INC/architecture/i386" "$STAGE_INC/architecture/arm" "$STAGE_INC/architecture/arm64"
-  cp "$DATA/headers/fenv-arm64.h" "$STAGE_INC/architecture/arm64/fenv.h"
   cp "$SRC"/Libm/Source/Intel/{math,fenv}.h "$STAGE_INC/architecture/i386/"
   cp "$SRC"/Libm/Source/ARM/{math,fenv}.h "$STAGE_INC/architecture/arm/"
   # The ARM math.h hides llrint*/llround* in strict ISO C++ mode (it tests the C
@@ -131,8 +131,11 @@ step_headers() {
      "$SRC"/xnu/libsyscall/wrappers/libproc/libproc.h "$STAGE_INC/"
   cp "$SRC"/syslog/libsystem_asl.tproj/include/asl.h "$STAGE_INC/"
 
-  headers_target_conditionals
-  headers_os_log
+  # the headers written for the SDK (data/own-files.txt): TargetConditionals.h,
+  # architecture/arm64/fenv.h, os/log.h (see docs/SOURCES.md; xnu installs its
+  # own only into Kernel.framework), os/signpost.h, os/activity.h, os/trace.h
+  # (stand-ins that trace nothing); after the projects, whose files they replace
+  install_own_files all
   headers_fixups
   headers_check
   # the headers of this step: gen_symbols.py takes the symbols of libSystem from them
@@ -242,19 +245,6 @@ headers_fixups() {
   add_notice "$STAGE_INC/math.h" "declarations of __exp10 and __exp10f added"
 }
 
-headers_target_conditionals() {
-  cp "$DATA/headers/TargetConditionals.h" "$STAGE_INC/TargetConditionals.h"
-}
-
-# os/log.h: written here (see docs/SOURCES.md); xnu installs its own only into Kernel.framework.
-# os/signpost.h, os/activity.h, os/trace.h: stand-ins that trace nothing.
-headers_os_log() {
-  mkdir -p "$STAGE_INC/os"
-  cp "$DATA/headers/os-log.h" "$STAGE_INC/os/log.h"
-  cp "$DATA/headers/os-signpost.h" "$STAGE_INC/os/signpost.h"
-  cp "$DATA/headers/os-activity.h" "$STAGE_INC/os/activity.h"
-  cp "$DATA/headers/os-trace.h" "$STAGE_INC/os/trace.h"
-}
 
 # fix_shebangs: Apple's scripts name /usr/bin/perl and /bin/bash; the BSDs have
 # them in /usr/local/bin.  Point the scripts that the steps run at the

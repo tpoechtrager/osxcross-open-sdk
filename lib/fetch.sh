@@ -12,30 +12,25 @@
 # ---------------------------------------------------------------------------
 
 # Readers of the manifests and of data/libcxx-versions.txt (data_lines: without
-# comments; helpers/data_files.py reads them the same way)
+# comments; helpers/data_files.py reads them the same way; data/releases.txt:
+# lib/common.sh)
 # manifest_projects FILE: "project tag commit" lines; manifest_sqlite FILE COLUMN:
 # 2 the URL, 3 the SHA-256 of the sqlite archive
 manifest_projects() { data_lines "$1" | awk '$1 != "sqlite" && NF >= 3 { print $1, $2, $3 }'; }
 manifest_sqlite() { data_lines "$1" | awk -v c="$2" '$1 == "sqlite" { print $c }'; }
-# libcxx_value KIND KEY: the value of the line "KIND KEY VALUE" (macos: the
-# default LLVM release of a macOS release, llvm: the commit of an LLVM release);
-# libcxx_keys KIND: the keys of the lines of KIND
-libcxx_value() { data_lines "$DATA/libcxx-versions.txt" | awk -v k="$1" -v v="$2" '$1 == k && $2 == v { print $3 }'; }
-libcxx_keys() { data_lines "$DATA/libcxx-versions.txt" | awk -v k="$1" '$1 == k { print $2 }'; }
+# llvm_commit RELEASE: the commit of the tag of an LLVM release; llvm_releases:
+# the LLVM releases that --libcxx accepts
+llvm_commit() { data_lines "$DATA/libcxx-versions.txt" | awk -v v="$1" '$1 == "llvm" && $2 == v { print $3 }'; }
+llvm_releases() { data_lines "$DATA/libcxx-versions.txt" | awk '$1 == "llvm" { print $2 }'; }
 
-# list_releases: the releases that have a manifest
+# list_releases: the releases of data/releases.txt (each has a manifest), their
+# libc++, the default and the releases of the core SDK only
 list_releases() {
-  local f v l
-  for f in "$DATA"/manifests/macos-*.txt; do
-    [ -f "$f" ] || continue
-    v=$(sed -n 's/^# osxcross-open-sdk: pinned sources for macOS //p' "$f" | head -n 1)
-    l=$(libcxx_value macos "$v")
-    printf '%s\tlibc++ %s\n' "$v" "$l"
-  done | sort -t. -k1,1n -k2,2n | while IFS= read -r l; do
-    v=${l%%"$(printf '\t')"*}
-    printf '%s' "$l"
+  local v
+  for v in $(releases); do
+    printf '%s\tlibc++ %s' "$v" "$(release_value "$v" 2)"
     [ "$v" != "$DEFAULT_MACOS" ] || printf '\t(default)'
-    ! version_lt "$v" "$FULL_SDK_MIN_MACOS" || printf '\t(core SDK only)'
+    case ,$(release_value "$v" 3), in *,full,*) ;; *) printf '\t(core SDK only)';; esac
     echo
   done
 }
@@ -55,12 +50,12 @@ load_manifest() {
   fi
   local t=$DATA/libcxx-versions.txt
   if [ -z "$LIBCXX_VERSION" ]; then
-    LIBCXX_VERSION=$(libcxx_value macos "$SDK_VERSION")
-    [ -n "$LIBCXX_VERSION" ] || die "$t has no libc++ for macOS $SDK_VERSION"
+    LIBCXX_VERSION=$(release_value "$SDK_VERSION" 2)
+    [ -n "$LIBCXX_VERSION" ] || die "data/releases.txt has no libc++ for macOS $SDK_VERSION"
   fi
   LLVM_TAG=llvmorg-$LIBCXX_VERSION
-  LLVM_COMMIT=$(libcxx_value llvm "$LIBCXX_VERSION")
-  [ -n "$LLVM_COMMIT" ] || die "LLVM $LIBCXX_VERSION is not in $t; releases: $(libcxx_keys llvm | tr '\n' ' ')(helpers/manifest.py --llvm adds one)"
+  LLVM_COMMIT=$(llvm_commit "$LIBCXX_VERSION")
+  [ -n "$LLVM_COMMIT" ] || die "LLVM $LIBCXX_VERSION is not in $t; releases: $(llvm_releases | tr '\n' ' ')(helpers/manifest.py --llvm adds one)"
 }
 
 # clone_is_current DIR TAG COMMIT: is DIR a complete clone of TAG (its mark

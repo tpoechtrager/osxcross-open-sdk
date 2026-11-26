@@ -16,6 +16,8 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 HELPERS = os.path.join(ROOT, "helpers")
 DATA = os.path.join(ROOT, "data")
+sys.path.insert(0, HELPERS)
+import data_files  # noqa: E402
 
 
 def run(script, *args):
@@ -193,12 +195,14 @@ class CxxSite(Tmp):
 
 
 class OpenSdkJson(Tmp):
+    OWN = ["--own-files", os.path.join(DATA, "own-files.txt"), "--own-headers", os.path.join(DATA, "headers")]
+
     def test_content_has_no_date_or_host(self):
         projects = self.write("p.tsv", "xnu\txnu-1\t" + "a" * 40 + "\nLibc\tLibc-1\t" + "b" * 40 + "\n")
         out = self.path("OpenSDK.json")
         args = ["generator_commit=unknown", "macos_version=26.5", "macos_release=macos-265",
                 "variant=full", "libcxx=21.1.8", "sqlite_url=https://example.org/s.zip", "sqlite_sha256=" + "c" * 64]
-        rc, _, err = run("open_sdk_json.py", out, projects, *args)
+        rc, _, err = run("open_sdk_json.py", out, projects, *(self.OWN + args))
         self.assertEqual(rc, 0, err)
         d = json.loads(read(out))
         self.assertEqual(d["name"], "osxcross-open-sdk")
@@ -208,17 +212,28 @@ class OpenSdkJson(Tmp):
         text = read(out)
         self.assertNotRegex(text, r"20\d\d-\d\d-\d\d")
         out2 = self.path("2.json")
-        run("open_sdk_json.py", out2, projects, *args)
+        run("open_sdk_json.py", out2, projects, *(self.OWN + args))
         self.assertEqual(text, read(out2))
 
     def test_core_has_no_sqlite_and_fewer_own_files(self):
         projects = self.write("p.tsv", "xnu\txnu-1\t" + "a" * 40 + "\n")
         out = self.path("c.json")
-        run("open_sdk_json.py", out, projects, "generator_commit=0123456789abcdef0123456789abcdef01234567-modified", "macos_version=26.5",
+        run("open_sdk_json.py", out, projects, *self.OWN, "generator_commit=0123456789abcdef0123456789abcdef01234567-modified", "macos_version=26.5",
             "macos_release=macos-265", "variant=core", "libcxx=21.1.8")
         d = json.loads(read(out))
         self.assertEqual([p["name"] for p in d["projects"]], ["xnu"])
         self.assertNotIn("usr/include/xpc/xpc.h", d["own_files"])
+
+    def test_fallback_only_if_the_sdk_has_the_own_file(self):
+        projects = self.write("p.tsv", "xnu\txnu-1\t" + "a" * 40 + "\n")
+        args = ["generator_commit=unknown", "macos_version=14.3", "macos_release=macos-143", "variant=full", "libcxx=16.0.6"]
+        der = "usr/include/libDER/DERItem.h"
+        self.write("sdk/" + der, read(os.path.join(DATA, "headers", der)))
+        run("open_sdk_json.py", self.path("sdk/OpenSDK.json"), projects, *(self.OWN + args))
+        self.assertIn(der, json.loads(read(self.path("sdk/OpenSDK.json")))["own_files"])
+        self.write("sdk/" + der, "/* the file of xnu */\n")
+        run("open_sdk_json.py", self.path("sdk/OpenSDK.json"), projects, *(self.OWN + args))
+        self.assertNotIn(der, json.loads(read(self.path("sdk/OpenSDK.json")))["own_files"])
 
 
 class Manifest(Tmp):
@@ -286,14 +301,20 @@ class DataFiles(unittest.TestCase):
             self.assertEqual(names, names0, n)
             self.assertIn("xnu", names)
 
-    def test_libcxx_versions(self):
-        t = read(os.path.join(DATA, "libcxx-versions.txt")).splitlines()
-        macos = {l.split()[1]: l.split()[2] for l in t if l.startswith("macos ")}
-        llvm = {l.split()[1]: l.split()[2] for l in t if l.startswith("llvm ")}
-        for n, lines in self.manifests().items():
-            v = lines[0].split("macOS ")[1]
-            self.assertIn(v, macos, n)
-            self.assertIn(macos[v], llvm)
+    def test_releases_and_libcxx_versions(self):
+        llvm = data_files.read_libcxx_versions(os.path.join(DATA, "libcxx-versions.txt"))
+        rel = data_files.read_releases(os.path.join(DATA, "releases.txt"))
+        versions = [r[0] for r in rel]
+        self.assertEqual(len(versions), len(set(versions)))
+        self.assertEqual(versions, sorted(versions, key=lambda v: [int(x) for x in v.split(".")]))
+        self.assertEqual(sum(1 for r in rel if r[4]), 1, "one default release")
+        manifest_versions = {lines[0].split("macOS ")[1] for lines in self.manifests().values()}
+        self.assertEqual(set(versions), manifest_versions, "every release has a manifest and every manifest a line")
+        for v, libcxx, variants, build, _ in rel:
+            self.assertIn(libcxx, llvm, v)
+            self.assertIn("core", variants, v)
+            self.assertTrue(set(variants) <= {"full", "core"}, v)
+            self.assertRegex(build, r"^([0-9]{2}[A-Z][0-9]+[a-z]?)?$", v)
         for v, c in llvm.items():
             self.assertRegex(c, r"^[0-9a-f]{40}$")
 
@@ -328,10 +349,24 @@ class DataFiles(unittest.TestCase):
                 self.assertTrue(named, "%s: %s has no source" % (fn, l.strip()))
 
     def test_own_headers_have_a_license(self):
-        for fn in os.listdir(os.path.join(DATA, "headers")):
-            if fn == "CFCompat.h.in":
-                continue   # appended to an APSL file
-            self.assertIn("SPDX-License-Identifier: 0BSD", read(os.path.join(DATA, "headers", fn)), fn)
+        for root, _, files in os.walk(os.path.join(DATA, "headers")):
+            for fn in files:
+                self.assertIn("SPDX-License-Identifier: 0BSD", read(os.path.join(root, fn)), fn)
+
+    def test_own_files(self):
+        """data/headers/ has exactly the files that data/own-files.txt copies"""
+        own = data_files.read_own_files(os.path.join(DATA, "own-files.txt"))
+        copied = set()
+        for p, var, how in own:
+            self.assertIn(var, ("all", "full"), p)
+            self.assertIn(how, ("written", "copied", "fallback"), p)
+            if how != "written":
+                copied.add(p)
+        have = set()
+        for root, _, files in os.walk(os.path.join(DATA, "headers")):
+            for fn in files:
+                have.add(os.path.relpath(os.path.join(root, fn), os.path.join(DATA, "headers")))
+        self.assertEqual(copied, have)
 
 
 if __name__ == "__main__":

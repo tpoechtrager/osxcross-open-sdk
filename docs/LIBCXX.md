@@ -1,7 +1,7 @@
 # libc++
 
-Headers and `libc++.1.tbd` come from one LLVM release (`data/libcxx-versions.txt`): 16.0.6 for macOS  
-14.3 and older, 19.1.7 for 15.5, 20.1.8 for 26.0, 21.1.8 for 26.5. `--libcxx` takes another one.
+Headers and `libc++.1.tbd` come from one LLVM release (the default of each macOS release is in `data/releases.txt`):  
+16.0.6 for macOS 14.3 and older, 19.1.7 for 15.5, 20.1.8 for 26.0, 21.1.8 for 26.5. `--libcxx` takes another one.
 
 At run time the program uses the `libc++.1.dylib` of the Mac. LLVM's headers therefore mark every function  
 with the macOS release that first had it, and the compiler rejects a function that is newer than the  

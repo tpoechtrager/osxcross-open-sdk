@@ -1,0 +1,39 @@
+# The macOS releases that the generator builds.  Every release has a
+# manifest (data/manifests/macos-<release without the dot>.txt).
+#
+# <release> <libc++> <variants> <ProductBuildVersion> [default]
+#   libc++               the default LLVM release of libc++ (--libcxx takes
+#                        another one of data/libcxx-versions.txt)
+#   variants             full,core: the full and the core SDK; core: only the
+#                        core SDK (--core)
+#   ProductBuildVersion  of SystemVersion.plist, "-" for none (empty); every
+#                        value names its public source below
+#   default              the release that make-open-sdk.sh builds without --macos
+# The lowest deployment target that SDKSettings.json names by default is the
+# major version of the first release, with ".0" (--min-deployment-target).
+#
+# ProductBuildVersion 23D56 of macOS 14.3: the public build of macOS 14.3,
+# released on 2024-01-22 (AppleDB, https://appledb.dev, "macOS 14.3 (23D56)").
+#
+# The libc++ releases.  The default is a choice of the generator, not a statement
+# about the libc++ that a macOS release has.  What protects programs is the
+# availability table in libcxx/include/__configuration/availability.h of
+# LLVM: every function that is newer than the libc++ of a macOS release is
+# marked with the macOS release that introduced it (LLVM 16: macOS 14.0, LLVM 18:
+# macOS 15.0; the table of LLVM 22 also has LLVM 19: macOS 15.4 and LLVM 20:
+# macOS 26.0), and what the table does not enter yet is marked unavailable on
+# Apple platforms.  So headers of an LLVM
+# release that is newer than the table's entry for the macOS release only offer
+# what the dylib of that release has, as long as the deployment target is set
+# (OSXCross sets it).  The defaults are the releases that the generator was
+# tested with: LLVM 16.0.6 up to macOS 14.x (the table's entry for macOS 14.0; the
+# oldest LLVM release with an entry in the table that Clang 16 to 23 can use),
+# 19.1.7 for macOS 15.x and 20.1.8 and 21.1.8 for the macOS releases of 2025 and
+# 2026.  17.0.6 to 22.1.8 are also tested (--libcxx).
+11.3  16.0.6  core       -
+12.3  16.0.6  core       -
+13.3  16.0.6  core       -
+14.3  16.0.6  full,core  23D56
+15.5  19.1.7  full,core  -
+26.0  20.1.8  full,core  -
+26.5  21.1.8  full,core  -      default

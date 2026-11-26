@@ -33,14 +33,21 @@ def read_manifest(path):
 
 
 def read_libcxx_versions(path):
-    """data/libcxx-versions.txt: {macOS release: LLVM release}, {LLVM release: commit}."""
-    macos, llvm = {}, {}
+    """data/libcxx-versions.txt: {LLVM release: commit of the tag}."""
+    return {w[1]: w[2] for w in lines(path) if w[0] == "llvm" and len(w) == 3}
+
+
+def read_releases(path):
+    """data/releases.txt: [(release, libc++, [variants], ProductBuildVersion or "", default?)]."""
+    res = []
     for w in lines(path):
-        if w[0] == "macos" and len(w) == 3:
-            macos[w[1]] = w[2]
-        elif w[0] == "llvm" and len(w) == 3:
-            llvm[w[1]] = w[2]
-    return macos, llvm
+        res.append((w[0], w[1], w[2].split(","), "" if w[3] == "-" else w[3], w[4:] == ["default"]))
+    return res
+
+
+def read_own_files(path):
+    """data/own-files.txt: [(path in the SDK, all or full, written, copied or fallback)]."""
+    return [tuple(w[:3]) for w in lines(path)]
 
 
 def read_libraries(path):

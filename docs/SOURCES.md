@@ -27,6 +27,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `xpc/xpc.h` | xnu `libkern/os/trace.h` ([details](#xpcxpch)) |
 | `CoreFoundation.modulemap`, `CFCompat.h.in` | Own work ([details](#corefoundationmodulemap-cfcompathin)) |
 | `SDKSettings.json`, `SDKSettings.plist` | The keys that Clang and OSXCross read ([details](#sdksettingsjson-sdksettingsplist)) |
+| `SystemVersion.plist`, the releases | AppleDB for the build number of 14.3 ([details](#systemversionplist-the-releases)) |
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | Foundation and CoreServices placeholders | dyld, CF and Security sources ([details](#foundation-and-coreservices-placeholders)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
@@ -134,15 +135,15 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### libc++ release of each macOS release
 
-**Files:** `data/libcxx-versions.txt`
+**Files:** `data/releases.txt`, `data/libcxx-versions.txt`
 
-- The availability table of LLVM (`libcxx/include/__configuration/availability.h`), see the comment of the file.
+- The availability table of LLVM (`libcxx/include/__configuration/availability.h`), see the comment of `data/releases.txt`.
 
 ---
 
 ### `TargetConditionals.h`
 
-**Files:** `data/headers/`
+**Files:** `data/headers/usr/include/TargetConditionals.h`
 
 - The names of `CarbonHeaders/TargetConditionals.h` and of the open source projects that use them.
 - The values from the compiler's predefined macros.
@@ -151,7 +152,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### `architecture/arm64/fenv.h`
 
-**Files:** `data/headers/`
+**Files:** `data/headers/usr/include/architecture/arm64/fenv.h`
 
 - The constants, `fexcept_t` and the size of `fenv_t` of `Libm/Source/ARM/fenv.h`.
 - The bit positions of FPSR and FPCR (Arm Architecture Reference Manual).
@@ -176,14 +177,14 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 - Copied unchanged from `xnu/EXTERNAL_HEADERS/libDER/` (APSL 2.0) where xnu has them (macOS 26.5),  
   as `oids.h` of Security needs them.
-- For the earlier releases `data/headers/DERItem.h` is an own file with the same typedefs and struct  
+- For the earlier releases `data/headers/usr/include/libDER/DERItem.h` is an own file with the same typedefs and struct  
   (its comment names the xnu header).
 
 ---
 
 ### `os/log.h`
 
-**Files:** `data/headers/os-log.h`, `lib/headers.sh` (`headers_os_log`), `data/symbols/libsystem-extra.txt`
+**Files:** `data/headers/usr/include/os/log.h`, `data/symbols/libsystem-extra.txt`
 
 - Own text (0BSD). The builtins `__builtin_os_log_format` and `__builtin_os_log_format_buffer_size`: LLVM,  
   `clang/include/clang/Basic/Builtins.td` (Apache-2.0 with LLVM exception).
@@ -204,7 +205,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### `os/signpost.h`, `os/activity.h`, `os/trace.h`
 
-**Files:** `data/headers/os-signpost.h`, `os-activity.h`, `os-trace.h`, `lib/headers.sh` (`headers_os_log`)
+**Files:** `data/headers/usr/include/os/` (`signpost.h`, `activity.h`, `trace.h`)
 
 - No-op stand-ins, nothing crosses into the system: no symbol is imported, no value reaches a system function,  
   nothing is traced. Own text (0BSD).
@@ -229,7 +230,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### `xpc/xpc.h`
 
-**Files:** `data/headers/`
+**Files:** `data/headers/usr/include/xpc/xpc.h`
 
 - Own file with the one typedef `typedef void *xpc_object_t;` that `xnu/libkern/os/trace.h`  
   (line 36) writes for the case that `<xpc/xpc.h>` does not exist; `SecCode.h` of Security needs the type.
@@ -238,7 +239,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### `CoreFoundation.modulemap`, `CFCompat.h.in`
 
-**Files:** `data/headers/`
+**Files:** `data/headers/System/Library/Frameworks/CoreFoundation.framework/Modules/module.modulemap`, `data/CFCompat.h.in`
 
 - Own work; the macros are those that the CF and DiskArbitration headers need.
 
@@ -253,6 +254,19 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   (`data/availability-extra.dsl` for the releases after the public tags).
 - `SDKSettings.plist` has only `Version`, which OSXCross reads for SDKs without a JSON file  
   (`wrapper/src/target.cpp`, `readSDKInfo`), and `OpenSDKGeneratorCommit`.
+
+---
+
+### `SystemVersion.plist`, the releases
+
+**Files:** `data/releases.txt`, `lib/meta.sh`
+
+- `ProductVersion` is the macOS release of the SDK (`--macos`), `ProductName` is `macOS`.
+- `ProductBuildVersion` is the public build of the release where `data/releases.txt` names one, else empty  
+  (`OPEN_SDK_BUILD_VERSION` sets another value):
+  - macOS 14.3: `23D56`, the build of macOS 14.3 that was released on 2024-01-22  
+    (AppleDB, https://appledb.dev, the entry "macOS 14.3 (23D56)").
+- The releases, their default libc++ and the variants (full and core, or core only) are choices of the generator.
 
 ---
 

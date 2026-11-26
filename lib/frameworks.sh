@@ -50,10 +50,9 @@ step_frameworks() {
     done
   done
   perl -pi -e 's|^(#include <CoreFoundation/CFBase.h>)|$1\n#include <CoreFoundation/CFMachPort.h>|' "$H/CoreFoundation.h"
-  cat "$DATA/headers/CFCompat.h.in" >> "$H/CFAvailability.h"
+  cat "$DATA/CFCompat.h.in" >> "$H/CFAvailability.h"
   add_notice "$H/CFAvailability.h" "annotation macros for the headers of other frameworks added at the end"
   add_notice "$H/CoreFoundation.h" "include of CFMachPort.h added"
-  mkdir -p "$STAGE_FW/CoreFoundation.framework/Modules"; cp "$DATA/headers/CoreFoundation.modulemap" "$STAGE_FW/CoreFoundation.framework/Modules/module.modulemap"
   cp "$SRC/CarbonHeaders/MacTypes.h" "$SRC/CarbonHeaders/ConditionalMacros.h" "$STAGE_INC/"
   local hl; hl=$(cd "$H" && ls *.h | tr '\n' ' ')
   # shellcheck disable=SC2086
@@ -88,14 +87,16 @@ step_frameworks() {
   # has both in EXTERNAL_HEADERS/libDER (APSL 2.0), unchanged here.  The rest of libDER is not
   # installed.  xpc/xpc.h is the one typedef that xnu's libkern/os/trace.h also writes
   # (line 36) for SecCode.h; libxpc itself has no open source.
-  mkdir -p "$STAGE_INC/xpc" "$STAGE_INC/libDER"
-  cp "$DATA/headers/xpc.h" "$STAGE_INC/xpc/xpc.h"
+  # The own files of the full SDK (data/own-files.txt): xpc/xpc.h and the
+  # module map of CoreFoundation.
+  install_own_files full
   # The xnu of macOS 26.5 has them; earlier releases do not, and get the small
   # own DERItem.h (the same types and struct).
+  mkdir -p "$STAGE_INC/libDER"
   if [ -f "$SRC/xnu/EXTERNAL_HEADERS/libDER/DERItem.h" ] && [ -f "$SRC/xnu/EXTERNAL_HEADERS/libDER/libDER_config.h" ]; then
     cp "$SRC/xnu/EXTERNAL_HEADERS/libDER/DERItem.h" "$SRC/xnu/EXTERNAL_HEADERS/libDER/libDER_config.h" "$STAGE_INC/libDER/"
   else
-    cp "$DATA/headers/DERItem.h" "$STAGE_INC/libDER/DERItem.h"
+    install_own_file usr/include/libDER/DERItem.h
   fi
   H=$STAGE_FW/Security.framework/Headers; rm -rf "$STAGE_FW/Security.framework"; mkdir -p "$H"
   python3 -I "$HELPERS/security_headers.py" "$SRC/Security/header_symlinks" "$H"
