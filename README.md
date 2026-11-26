@@ -138,15 +138,16 @@ The full guide, with dependencies, options, steps and tests, is in [docs/BUILDIN
 ## Licenses
 
 - The generator: GPL-2.0-only ([LICENSE](LICENSE)), including `data/` and `tests/`.
-- Files written into the SDK (`TargetConditionals.h`, `architecture/arm64/fenv.h`, `os/log.h`,  
-  `os/signpost.h`, `os/activity.h`, `os/trace.h`, `xpc/xpc.h`, the module map, settings and `.tbd` files):  
-  0BSD, so programs that include them are not affected.
-- Apple's sources: APSL 2.0 and the licenses of the single projects; `libc++`: Apache 2.0 with  
-  LLVM exceptions; `sqlite3`, `liblzma`: public domain.
+- Files written for the SDK (listed in `data/own-files.txt`: `TargetConditionals.h`, `os/log.h`, `xpc/xpc.h`,  
+  `CoreServices/FSEvents.h`, the `.tbd` stubs, the settings, ...): 0BSD, so programs that include them are not affected.
+- Apple's open source projects: mostly APSL 2.0; `libdispatch`, `launchd` and `mDNSResponder` Apache 2.0;  
+  others BSD, MIT or zlib (parts of `Libc`, `libarchive`, `libpcap`, OpenPAM, `expat`, `libffi`, `libxml2`, `curl`, `zlib`).
+- `libc++` and `libunwind`: Apache 2.0 with LLVM exceptions; `sqlite3`, `liblzma`: public domain.
 
 Every SDK carries the full license texts of each project in `usr/share/licenses/open-sdk/<project>/`,  
 with `LICENSES.md`, which names project, tag, license and the SDK files that come from it.  
-This is a description of the facts, not legal advice.
+A project without a license file gets the notice block of its headers, or the published text of its license  
+(`launchd`: the Apache License 2.0 of apache.org). This is a description of the facts, not legal advice.
 
 ## Known limits
 

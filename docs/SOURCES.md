@@ -24,12 +24,11 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | libc++ release of each macOS release | LLVM's availability table ([details](#libc-release-of-each-macos-release)) |
 | `TargetConditionals.h` | CarbonHeaders, compiler macros ([details](#targetconditionalsh)) |
 | `architecture/arm64/fenv.h` | Libm, Arm Architecture Reference Manual, xnu ([details](#architecturearm64fenvh)) |
-| License text of launchd | The published Apache License 2.0 ([details](#license-text-of-launchd)) |
 | `libDER/DERItem.h`, `libDER/libDER_config.h` | xnu `EXTERNAL_HEADERS/libDER/` ([details](#libderderitemh-libderlibder_configh)) |
 | `os/log.h` | LLVM, Swift 5.2.5, xnu, configd ([details](#oslogh)) |
 | `os/signpost.h`, `os/activity.h`, `os/trace.h` | Swift 5.2.5, Security, xnu; some own values ([details](#ossignposth-osactivityh-ostraceh)) |
 | `xpc/xpc.h` and its symbols | Apple's XPC documentation, WebKit `XPCSPI.h` ([details](#xpcxpch-and-its-symbols)) |
-| `CoreFoundation.modulemap`, `CFCompat.h.in` | Own work ([details](#corefoundationmodulemap-cfcompathin)) |
+| `CoreFoundation.modulemap`, `CFCompat.h.in` | swift-corelibs-foundation, AvailabilityVersions, Clang's documentation ([details](#corefoundationmodulemap-cfcompathin)) |
 | `SDKSettings.json`, `SDKSettings.plist` | The keys that Clang and OSXCross read ([details](#sdksettingsjson-sdksettingsplist)) |
 | `SystemVersion.plist`, the releases | AppleDB for the build number of each release ([details](#systemversionplist-the-releases)) |
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
@@ -273,17 +272,6 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ---
 
-### License text of launchd
-
-**Files:** `data/licenses/Apache-2.0.txt`
-
-- The file `usr/share/licenses/open-sdk/launchd/LICENSE-Apache-2.0.txt` of the SDK.
-- The text of the Apache License 2.0 as published at apache.org/licenses/LICENSE-2.0.txt  
-  (SHA-256 `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`).
-- launchd's headers only carry the short notice (section 4(a) asks for a copy of the license).
-
----
-
 ### `libDER/DERItem.h`, `libDER/libDER_config.h`
 
 **Files:** `lib/frameworks.sh`
@@ -404,7 +392,15 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 **Files:** `data/headers/System/Library/Frameworks/CoreFoundation.framework/Modules/module.modulemap`, `data/CFCompat.h.in`
 
-- Own work; the macros are those that the CF and DiskArbitration headers need.
+- `CFCompat.h.in` (appended to `CFAvailability.h` of CF, APSL 2.0): the macros that the headers of DiskArbitration,  
+  SystemConfiguration and Security use, but the older `CFAvailability.h` does not define.
+  - Which macros: the headers of these projects, which use them.
+  - Their definitions (`CF_ASSUME_NONNULL_*`, `CF_BRIDGED_TYPE`, `CF_IMPLICIT_BRIDGING_*`, `CF_SWIFT_NAME`, `CF_SWIFT_UNAVAILABLE`,  
+    `CF_CLOSED_ENUM`, `CF_STRING_ENUM`, `CF_ENUM` and `CF_OPTIONS` with one argument): swift-corelibs-foundation,  
+    tag swift-6.0-RELEASE, `Sources/CoreFoundation/include/CFBase.h` and `CFAvailability.h` (Apache 2.0).
+  - `CF_AVAILABLE` and the like through `__OSX_AVAILABLE_STARTING`: `Availability.h` of AvailabilityVersions.
+- `module.modulemap`: own text (0BSD), a framework module as Clang's documentation of modules describes it  
+  ("Module Map Language").
 
 ---
 
