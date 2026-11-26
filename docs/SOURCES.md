@@ -173,7 +173,8 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 - The functions and the variable that the public headers of the project libiconv declare:
   - `citrus/iconv.h`: `iconv`, `iconv_open`, `iconv_close`, `__iconv_get_list`, `__iconv_free_list`, `__iconv`,  
-    `iconv_open_into`, `libiconv_set_relocation_prefix`, `iconvlist`, `iconv_canonicalize`, `iconvctl`, `_libiconv_version`;
+    `iconv_open_into`, `libiconv_set_relocation_prefix`, `iconvlist`, `iconv_canonicalize`, `iconvctl`, `_libiconv_version`  
+    (a C name: the symbol is `__libiconv_version`);
   - `libcharset/localcharset.h`: `locale_charset`;
   - `libcharset/libcharset.h`: `libcharset_set_relocation_prefix`.
 

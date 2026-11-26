@@ -1,6 +1,7 @@
 # The symbols of libiconv.2.dylib: the functions and the variable that the
 # public headers of the project libiconv declare.  Mach-O names; the same for
-# all architectures.  The file of the project that declares the names:
+# all architectures (the C variable _libiconv_version is __libiconv_version).
+# The file of the project that declares the names:
 #   citrus/iconv.h            iconv, iconv_open, iconv_close, __iconv_get_list,
 #                             __iconv_free_list, __iconv, iconv_open_into,
 #                             libiconv_set_relocation_prefix, iconvlist,
@@ -18,6 +19,6 @@ _libiconv_set_relocation_prefix
 _iconvlist
 _iconv_canonicalize
 _iconvctl
-_libiconv_version
+__libiconv_version
 _locale_charset
 _libcharset_set_relocation_prefix
