@@ -33,6 +33,7 @@ IODVDStorageFamily IODVDStorageFamily-46 f79a43de1021d9b1aa6c9b774e2d2a8ff6739d4
 IOBDStorageFamily IOBDStorageFamily-26 3f6590c4538a62cd1146e86df83cf1b4cb55cf39 release
 IOHIDFamily IOHIDFamily-2222.0.24 54716733f7bfaccb8c6f794a0f8d893203e24ffe release
 IOGraphics IOGraphics-599 4d3fd008c80d1414c9da8f02ea67d534b47158c2 release
+IOUSBFamily IOUSBFamily-560.4.2 aa1bde6708ab287ab8d5098287a957f5d34df372 fixed
 Security Security-61901.0.87.0.1 db15acbe6a7f257a859ad9a3bb86097bfe0679d9 release
 ncurses ncurses-79 1d2f7b26157890a542d967be0d1236e7a97f8f5b release
 libutil libutil-73 0f4264d617b0a94d8905521fa444e2aa215f0a4d release

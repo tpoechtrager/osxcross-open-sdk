@@ -1,0 +1,21 @@
+
+/* The text of this block is appended to USB.h of IOUSBFamily (APSL 2.0, see the notice at its top
+ * and the license directory of the SDK); it is not under the 0BSD license of the other files
+ * written for the SDK.
+ * Source of the names and values: Apple's public documentation of the kernel, the enumeration of
+ * kUSBDeviceSpeedLow (developer.apple.com/documentation/kernel/1646359-anonymous) and
+ * USBReEnumerateOptions (developer.apple.com/documentation/kernel/usbreenumerateoptions),
+ * see docs/SOURCES.md. */
+/* ---- added by the open SDK: constants that the open IOUSBFamily headers do not have, but
+ * programs (libusb) use ---- */
+#ifndef _OPEN_SDK_USB_COMPAT_H
+#define _OPEN_SDK_USB_COMPAT_H
+enum {
+    kUSBDeviceSpeedSuperPlus    = 4,
+    kUSBDeviceSpeedSuperPlusBy2 = 5
+};
+enum {
+    kUSBReEnumerateCaptureDeviceBit  = 30,
+    kUSBReEnumerateCaptureDeviceMask = (1 << kUSBReEnumerateCaptureDeviceBit)
+};
+#endif

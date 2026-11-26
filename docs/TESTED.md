@@ -18,7 +18,7 @@ projects were also built with the stable flavor (cctools/ld64).
   `gmp`, `mpfr`, `libffi`, `xxhash`, `lmdb`, `redis`
 - **Version control:** `git`, `libgit2` (also with SecureTransport)
 - **File system events:** the `git` fsmonitor daemon, `fswatch`
-- **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`mac/hid.c` and `hidtest`)
+- **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`mac/hid.c` and `hidtest`), `libusb` (`listdevs`)
 - **Compilers and tools:** `LLVM/Clang` (the compiler works on macOS), `cctools-port` (builds, and its tools work on macOS),  
   `compiler-rt` (builds, and its runtimes work on macOS)
 

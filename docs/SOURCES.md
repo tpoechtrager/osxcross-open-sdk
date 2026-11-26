@@ -33,7 +33,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `SystemVersion.plist`, the releases | AppleDB for the build number of each release ([details](#systemversionplist-the-releases)) |
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
-| `IOKit` device families | IOKitUser's module map, the Xcode projects of the families ([details](#iokit-device-families)) |
+| `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
 | Foundation placeholder, CoreServices | dyld, CF and Security sources ([details](#foundation-placeholder-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
@@ -446,9 +446,9 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### `IOKit` device families
 
-**Files:** `lib/frameworks.sh` (`iokit_families`, `fw_tbd`), `helpers/write_licenses.py`
+**Files:** `lib/frameworks.sh` (`iokit_families`, `fw_tbd`), `data/USBCompat.h.in`, `helpers/write_licenses.py`
 
-- The families: the modules `storage` (without `storage/ata`), `hid`, `hidsystem`, `graphics`, `i2c` and `ndrvsupport`  
+- The families: the modules `storage` (without `storage/ata`), `hid`, `hidsystem`, `graphics`, `i2c`, `ndrvsupport` and `usb`  
   of IOKitUser's `Modules/IOKit.modulemap`.
 - The headers of each directory: the `PBXCopyFilesBuildPhase` of the Xcode project that copies them  
   to `IOKit.framework/Versions/A/Headers/<dir>`:
@@ -456,7 +456,10 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
     then `unifdef -UKERNEL` as the shell script phase of the same projects does;
   - IOHIDFamily (target `InstallHeaders`): `hid/` and `hidsystem/` in part;
   - IOKitUser (target `IOKit`): the rest of `hid/` and `hidsystem/`, and `graphics/IOGraphicsLib.h`;
-  - IOGraphics (targets `IOGraphics Headers`, `IONDRVSupport Headers`): `graphics/`, `i2c/`, `ndrvsupport/`.
+  - IOGraphics (targets `IOGraphics Headers`, `IONDRVSupport Headers`): `graphics/`, `i2c/`, `ndrvsupport/`;
+  - IOUSBFamily (the `CopyFiles` phase with the destination `IOKit.framework/Versions/A/Headers/usb`): `usb/`,  
+    `USB.h`, `USBSpec.h`, `IOUSBLib.h` and `IOUSBUserClient.h`, copied as they are (their kernel parts are under `#if KERNEL`).  
+    The other headers of the project go to `Kernel.framework` and are not installed.
 - `storage/IOFireWireStorageCharacteristics.h` of the module map belongs to IOFireWireSerialBusProtocolTransport  
   and is not installed.
 - Symbols: the declarations of these headers (as for the other frameworks), defined in IOKitUser.
@@ -464,9 +467,23 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   (IOKitUser `hidsystem.subproj`): IOKitUser builds their functions from  
   `hid.subproj/IOHIDEventSystemClient.c` and `IOHIDServiceClient.c`, which are empty in the open source releases  
   (`IOKitUser` of macOS 14.3 to 26.5), so no open source defines them.
+- IOUSBFamily 560.4.2 and not the last tag, 630.4.5: `USB.h` of 630.4.5 is an empty file (as are many other headers of that tag),  
+  and `IOUSBLib.h` needs its types; 560.4.2 is the newest tag that has it. The two tags differ in the userspace headers  
+  in one comment of `IOUSBLib.h` and four constants of `USBSpec.h` (`kUSBFunctionRemoteWakeCapableBit` and three more).
+- Appended to `usb/USB.h` (`data/USBCompat.h.in`, with the notice of `helpers/notice.py`): the enumerators `kUSBDeviceSpeedSuperPlus = 4`,  
+  `kUSBDeviceSpeedSuperPlusBy2 = 5`, `kUSBReEnumerateCaptureDeviceBit = 30` and  
+  `kUSBReEnumerateCaptureDeviceMask = (1 << kUSBReEnumerateCaptureDeviceBit)`:  
+  - neither open tag (560.4.2, 630.4.5) has them; libusb 1.0.30 (`os/darwin_usb.c`) uses them;  
+  - source: Apple's public documentation of the kernel, the declarations of these four enumerators:  
+    the enumeration of `kUSBDeviceSpeedLow` (`developer.apple.com/documentation/kernel/1646359-anonymous`) and  
+    `USBReEnumerateOptions` (`developer.apple.com/documentation/kernel/usbreenumerateoptions`);  
+  - the other enumerators of `USBReEnumerateOptions` are left out.
+- `IOKit.tbd` gets nothing from `usb/`: `IOUSBLib.h` is the interface of a CFPlugIn (UUID macros and structures of function pointers,  
+  no function), `IOUSBUserClient.h` only constants.
 - Licenses: APSL 2.0; the headers of IOGraphics carry the APSL 1.1 notice, its text is the `APPLE_LICENSE` of Libinfo.  
   IOHIDFamily has no license file (the notice of `IOHIDKeys.h` and the APSL 2.0 text of xnu).
-- Tags: `release.json` of distribution-macOS for 14.3, 15.5, 26.0 and 26.5 (see [Manifests](#manifests));  
+- Tags: `release.json` of distribution-macOS for 14.3, 15.5, 26.0 and 26.5 (see [Manifests](#manifests)), except IOUSBFamily:  
+  `release.json` does not list it, its manifest lines are `fixed` with the tag 560.4.2;  
   the core-only releases do not have these projects.
 
 ---

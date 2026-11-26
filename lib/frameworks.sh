@@ -39,7 +39,7 @@ fw_placeholder() {
 }
 
 # iokit_families HEADERS: the headers of the IOKit device families storage, hid,
-# hidsystem, graphics, i2c and ndrvsupport (the modules of these names in
+# hidsystem, graphics, i2c, ndrvsupport and usb (the modules of these names in
 # IOKitUser's Modules/IOKit.modulemap, without storage/ata) in HEADERS/<dir>.
 # Each list is the one that the project's Xcode project copies to
 # IOKit.framework/Versions/A/Headers/<dir> (its PBXCopyFilesBuildPhase); the
@@ -48,9 +48,12 @@ fw_placeholder() {
 # IOKIT_FAMILY_SCAN to these headers (for the symbol scan of IOKit.tbd).
 # storage/IOFireWireStorageCharacteristics.h of the module map belongs to
 # IOFireWireSerialBusProtocolTransport and is not installed here.
+# usb: the four headers that IOUSBFamily's CopyFiles phase installs in
+# IOKit.framework/Headers/usb (the other headers go to Kernel.framework); they are
+# copied as they are: their kernel parts are under #if KERNEL.
 iokit_families() {
   local H=$1 h
-  mkdir -p "$H/storage" "$H/hid" "$H/hidsystem" "$H/graphics" "$H/i2c" "$H/ndrvsupport"
+  mkdir -p "$H/storage" "$H/hid" "$H/hidsystem" "$H/graphics" "$H/i2c" "$H/ndrvsupport" "$H/usb"
   for h in IOAppleLabelScheme IOApplePartitionScheme IOBlockStorageDevice IOBlockStorageDriver \
            IOFDiskPartitionScheme IOFilterScheme IOGUIDPartitionScheme IOMedia IOMediaBSDClient \
            IOPartitionScheme IOStorage IOStorageCardCharacteristics IOStorageControllerCharacteristics \
@@ -80,7 +83,12 @@ iokit_families() {
   cp "$SRC"/IOGraphics/IOGraphicsFamily/IOKit/graphics/{IOAccelClientConnect,IOAccelSurfaceConnect,IOAccelTypes,IOFramebufferShared,IOGraphicsEngine,IOGraphicsInterface,IOGraphicsInterfaceTypes,IOGraphicsTypes}.h "$H/graphics/"
   cp "$SRC/IOGraphics/IOGraphicsFamily/IOKit/i2c/IOI2CInterface.h" "$H/i2c/"
   cp "$SRC"/IOGraphics/IONDRVSupport/IOKit/ndrvsupport/{IOMacOSTypes,IOMacOSVideo}.h "$H/ndrvsupport/"
-  IOKIT_FAMILY_SCAN=$(cd "$H" && ls storage/*.h hid/*.h hidsystem/*.h graphics/*.h i2c/*.h ndrvsupport/*.h | tr '\n' ' ')
+  # IOUSBFamily: the phase "CopyFiles" of the target that has the destination IOKit.framework/Versions/A/Headers/usb
+  cp "$SRC"/IOUSBFamily/IOUSBFamily/Headers/{USB,USBSpec,IOUSBLib}.h "$SRC/IOUSBFamily/IOUSBUserClient/Headers/IOUSBUserClient.h" "$H/usb/"
+  # constants of the speeds and the re-enumerate options that the open headers lack (libusb uses them)
+  cat "$DATA/USBCompat.h.in" >> "$H/usb/USB.h"
+  add_notice "$H/usb/USB.h" "constants of the device speeds and of USBReEnumerateOptions added at the end"
+  IOKIT_FAMILY_SCAN=$(cd "$H" && ls storage/*.h hid/*.h hidsystem/*.h graphics/*.h i2c/*.h ndrvsupport/*.h usb/*.h | tr '\n' ' ')
 }
 
 step_frameworks() {
