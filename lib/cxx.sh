@@ -38,6 +38,11 @@ step_cxx() {
   if [ "${LIBCXX_VERSION%%.*}" -ge 20 ]; then
     syms_for_archs "$DATA/symbols/libcxx-extra.txt" >> "$STAGE_WORK/libcxx.syms"
   fi
+  # the typed operator new/delete (LLVM 19 and later, see the file): exported
+  # by libc++abi like the other operators of new-delete.exp, so re-exported
+  if [ "${LIBCXX_VERSION%%.*}" -ge 19 ]; then
+    syms_for_archs "$DATA/symbols/libcxxabi-typed-new.txt" | tee -a "$STAGE_WORK/libcxxabi-reexported.syms" >> "$STAGE_WORK/libcxxabi.syms"
+  fi
   mk_lib_tbd libc++abi "$STAGE_LIB/libc++abi.tbd" "$STAGE_WORK/libcxxabi.syms"
   # libc++.1.dylib re-exports libc++abi (libcxx/CMakeLists.txt, LIBCXX_CXX_ABI
   # system-libcxxabi on Apple platforms); the stub lists its symbols so that

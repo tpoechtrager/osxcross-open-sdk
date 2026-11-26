@@ -1,0 +1,22 @@
+# The typed allocation operators (operator new/delete with a trailing
+# std::__type_descriptor_t) that the system libc++abi on Apple platforms
+# exports and that libc++.1 re-exports.  Source: libcxxabi/src/vendor/apple/
+# shims.cpp of LLVM 19 and later (identical in 19.1.7 to 22.1.8; the file
+# does not exist in LLVM 18 and earlier), whose header comment says the shims
+# implement "symbols that are present in the system libc++ on Apple
+# platforms".  The file declares `enum class std::__type_descriptor_t`
+# itself (the libc++ headers do not declare it); the mangled names are what
+# Clang makes of its ten operators (-target x86_64-apple-darwin and
+# arm64-apple-darwin give the same names).  The aligned variants are not
+# in the file and not listed.  One mangled name per line, the same for all
+# architectures.
+__ZnwmSt19__type_descriptor_t
+__ZnwmRKSt9nothrow_tSt19__type_descriptor_t
+__ZnamSt19__type_descriptor_t
+__ZnamRKSt9nothrow_tSt19__type_descriptor_t
+__ZdlPvSt19__type_descriptor_t
+__ZdlPvRKSt9nothrow_tSt19__type_descriptor_t
+__ZdaPvSt19__type_descriptor_t
+__ZdaPvRKSt9nothrow_tSt19__type_descriptor_t
+__ZdlPvmSt19__type_descriptor_t
+__ZdaPvmSt19__type_descriptor_t
