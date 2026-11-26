@@ -20,7 +20,8 @@
 #                   run them, and delete the directory (the host is a Mac; it needs nothing installed)
 #   --gcc           also build with the GCC of the OSXCross (--osxcross only; C and C++ programs)
 #
-# The exit status is 0 if every program built (and ran, with --ssh).
+# The exit status is 0 if every program built (and ran, with --ssh; then at least one must run and
+# the connection must work).
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
 PROG=$HERE/programs
@@ -89,7 +90,7 @@ build() {
   fi
 }
 
-total=0; failed=0; ran=0; runfailed=0
+total=0; failed=0; ran=0; runfailed=0; sshfailed=0
 # name file lang flags libs variant(core|full)
 PROGRAMS="
 hello       hello.c       c    -                          -                                     core
@@ -155,12 +156,16 @@ done
 if [ -n "$SSH" ]; then
   # the programs of the architecture of the Mac; ssh with the options of the user
   rarch=$(ssh "$SSH" uname -m 2>/dev/null)
-  case $rarch in arm64) rarch=arm64;; x86_64) rarch=x86_64;; *) echo "run.sh: cannot ask $SSH for its architecture" >&2; rarch=;; esac
+  case $rarch in arm64) rarch=arm64;; x86_64) rarch=x86_64;; *) echo "run.sh: cannot ask $SSH for its architecture" >&2; rarch=; sshfailed=1;; esac
   if [ -n "$rarch" ]; then
     rdir=open-sdk-tests/tests.$$
-    ssh "$SSH" "mkdir -p $rdir" && for p in $built; do
-      case $p in *-"$rarch") scp -q "$OUT/$p" "$SSH:$rdir/" ;; esac
-    done
+    if ssh "$SSH" "mkdir -p $rdir"; then
+      for p in $built; do
+        case $p in *-"$rarch") scp -q "$OUT/$p" "$SSH:$rdir/" || { echo "run.sh: scp of $p to $SSH failed" >&2; sshfailed=1; } ;; esac
+      done
+    else
+      echo "run.sh: cannot create $rdir on $SSH" >&2; sshfailed=1
+    fi
     for p in $built; do
       case $p in
         *-"$rarch")
@@ -174,4 +179,7 @@ if [ -n "$SSH" ]; then
 fi
 
 echo "$((total - failed)) of $total programs built; $((ran - runfailed)) of $ran ran"
-[ "$failed" = 0 ] && [ "$runfailed" = 0 ]
+if [ -n "$SSH" ] && [ "$ran" = 0 ] && [ "$sshfailed" = 0 ]; then
+  echo "run.sh: --ssh $SSH: no program ran" >&2; sshfailed=1
+fi
+[ "$failed" = 0 ] && [ "$runfailed" = 0 ] && [ "$sshfailed" = 0 ]
