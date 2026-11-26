@@ -195,7 +195,9 @@ libs_ncurses() {
      "$N"/ncurses/form/form.h "$N"/ncurses/include/termcap.h "$N"/ncurses/menu/menu.h \
      "$N"/ncurses/include/term_entry.h "$B/term.h" "$B/curses.h" "$STAGE_INC/"
   cp "$B/curses.h" "$STAGE_INC/ncurses.h"
-  local cf="-D_XOPEN_SOURCE_EXTENDED=1"
+  # -DTAPI (COMMON_TAPI_FLAGS in xcodeconfig/base.xcconfig) makes curses.h declare the functions
+  # a second time with the "$NCURSES60" names that programs of a new deployment target reference
+  local cf="-D_XOPEN_SOURCE_EXTENDED=1 -DTAPI"
   ext_tbd libncurses.5.4 "$cf" - curses.h term.h termcap.h unctrl.h tic.h term_entry.h nc_tparm.h
   ext_tbd libpanel.5.4 "$cf" - panel.h
   ext_tbd libform.5.4 "$cf" - form.h

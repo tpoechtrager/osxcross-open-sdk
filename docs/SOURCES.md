@@ -187,6 +187,9 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - libxml2: the whole export list of the project, `Pregenerated Files/libxml2.exp` (`EXPORTED_SYMBOLS_FILE` in
   `Configurations/libxml2.xcconfig`), not the headers.
 - expat: the headers, scanned with `-DXML_DTD=1 -DXML_GE=1` (`OTHER_TAPI_FLAGS` in `expat.xcodeproj`).
+- ncurses: the headers, scanned with `-DTAPI` (`COMMON_TAPI_FLAGS` in `xcodeconfig/base.xcconfig`).  
+  With it `curses.h` declares each function a second time with the `$NCURSES60` name (`ifTAPI` in `curses.head`);  
+  programs that use the 15.0 ABI (`NCURSES_EXPORT_ABI60` in the same header) reference these names.
 - libffi: `ffi.h` and `tramp.h` (a Public header in `libffi.xcodeproj`).
 - libresolv: the headers of the project and its `installapi.h`, as the project's own build does (`libresolv.xcconfig`,
   with `-D__BIND_INSTALLAPI`), and the Private header `dns_private.h` (`libresolv.xcodeproj`; not installed in the SDK).
