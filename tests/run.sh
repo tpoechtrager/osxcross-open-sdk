@@ -119,6 +119,7 @@ commoncrypto commoncrypto.c c  -                          -                     
 launchd     launchd.c     c    -                          -                                     full
 readline    readline.c    c    -                          -lreadline                            full
 iopm        iopm.c        c    -                          -framework,CoreFoundation,-framework,IOKit full
+iokit_families iokit_families.c c -                       -framework,CoreFoundation,-framework,IOKit full
 "
 
 built=

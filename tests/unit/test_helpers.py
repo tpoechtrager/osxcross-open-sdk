@@ -504,7 +504,11 @@ class DataFiles(unittest.TestCase):
     def test_manifests(self):
         ms = self.manifests()
         self.assertGreaterEqual(len(ms), 7)
-        names0 = None
+        # the manifests of the releases with a full SDK list the same projects; those of the
+        # core-only releases list the same projects but those that only the full SDK uses
+        full = {"macos-%s.txt" % r[0].replace(".", "") for r in
+                data_files.read_releases(os.path.join(DATA, "releases.txt")) if "full" in r[2]}
+        names0 = {True: None, False: None}
         for n, lines in ms.items():
             self.assertRegex(n, r"^macos-\d+\.txt$")
             self.assertTrue(lines[0].startswith("# osxcross-open-sdk: pinned sources for macOS "), n)
@@ -528,10 +532,12 @@ class DataFiles(unittest.TestCase):
                 self.assertTrue(f[1].startswith(f[0] + "-"), l)
                 names.append(f[0])
             self.assertEqual(len(names), len(set(names)), n)
-            if names0 is None:
-                names0 = names
-            self.assertEqual(names, names0, n)
+            if names0[n in full] is None:
+                names0[n in full] = names
+            self.assertEqual(names, names0[n in full], n)
             self.assertIn("xnu", names)
+        self.assertTrue(names0[True] and names0[False])
+        self.assertEqual([x for x in names0[True] if x in names0[False]], names0[False])
 
     def test_releases_and_libcxx_versions(self):
         llvm = data_files.read_libcxx_versions(os.path.join(DATA, "libcxx-versions.txt"))

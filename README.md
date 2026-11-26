@@ -39,7 +39,8 @@ install name and version. A real SDK was used only to test a result, never as a 
 - `os_log` (`<os/log.h>`): the messages appear in the unified log of macOS, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).  
   Signposts, activities and `os_trace` compile and run but record nothing.
 - The frameworks `CoreFoundation`, `DiskArbitration`, `SystemConfiguration`, `Security` (including `SecureTransport`)  
-  and `IOKit` (`IOKitLib`, power sources and power management; no device families).
+  and `IOKit` (`IOKitLib`, power sources, power management and the device families `storage`, `hid`,  
+  `hidsystem`, `graphics`, `i2c` and `ndrvsupport`).
 - XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - File System Events (`<CoreServices/CoreServices.h>`, only this part of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `tsan`, `rtsan`, `tysan`.
@@ -50,7 +51,9 @@ install name and version. A real SDK was used only to test a result, never as a 
   `Foundation` is an empty placeholder, so that `-framework Foundation`  
   links; `#import <Foundation/Foundation.h>` fails.
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
-- `libbsm`, the `IOKit` device families (`IOKit/storage`, `usb`, `hid`, ...) and `CoreServices` except File System Events.
+- `libbsm`, the other `IOKit` device families (`usb`, `storage/ata`, `network`, ...) and `CoreServices` except File System Events.
+- The functions of `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h` (but `IOHIDServiceClientGetTypeID`):  
+  the headers are there, the functions are not in `IOKit.tbd` (see [docs/SOURCES.md](docs/SOURCES.md#iokit-device-families)).
 - XPC sessions and listeners (`xpc_session`, `xpc_listener`) and the parts of XPC that have no public value  
   (see [docs/SOURCES.md](docs/SOURCES.md#xpcxpch-and-its-symbols)).
 
@@ -58,7 +61,7 @@ install name and version. A real SDK was used only to test a result, never as a 
 
 | Variant | macOS releases | Architectures | Size (26.5) |
 |---|---|---|---|
-| full (default) | 14.3, 15.5, 26.0, 26.5 | x86_64, arm64 | 2.5 MB |
+| full (default) | 14.3, 15.5, 26.0, 26.5 | x86_64, arm64 | 2.7 MB |
 | core (`--core`) | 11.3, 12.3, 13.3, 14.3, 15.5, 26.0, 26.5 | x86_64, arm64 | 1.7 MB |
 
 - **full** has everything listed under [What works](#what-works).

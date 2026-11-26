@@ -18,12 +18,12 @@ projects were also built with the stable flavor (cctools/ld64).
   `gmp`, `mpfr`, `libffi`, `xxhash`, `lmdb`, `redis`
 - **Version control:** `git`, `libgit2` (also with SecureTransport)
 - **File system events:** the `git` fsmonitor daemon, `fswatch`
+- **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`mac/hid.c` and `hidtest`)
 - **Compilers and tools:** `LLVM/Clang` (the compiler works on macOS), `cctools-port` (builds, and its tools work on macOS),  
   `compiler-rt` (builds, and its runtimes work on macOS)
 
 **Not covered**
 
-- `htop` needs the headers of `IOKit/storage`; they are not open source.
 - The Xcode generator of `cmake` is switched off: it needs `ApplicationServices`.
 - `asan`, `lsan` and `tsan` of compiler-rt need the full SDK (`CoreFoundation/CFBase.h`).
 - Projects that need `Foundation`, `AppKit` or `Metal` were not tried.

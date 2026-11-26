@@ -31,7 +31,8 @@ from data_files import own_files_of  # noqa: E402
 
 # name, source dir (below SRC), license summary, what comes from it ({tag}: the
 # tag of the project, {version}: the version of sqlite), part of the SDK (core,
-# libs, frameworks, swift), [extra license-like files], [fallback: header with notice]
+# libs, frameworks, swift), [extra license-like files ("path" or "path=name in the
+# SDK", relative to the source dir)], [fallback: header with notice]
 P = [
  ("xnu", "xnu", "APSL 2.0", "bsd/, osfmk/, libkern/ headers and EXTERNAL_HEADERS/libDER (DERItem.h, libDER_config.h) (sys/, mach/, net*/, i386/, arm/, ...), Libsyscall and MIG generated headers (mach/, servers/), mach-o/{loader,fat,nlist,reloc,stab,fixup-chains}.h, AssertMacros.h, libSystem.tbd symbol names", "core"),
  ("Libc", "Libc", "APSL 2.0 and BSD (per-file notices)", "libc headers (stdio.h, stdlib.h, string.h, ..., xlocale/, secure/, arpa/), libSystem.tbd symbol names", "core"),
@@ -79,8 +80,14 @@ P = [
  ("DiskArbitration", "DiskArbitration", "APSL 2.0", "DiskArbitration.framework/Headers, DiskArbitration.tbd", "frameworks"),
  ("Security", "Security", "APSL 2.0", "Security.framework/Headers (resolved from header_symlinks), Security.tbd", "frameworks", [], "base/Security.h"),
  ("configd", "configd", "APSL 2.0", "SystemConfiguration.framework/Headers, SystemConfiguration.tbd", "frameworks"),
- ("IOKitUser", "IOKitUser", "APSL 2.0", "IOKit.framework/Headers (IOKitLib, IOCF*, ps/, pwr_mgt/), IOKit.tbd (plus iokit/IOKit/*.h of xnu)", "frameworks"),
+ ("IOKitUser", "IOKitUser", "APSL 2.0", "IOKit.framework/Headers (IOKitLib, IOCF*, ps/, pwr_mgt/, hid/ and hidsystem/ in part, graphics/IOGraphicsLib.h), IOKit.tbd (plus iokit/IOKit/*.h of xnu)", "frameworks"),
  ("xz", "xz/src/liblzma/api", "Public domain (liblzma; COPYING)", "liblzma.tbd symbol names (from lzma.h and lzma/*.h)", "libs", ["../../../COPYING"]),
+ ("IOStorageFamily", "IOStorageFamily", "APSL 2.0", "IOKit.framework/Headers/storage (IOMedia, IOBlockStorageDriver, partition schemes, ...)", "frameworks"),
+ ("IOCDStorageFamily", "IOCDStorageFamily", "APSL 2.0", "IOKit.framework/Headers/storage/IOCD*.h", "frameworks"),
+ ("IODVDStorageFamily", "IODVDStorageFamily", "APSL 2.0", "IOKit.framework/Headers/storage/IODVD*.h", "frameworks"),
+ ("IOBDStorageFamily", "IOBDStorageFamily", "APSL 2.0", "IOKit.framework/Headers/storage/IOBD*.h", "frameworks"),
+ ("IOHIDFamily", "IOHIDFamily", "APSL 2.0 (file notices)", "IOKit.framework/Headers/hid (keys, types, usage tables), hidsystem (IOHIDTypes, IOLLEvent, ...)", "frameworks", [], "IOHIDFamily/IOHIDKeys.h"),
+ ("IOGraphics", "IOGraphics", "APSL 2.0 (APPLE_LICENSE), APSL 1.1 (file notices of the headers)", "IOKit.framework/Headers/graphics (all but IOGraphicsLib.h), i2c, ndrvsupport", "frameworks", ["../Libinfo/APPLE_LICENSE=APPLE_LICENSE-1.1 (APSL 1.1, from Libinfo)"]),
  ("sqlite", None, "Public domain (SQLite blessing)", "sqlite3.h, sqlite3ext.h (upstream amalgamation {version}), libsqlite3.tbd", "libs"),
  ("Swift runtime stubs", None, "Apache 2.0 with Runtime Library Exception", "usr/lib/swift/*.tbd generated from the Swift runtime dylibs of swift.org's macOS package", "swift"),
 ]
@@ -175,10 +182,12 @@ def install(src, out, variant, apache, sqlite, swift_lic):
                     shutil.copy(os.path.join(base, f), os.path.join(dst, f))
                     found.append(f)
             for e in extra:
+                e, _, as_name = e.partition("=")
                 p = os.path.normpath(os.path.join(base, e))
                 if os.path.isfile(p):
-                    shutil.copy(p, os.path.join(dst, os.path.basename(p)))
-                    found.append(os.path.basename(p))
+                    as_name = as_name or os.path.basename(p)
+                    shutil.copy(p, os.path.join(dst, as_name))
+                    found.append(as_name)
             if not found:
                 if notice and os.path.exists(os.path.join(base, notice)):
                     with open(os.path.join(dst, "NOTICE-from-" + os.path.basename(notice) + ".txt"), "w") as f:

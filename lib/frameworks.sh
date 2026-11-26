@@ -10,12 +10,20 @@
 # own headers (File System Events only); Foundation: only the .tbd
 # (fw_placeholder).
 # ---------------------------------------------------------------------------
-# fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/)
+# fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/):
+# the symbols that HEADERs declare, without those of data/symbols/NAME-exclude.txt, and
+# with those of data/symbols/NAME-extra.txt
 fw_tbd() {
   local name=$1; shift
   local args="" h; for h in "$@"; do args="$args $name/$h"; done
   # shellcheck disable=SC2086
   header_syms "$STAGE_WORK/fw-$name.syms" "-F$STAGE_FW" $args
+  if [ -f "$DATA/symbols/$name-exclude.txt" ]; then
+    symbol_list "$DATA/symbols/$name-exclude.txt" > "$STAGE_WORK/fw-$name.exclude"
+    awk 'NR == FNR { x[$1] = 1; next } !($2 in x)' "$STAGE_WORK/fw-$name.exclude" "$STAGE_WORK/fw-$name.syms" \
+      > "$STAGE_WORK/fw-$name.syms.new"
+    mv "$STAGE_WORK/fw-$name.syms.new" "$STAGE_WORK/fw-$name.syms"
+  fi
   if [ -f "$DATA/symbols/$name-extra.txt" ]; then
     syms_for_archs "$DATA/symbols/$name-extra.txt" >> "$STAGE_WORK/fw-$name.syms"
   fi
@@ -28,6 +36,49 @@ fw_placeholder() {
   rm -rf "$STAGE_FW/$1.framework"; mkdir -p "$STAGE_FW/$1.framework"
   : > "$STAGE_WORK/fw-$1.syms"
   mk_lib_tbd "$1" "$STAGE_FW/$1.framework/$1.tbd" "$STAGE_WORK/fw-$1.syms"
+}
+
+# iokit_families HEADERS: the headers of the IOKit device families storage, hid,
+# hidsystem, graphics, i2c and ndrvsupport (the modules of these names in
+# IOKitUser's Modules/IOKit.modulemap, without storage/ata) in HEADERS/<dir>.
+# Each list is the one that the project's Xcode project copies to
+# IOKit.framework/Versions/A/Headers/<dir> (its PBXCopyFilesBuildPhase); the
+# storage families run `unifdef -UKERNEL` on their headers after the copy (a
+# shell script phase of the same projects), and so does this step.  Sets
+# IOKIT_FAMILY_SCAN to these headers (for the symbol scan of IOKit.tbd).
+# storage/IOFireWireStorageCharacteristics.h of the module map belongs to
+# IOFireWireSerialBusProtocolTransport and is not installed here.
+iokit_families() {
+  local H=$1 h
+  mkdir -p "$H/storage" "$H/hid" "$H/hidsystem" "$H/graphics" "$H/i2c" "$H/ndrvsupport"
+  for h in IOAppleLabelScheme IOApplePartitionScheme IOBlockStorageDevice IOBlockStorageDriver \
+           IOFDiskPartitionScheme IOFilterScheme IOGUIDPartitionScheme IOMedia IOMediaBSDClient \
+           IOPartitionScheme IOStorage IOStorageCardCharacteristics IOStorageControllerCharacteristics \
+           IOStorageDeviceCharacteristics IOStorageProtocolCharacteristics; do
+    run_unifdef -UKERNEL -o "$H/storage/$h.h" "$SRC/IOStorageFamily/$h.h"
+  done
+  for h in IOCDBlockStorageDevice IOCDMedia IOCDMediaBSDClient IOCDPartitionScheme IOCDTypes; do
+    run_unifdef -UKERNEL -o "$H/storage/$h.h" "$SRC/IOCDStorageFamily/$h.h"
+  done
+  for h in IODVDBlockStorageDevice IODVDMedia IODVDMediaBSDClient IODVDTypes; do
+    run_unifdef -UKERNEL -o "$H/storage/$h.h" "$SRC/IODVDStorageFamily/$h.h"
+  done
+  for h in IOBDBlockStorageDevice IOBDMedia IOBDMediaBSDClient IOBDTypes; do
+    run_unifdef -UKERNEL -o "$H/storage/$h.h" "$SRC/IOBDStorageFamily/$h.h"
+  done
+  # IOHIDFamily: the phases "Copy IOKit HID" and "Copy IOKit HIDSystem" of the target InstallHeaders
+  cp "$SRC"/IOHIDFamily/IOHIDFamily/{IOHIDDeviceKeys,IOHIDDeviceTypes,IOHIDEventServiceKeys,IOHIDEventServiceTypes,IOHIDKeys,IOHIDProperties,IOHIDUsageTables}.h \
+     "$SRC/IOHIDFamily/IOHIDLib/IOHIDLibObsolete.h" "$H/hid/"
+  cp "$SRC"/IOHIDFamily/IOHIDSystem/IOKit/hidsystem/{IOHIDParameter,IOHIDShared,IOHIDTypes,IOLLEvent,ev_keymap}.h "$H/hidsystem/"
+  # IOKitUser: the phases "Copy HID Headers", "Copy HIDSystem Headers" and "Copy Files B" of the target IOKit
+  cp "$SRC"/IOKitUser/hid.subproj/{IOHIDBase,IOHIDDevice,IOHIDDevicePlugIn,IOHIDElement,IOHIDLib,IOHIDManager,IOHIDQueue,IOHIDTransaction,IOHIDValue}.h "$H/hid/"
+  cp "$SRC"/IOKitUser/hidsystem.subproj/{IOHIDEventSystemClient,IOHIDLib,IOHIDServiceClient,IOHIDUserDevice,event_status_driver}.h "$H/hidsystem/"
+  cp "$SRC/IOKitUser/graphics.subproj/IOGraphicsLib.h" "$H/graphics/"
+  # IOGraphics: the copy phases of the targets IOGraphics Headers and IONDRVSupport Headers
+  cp "$SRC"/IOGraphics/IOGraphicsFamily/IOKit/graphics/{IOAccelClientConnect,IOAccelSurfaceConnect,IOAccelTypes,IOFramebufferShared,IOGraphicsEngine,IOGraphicsInterface,IOGraphicsInterfaceTypes,IOGraphicsTypes}.h "$H/graphics/"
+  cp "$SRC/IOGraphics/IOGraphicsFamily/IOKit/i2c/IOI2CInterface.h" "$H/i2c/"
+  cp "$SRC"/IOGraphics/IONDRVSupport/IOKit/ndrvsupport/{IOMacOSTypes,IOMacOSVideo}.h "$H/ndrvsupport/"
+  IOKIT_FAMILY_SCAN=$(cd "$H" && ls storage/*.h hid/*.h hidsystem/*.h graphics/*.h i2c/*.h ndrvsupport/*.h | tr '\n' ' ')
 }
 
 step_frameworks() {
@@ -73,10 +124,16 @@ step_frameworks() {
   cp "$SRC"/IOKitUser/{IOCFBundle,IOCFPlugIn,IOCFSerialize,IOCFURLAccess,IOCFUnserialize,IODataQueueClient,IOKitLib,iokitmig}.h "$H/"
   cp "$SRC"/IOKitUser/ps.subproj/{IOPowerSources,IOPSKeys,IOUPSPlugIn}.h "$H/ps/"
   cp "$SRC"/IOKitUser/pwr_mgt.subproj/{IOPMLib,IOPMKeys,IOPMAssertionCategories}.h "$H/pwr_mgt/"
+  iokit_families "$H"
   # iokitmig.h (a MIG interface) includes iokitmig_c.h, which MIG makes while IOKit is built
   # and which is not in the sources: it is copied above but not scanned for symbols.
+  # The functions that the headers of the device families declare are defined in
+  # IOKitUser (hid.subproj, hidsystem.subproj, graphics.subproj), but for those of
+  # data/symbols/IOKit-exclude.txt.
+  # shellcheck disable=SC2086
   fw_tbd IOKit IOKitLib.h IOCFBundle.h IOCFPlugIn.h IOCFSerialize.h IOCFURLAccess.h IOCFUnserialize.h \
-    IODataQueueClient.h ps/IOPowerSources.h ps/IOPSKeys.h pwr_mgt/IOPMLib.h pwr_mgt/IOPMKeys.h
+    IODataQueueClient.h ps/IOPowerSources.h ps/IOPSKeys.h pwr_mgt/IOPMLib.h pwr_mgt/IOPMKeys.h \
+    $IOKIT_FAMILY_SCAN
 
   echo "DiskArbitration"
   H=$STAGE_FW/DiskArbitration.framework/Headers; rm -rf "$STAGE_FW/DiskArbitration.framework"; mkdir -p "$H"
