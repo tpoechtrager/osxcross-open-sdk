@@ -53,6 +53,20 @@ export MAKE
 
 die() { echo "make-open-sdk.sh: $*" >&2; exit 1; }
 
+# version_lt A B: is the version A (MAJOR.MINOR[.PATCH]) lower than B?
+version_lt() {
+  awk -v a="$1" -v b="$2" 'BEGIN {
+    split(a, x, "."); split(b, y, ".")
+    for (i = 1; i <= 3; i++) if (x[i] + 0 != y[i] + 0) exit !(x[i] + 0 < y[i] + 0)
+    exit 1 }'
+}
+
+# require_lines FILE MIN MESSAGE: stop with MESSAGE if FILE has fewer than MIN
+# lines (a list of symbols that a scan made: too few means the scan failed)
+require_lines() {
+  [ "$(wc -l < "$1")" -ge "$2" ] || die "$3"
+}
+
 # to_log LOG COMMAND...: run COMMAND with its output (stdout and stderr) in
 # LOG.  With -v (VERBOSE=1) the output is shown too, and so it is in build.log;
 # the status is the one of COMMAND (pipefail).
@@ -134,6 +148,28 @@ mk_lib_tbd() {
 NOTICE_DATE=2026-11-24
 add_notice() { python3 -I "$HELPERS/notice.py" "$NOTICE_DATE" "$1" "$2"; }
 
+# run_unifdef ARGS...: the unifdef of the step host.  Its status 1 means that
+# it changed the file, not an error (2 is one).
+run_unifdef() { "$HOST/bin/unifdef" "$@" || [ $? -eq 1 ]; }
+
+# TBD_ARCHS: the architectures of the symbol lists ("ARCH SYMBOL" lines) that
+# helpers/mk_tbd.py reads (it writes arm64e and x86_64h from them)
+TBD_ARCHS="x86_64 arm64"
+
+# syms_for_archs FILE: the symbols of FILE (one per line, "#" starts a
+# comment, empty lines are skipped) as "ARCH SYMBOL" lines for TBD_ARCHS
+syms_for_archs() {
+  local a
+  for a in $TBD_ARCHS; do sed 's/#.*//' "$1" | awk -v a="$a" 'NF { print a " " $0 }'; done
+}
+
+# hdr_syms OUT CLANG-FLAGS HEADER...: the symbols that the HEADERs of the stage
+# declare, as "ARCH SYMBOL" lines (helpers/hdr_syms.py)
+hdr_syms() {
+  local out=$1 flags=$2; shift 2
+  python3 -I "$HELPERS/hdr_syms.py" "$STAGE" "$CLANG_PATH" "$out" "$flags" -- "$@"
+}
+
 # has_step NAME: is the step in the list of steps to run?
 has_step() { case " $STEPS " in *" $1 "*) return 0;; *) return 1;; esac; }
 
@@ -178,7 +214,7 @@ BASE_TOOLS="python3 perl sed awk cut tr sort find"
 # tools_of_step STEP: the tools that STEP needs besides BASE_TOOLS.
 tools_of_step() {
   case $1 in
-    fetch)                echo git; [ "$CORE" = 1 ] || echo curl;;
+    fetch)                echo git; [ "$VARIANT" = core ] || echo curl;;
     host)                 echo "$CLANG" flex;;
     headers)              echo "$MAKE" "$CLANG";;
     stubs|cxx|frameworks) echo "$CLANG";;
@@ -238,31 +274,16 @@ clean_work() {
 }
 
 # ---------------------------------------------------------------------------
-# Headers
+# Apple's build scripts
 # ---------------------------------------------------------------------------
-# Clean environment for Apple's scripts
+# aenv COMMAND...: run COMMAND (a script of Apple's) in a clean environment
+# with the host tools first in the PATH.
 # (The scripts start `bash`: on the BSDs it is in /usr/local/bin, so the
 # directory of the running bash is added to the PATH if it is not a standard one.)
 case $(dirname "$BASH") in /usr/bin|/bin|/usr/sbin) AENV_PATH=;; *) AENV_PATH=:$(dirname "$BASH");; esac
 aenv() { env -i HOME="$HOME" PATH="$HOST/bin:/usr/bin:/bin:/usr/sbin$AENV_PATH" TERM=dumb \
-  CLANG="$(command -v "$CLANG")" "$@"; }
+  CLANG="$CLANG_PATH" "$@"; }
 
-
-# Apple's scripts name /usr/bin/perl and /bin/bash; the BSDs have them in
-# /usr/local/bin.  Point the scripts that we run at the interpreter in the PATH.
-fix_shebangs() {
-  local d f
-  for d in Libc/xcodescripts Libinfo/xcodescripts ncurses/xcodescripts xnu/libsyscall/xcodescripts xnu/bsd/sys xnu/bsd/kern; do
-    [ -d "$SRC/$d" ] || continue
-    for f in "$SRC/$d"/*; do
-      [ -f "$f" ] || continue
-      if [ ! -x /usr/bin/perl ]; then
-        head -n 1 "$f" | grep -q '^#! */usr/bin/perl' && sed_inplace "$f" '1s|^#! */usr/bin/perl|#!/usr/bin/env perl|'
-      fi
-      if [ ! -x /bin/bash ]; then
-        head -n 1 "$f" | grep -q '^#! */bin/bash' && sed_inplace "$f" '1s|^#! */bin/bash|#!/usr/bin/env bash|'
-      fi
-    done
-  done
-  return 0
-}
+# plain_env COMMAND...: run COMMAND in a clean environment with only the
+# system's tools in the PATH (no host tools, no variables)
+plain_env() { env -i PATH="/usr/bin:/bin:/usr/sbin$AENV_PATH" "$@"; }

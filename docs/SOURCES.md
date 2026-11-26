@@ -15,6 +15,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | libedit's readline layer | libedit's own install script ([details](#libedits-readline-layer)) |
 | `__exp10`, `__exp10f` in `math.h` | LLVM `RuntimeLibcalls.td` ([details](#__exp10-__exp10f-in-mathh)) |
 | Symbols of the other `.tbd` | Headers and export lists of the projects ([details](#symbols-of-the-other-tbd)) |
+| Symbols of `libiconv.2.tbd` | The public headers of libiconv ([details](#symbols-of-libiconv2tbd)) |
 | Symbols of libc++ and libc++abi | LLVM's ABI lists ([details](#symbols-of-libc-and-libcabi)) |
 | libc++ release of each macOS release | LLVM's availability table ([details](#libc-release-of-each-macos-release)) |
 | `TargetConditionals.h` | CarbonHeaders, compiler macros ([details](#targetconditionalsh)) |
@@ -107,6 +108,18 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 - The headers (clang AST) and the export lists of the projects.
 - libresolv: the headers of the project and its `installapi.h`, as the project's own build does (`libresolv.xcconfig`).
+
+---
+
+### Symbols of `libiconv.2.tbd`
+
+**Files:** `data/symbols/libiconv.txt`, `lib/stubs.sh` (`stubs_libiconv`)
+
+- The functions and the variable that the public headers of the project libiconv declare:
+  - `citrus/iconv.h`: `iconv`, `iconv_open`, `iconv_close`, `__iconv_get_list`, `__iconv_free_list`, `__iconv`,  
+    `iconv_open_into`, `libiconv_set_relocation_prefix`, `iconvlist`, `iconv_canonicalize`, `iconvctl`, `_libiconv_version`;
+  - `libcharset/localcharset.h`: `locale_charset`;
+  - `libcharset/libcharset.h`: `libcharset_set_relocation_prefix`.
 
 ---
 

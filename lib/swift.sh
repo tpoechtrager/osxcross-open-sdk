@@ -11,13 +11,13 @@
 # only import Swift.  Not part of the default steps.
 # ---------------------------------------------------------------------------
 step_swift() {
-  [ -f "${OPEN_SDK_SWIFT_PKG:-}" ] || { echo "set OPEN_SDK_SWIFT_PKG to a swift-*-osx.pkg" >&2; return 1; }
-  local D=$WORK/swiftpkg L=$STAGE/usr/lib/swift
+  [ -f "${OPEN_SDK_SWIFT_PKG:-}" ] || die "set OPEN_SDK_SWIFT_PKG to a swift-*-osx.pkg"
+  local D=$WORK/swiftpkg L=$STAGE_LIB/swift
   rm -rf "$D"; mkdir -p "$D/x" "$D/payload" "$L"
   (cd "$D/x" && bsdtar -xf "$OPEN_SDK_SWIFT_PKG")
   # (|| true: ls fails for the one of the two layouts that the package does not have)
   local P; P=$(ls "$D"/x/*/Payload "$D"/x/Payload 2>/dev/null | head -1) || true
   (cd "$D/payload" && bsdtar -xf "$P" './usr/lib/swift/macosx/libswift*.dylib' './usr/share/swift/LICENSE.txt')
   python3 -I "$HELPERS/swift_stubs.py" "$D/payload/usr/lib/swift/macosx" "$L" \
-    "$(dirname "$(command -v "$CLANG")")" "$HELPERS/mk_tbd.py"
+    "$(dirname "$CLANG_PATH")" "$HELPERS/mk_tbd.py"
 }

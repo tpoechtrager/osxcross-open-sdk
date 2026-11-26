@@ -19,11 +19,13 @@ list_releases() {
     v=$(sed -n 's/^# osxcross-open-sdk: pinned sources for macOS //p' "$f" | head -n 1)
     l=$(awk -v v="$v" '$1=="macos" && $2==v {print $3}' "$DATA/libcxx-versions.txt")
     printf '%s\tlibc++ %s\n' "$v" "$l"
-  done | sort -t. -k1,1n -k2,2n | awk -v d="$DEFAULT_MACOS" '{
-    split($1, v, ".")
-    note = ($1 == d ? "\t(default)" : "")
-    if (v[1] + 0 < 14 || (v[1] + 0 == 14 && v[2] + 0 < 3)) note = note "\t(core SDK only)"
-    printf "%s%s\n", $0, note }'
+  done | sort -t. -k1,1n -k2,2n | while IFS= read -r l; do
+    v=${l%%"$(printf '\t')"*}
+    printf '%s' "$l"
+    [ "$v" != "$DEFAULT_MACOS" ] || printf '\t(default)'
+    ! version_lt "$v" "$FULL_SDK_MIN_MACOS" || printf '\t(core SDK only)'
+    echo
+  done
 }
 
 # load_manifest: set PROJECTS ("name tag commit" lines), SQLITE_URL and
@@ -105,7 +107,7 @@ step_fetch() {
 $PROJECTS
 EOF2
   fetch_llvm
-  [ "$CORE" = 1 ] || fetch_sqlite
+  [ "$VARIANT" = core ] || fetch_sqlite
 }
 
 fetch_llvm() {

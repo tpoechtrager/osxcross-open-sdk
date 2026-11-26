@@ -34,7 +34,7 @@ step_tarball() {
     # bsdtar (macOS, BSD): no --sort and --mtime; take a sorted file list and
     # set the mtime of the files before.  The bytes differ from GNU tar's
     # (another archive format), the files in the archive are the same.
-    command -v bsdtar >/dev/null 2>&1 || { echo "need GNU tar (gtar) or bsdtar for the tarball" >&2; return 1; }
+    command -v bsdtar >/dev/null 2>&1 || die "need GNU tar (gtar) or bsdtar for the tarball"
     local mt=()
     if bsdtar --help 2>&1 | grep -q -e --clamp-mtime; then
       mt=(--mtime "2024-01-01 00:00:00 UTC" --clamp-mtime)
@@ -44,16 +44,16 @@ step_tarball() {
         find "MacOSX$V.sdk" ! -type l -exec env TZ=UTC touch -t 202401010000.00 {} + &&
         { find "MacOSX$V.sdk" -type l -exec env TZ=UTC touch -h -t 202401010000.00 {} + 2>/dev/null || true; })
     fi
-    (cd "$PKG" && find "MacOSX$V.sdk" | sort > "$WORK/tarlist-$FLAVOR" &&
+    (cd "$PKG" && find "MacOSX$V.sdk" | sort > "$WORK/tarlist-$VARIANT" &&
       if command -v xz >/dev/null 2>&1; then
-        bsdtar -n -T "$WORK/tarlist-$FLAVOR" ${mt[@]+"${mt[@]}"} --uid 0 --gid 0 --uname root --gname wheel --numeric-owner -cf - | xz -T0 -6 > "$T.tmp"
+        bsdtar -n -T "$WORK/tarlist-$VARIANT" ${mt[@]+"${mt[@]}"} --uid 0 --gid 0 --uname root --gname wheel --numeric-owner -cf - | xz -T0 -6 > "$T.tmp"
       else
-        bsdtar -n -T "$WORK/tarlist-$FLAVOR" ${mt[@]+"${mt[@]}"} --uid 0 --gid 0 --uname root --gname wheel --numeric-owner --xz -cf "$T.tmp"
+        bsdtar -n -T "$WORK/tarlist-$VARIANT" ${mt[@]+"${mt[@]}"} --uid 0 --gid 0 --uname root --gname wheel --numeric-owner --xz -cf "$T.tmp"
       fi)
   fi
   mv "$T.tmp" "$T"
   echo "size: $(du -h "$T" | cut -f1)"
   if [ "$TREE_HASH" = 1 ]; then
-    echo "tree hash ($FLAVOR): $(python3 -I "$HELPERS/tree_hash.py" "$SDK")  MacOSX$V.sdk"
+    echo "tree hash ($VARIANT): $(python3 -I "$HELPERS/tree_hash.py" "$SDK")  MacOSX$V.sdk"
   fi
 }

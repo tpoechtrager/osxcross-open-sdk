@@ -4,7 +4,7 @@
 # Sourced by make-open-sdk.sh; not meant to be run on its own.
 
 # ---------------------------------------------------------------------------
-# Metadata and licenses (the tarball: lib/package.sh)
+# Metadata and licenses (the tarball: lib/tarball.sh)
 # ---------------------------------------------------------------------------
 step_meta() {
   log "Meta"
@@ -79,20 +79,20 @@ EOF
 EOF
   # full license texts of every project that contributes to the SDK
   rm -rf "$M/usr/share/licenses/open-sdk"; mkdir -p "$M/usr/share/licenses/open-sdk"
-  local lv=$FLAVOR swl=
+  local lic_variant=$VARIANT swl=
   if [ -d "$M/usr/lib/swift" ] && [ -f "$WORK/swiftpkg/payload/usr/share/swift/LICENSE.txt" ]; then
-    lv=swift; swl=$WORK/swiftpkg/payload/usr/share/swift/LICENSE.txt
+    lic_variant=swift; swl=$WORK/swiftpkg/payload/usr/share/swift/LICENSE.txt
   fi
   echo "license texts"
-  quiet python3 -I "$HELPERS/make_licenses.py" "$SRC" "$M/usr/share/licenses/open-sdk" "$lv" "$LIBCXX_VERSION" \
-    "$DATA/licenses/0BSD.txt" ${swl:+--swift-license "$swl"} --projects-out "$STAGE/work/projects.tsv"   # (it prints a count)
+  quiet python3 -I "$HELPERS/make_licenses.py" "$SRC" "$M/usr/share/licenses/open-sdk" "$lic_variant" "$LIBCXX_VERSION" \
+    "$DATA/licenses/0BSD.txt" ${swl:+--swift-license "$swl"} --projects-out "$STAGE_WORK/projects.tsv"   # (it prints a count)
   local sq=
-  [ "$CORE" = 1 ] || sq="sqlite_url=$SQLITE_URL sqlite_sha256=$SQLITE_SHA256"
+  [ "$VARIANT" = core ] || sq="sqlite_url=$SQLITE_URL sqlite_sha256=$SQLITE_SHA256"
   echo "OpenSDK.json"
   # shellcheck disable=SC2086
-  python3 -I "$HELPERS/open_sdk_json.py" "$M/OpenSDK.json" "$STAGE/work/projects.tsv" \
+  python3 -I "$HELPERS/open_sdk_json.py" "$M/OpenSDK.json" "$STAGE_WORK/projects.tsv" \
     generator_commit="$GENERATOR_COMMIT" \
-    macos_version="$V" macos_release="$MACOS_REL" variant="$FLAVOR" libcxx="$LIBCXX_VERSION" $sq
+    macos_version="$V" macos_release="$MACOS_REL" variant="$VARIANT" libcxx="$LIBCXX_VERSION" $sq
   echo "README.LICENSE.txt"
   cat > "$M/README.LICENSE.txt" <<'EOF'
 This SDK was built by osxcross-open-sdk (make-open-sdk.sh) from open source

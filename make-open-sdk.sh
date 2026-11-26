@@ -114,7 +114,7 @@ SDK_VERSION=$DEFAULT_MACOS
 LIBCXX_VERSION=
 MIN_DEPLOYMENT_TARGET=${OPEN_SDK_MIN_DEPLOYMENT_TARGET:-11.0}
 BUILD_VERSION=${OPEN_SDK_BUILD_VERSION:-}
-CORE=0
+VARIANT=full
 FORCE=0
 CLEAN=
 TREE_HASH=0
@@ -133,7 +133,7 @@ while [ $# -gt 0 ]; do
     -o|--output-dir) opt_value "$1" $#; OUT_DIR=$2; shift 2;;
     -s|--steps) opt_value "$1" $#; STEPS=$2; shift 2;;
     --min-deployment-target) opt_value "$1" $#; MIN_DEPLOYMENT_TARGET=$2; shift 2;;
-    --core) CORE=1; shift;;
+    --core) VARIANT=core; shift;;
     --macos) opt_value "$1" $#; SDK_VERSION=$2; shift 2;;
     --libcxx) opt_value "$1" $#; LIBCXX_VERSION=$2; shift 2;;
     --clang) opt_value "$1" $#; CLANG=$2; shift 2;;
@@ -173,7 +173,7 @@ MACOS_REL=macos-$(echo "$SDK_VERSION" | tr -d .)
 ALL_STEPS="fetch host headers stubs cxx libs frameworks meta tarball swift"
 if [ -z "$STEPS" ]; then
   STEPS="fetch host headers stubs cxx"
-  [ "$CORE" = 1 ] || STEPS="$STEPS libs frameworks"
+  [ "$VARIANT" = core ] || STEPS="$STEPS libs frameworks"
   STEPS="$STEPS meta tarball"
 fi
 for s in $STEPS; do
@@ -181,15 +181,21 @@ for s in $STEPS; do
 done
 SRC=$WORK/src
 HOST=$WORK/host
-FLAVOR=full
-[ "$CORE" = 0 ] || FLAVOR=core
 STAGE=$WORK/stage
-[ "$CORE" = 0 ] || STAGE=$WORK/stage-core
+[ "$VARIANT" = full ] || STAGE=$WORK/stage-core
+# the directories of the stage that the steps fill (the SDK is copied from it)
+STAGE_INC=$STAGE/usr/include
+STAGE_LIB=$STAGE/usr/lib
+STAGE_FW=$STAGE/System/Library/Frameworks
+STAGE_WORK=$STAGE/work   # intermediate files, not copied
 PKG=$WORK/pkg
-[ "$CORE" = 0 ] || PKG=$WORK/pkg-core
+[ "$VARIANT" = full ] || PKG=$WORK/pkg-core
 SDK=$PKG/MacOSX$SDK_VERSION.sdk
+# the full SDK is made for this release and later (the core SDK for every
+# release with a manifest)
+FULL_SDK_MIN_MACOS=14.3
 
-for f in common fetch host headers stubs meta package cxx libs frameworks swift; do
+for f in common $ALL_STEPS; do
   # shellcheck source=/dev/null
   . "$SELF/lib/$f.sh"
 done
@@ -197,21 +203,19 @@ done
 # check_min_target: the minimum must not be above the SDK's release (called
 # after load_manifest, so that an unknown release is reported first)
 check_min_target() {
-  local mj=${MIN_DEPLOYMENT_TARGET%%.*} mn=${MIN_DEPLOYMENT_TARGET#*.}
-  local sj=${SDK_VERSION%%.*} sn=${SDK_VERSION#*.}
-  if [ "$mj" -gt "$sj" ] || { [ "$mj" -eq "$sj" ] && [ "$mn" -gt "${sn%%.*}" ]; }; then
+  if version_lt "$SDK_VERSION" "$MIN_DEPLOYMENT_TARGET"; then
     echo "make-open-sdk.sh: --min-deployment-target $MIN_DEPLOYMENT_TARGET is above the SDK's release $SDK_VERSION" >&2
     exit 2
   fi
 }
 
-# check_full_release: the full SDK is made for macOS 14.3 and later (the core SDK
-# for 11.3 and later).  Called after load_manifest, like check_min_target.
+# check_full_release: the full SDK is made for FULL_SDK_MIN_MACOS and later (the
+# core SDK for every release with a manifest).  Called after load_manifest, like
+# check_min_target.
 check_full_release() {
-  local sj=${SDK_VERSION%%.*} sn=${SDK_VERSION#*.}
-  [ "$CORE" = 1 ] && return 0
-  if [ "$sj" -lt 14 ] || { [ "$sj" -eq 14 ] && [ "${sn%%.*}" -lt 3 ]; }; then
-    echo "make-open-sdk.sh: the full SDK is made for macOS 14.3 and later; use --core for macOS $SDK_VERSION" >&2
+  [ "$VARIANT" = core ] && return 0
+  if version_lt "$SDK_VERSION" "$FULL_SDK_MIN_MACOS"; then
+    echo "make-open-sdk.sh: the full SDK is made for macOS $FULL_SDK_MIN_MACOS and later; use --core for macOS $SDK_VERSION" >&2
     exit 2
   fi
 }
@@ -229,7 +233,7 @@ if [ "$SHOW" = 1 ]; then
   check_min_target
   check_full_release
   printf 'macos %s\nlibcxx %s\nmin-deployment-target %s\nvariant %s\nsteps %s\nwork %s\noutput %s\nclang %s\nmanifest %s\n' \
-    "$SDK_VERSION" "$LIBCXX_VERSION" "$MIN_DEPLOYMENT_TARGET" "$FLAVOR" "$STEPS" "$WORK" "$OUT_DIR" "$CLANG" "$DATA/manifests/$MACOS_REL.txt"
+    "$SDK_VERSION" "$LIBCXX_VERSION" "$MIN_DEPLOYMENT_TARGET" "$VARIANT" "$STEPS" "$WORK" "$OUT_DIR" "$CLANG" "$DATA/manifests/$MACOS_REL.txt"
   exit 0
 fi
 if [ -n "$CLEAN" ]; then
@@ -241,6 +245,9 @@ load_manifest
 check_min_target
 check_full_release
 check_tools
+# the clang as a path, for the helpers and the scripts of Apple (check_tools
+# found it if a step needs it; for the other steps the name stays)
+CLANG_PATH=$(command -v "$CLANG") || CLANG_PATH=$CLANG
 mkdir -p "$WORK"
 : > "$WORK/.open-sdk-work"
 
@@ -250,17 +257,19 @@ BUILD_LOG=$WORK/build.log
 # the commit of this repository: in the tarball's name and in three files of the SDK
 GENERATOR_COMMIT=$(generator_commit)
 GENERATOR_LABEL=$(generator_label "$GENERATOR_COMMIT")
-# the tarball (made by the step tarball, lib/package.sh)
-tarball_kind=open
-[ "$FLAVOR" != core ] || tarball_kind=open-core
-SDK_TARBALL=$OUT_DIR/MacOSX$SDK_VERSION-$tarball_kind-sdk-$GENERATOR_LABEL.tar.xz
+# the tarball (made by the step tarball, lib/tarball.sh)
+if [ "$VARIANT" = full ]; then
+  SDK_TARBALL=$OUT_DIR/MacOSX$SDK_VERSION-open-sdk-$GENERATOR_LABEL.tar.xz
+else
+  SDK_TARBALL=$OUT_DIR/MacOSX$SDK_VERSION-open-core-sdk-$GENERATOR_LABEL.tar.xz
+fi
 # the start: what is built, with what, and where the results are (paths relative to
 # the current directory where possible); it is not a step, so it has no "==" heading
 rel_path() { case $1 in "$PWD"/*) echo "${1#"$PWD"/}";; *) echo "$1";; esac; }
 {
   echo "Build configuration"
   echo
-  printf '  %-18s %s\n' "macOS" "$SDK_VERSION ($FLAVOR)"
+  printf '  %-18s %s\n' "macOS" "$SDK_VERSION ($VARIANT)"
   printf '  %-18s %s\n' "Deployment target" "$MIN_DEPLOYMENT_TARGET and later"
   printf '  %-18s %s\n' "Compiler" "$("$CLANG" --version 2>&1 | head -n 1)"
   printf '  %-18s %s\n' "libc++" "$LIBCXX_VERSION"

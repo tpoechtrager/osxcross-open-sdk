@@ -10,10 +10,10 @@
 
 step_cxx() {
   FETCH_QUIET=1 fetch_llvm
-  local I=$STAGE/usr/include/c++/v1 L=$STAGE/usr/lib W=$STAGE/work a
+  local I=$STAGE_INC/c++/v1   # the headers of libc++
   log "CXX"
   echo "libc++ headers"
-  rm -rf "$I"; mkdir -p "$I" "$L" "$W"
+  rm -rf "$I"; mkdir -p "$I" "$STAGE_LIB" "$STAGE_WORK"
   copy_tree "$SRC/llvm-project/libcxx/include" "$I"
   rm -f "$I/CMakeLists.txt" "$I/__config_site.in" "$I/libcxx.imp"
   # Upstream LLVM 16 marks <format> as unavailable on Apple platforms (the
@@ -33,16 +33,15 @@ step_cxx() {
   [ -f "$ah" ] && cp "$ah" "$I/__assertion_handler"
   echo "libc++ stub"
   echo "libc++abi stub"
-  quiet python3 -I "$HELPERS/cxx_syms.py" "$SRC/llvm-project" "$W"   # (it prints the counts of symbols)
-  case $LIBCXX_VERSION in 20.*|21.*|22.*|23.*)
-    for a in x86_64 arm64; do
-      grep -v '^#' "$DATA/symbols/libcxx-extra.txt" | sed "s/^/$a /" >> "$W/libcxx.syms"
-    done;;
-  esac
-  mk_lib_tbd libc++abi "$L/libc++abi.tbd" "$W/libcxxabi.syms"
+  quiet python3 -I "$HELPERS/cxx_syms.py" "$SRC/llvm-project" "$STAGE_WORK"   # (it prints the counts of symbols)
+  # (LLVM 20 and later, see the file)
+  if [ "${LIBCXX_VERSION%%.*}" -ge 20 ]; then
+    syms_for_archs "$DATA/symbols/libcxx-extra.txt" >> "$STAGE_WORK/libcxx.syms"
+  fi
+  mk_lib_tbd libc++abi "$STAGE_LIB/libc++abi.tbd" "$STAGE_WORK/libcxxabi.syms"
   # libc++.1.dylib re-exports libc++abi (libcxx/CMakeLists.txt, LIBCXX_CXX_ABI
   # system-libcxxabi on Apple platforms); the stub lists its symbols so that
   # programs only record libc++.1
-  mk_lib_tbd libc++.1 "$L/libc++.1.tbd" "$W/libcxx.syms" --reexport-symbols "$W/libcxxabi.syms"
-  ln -sf libc++.1.tbd "$L/libc++.tbd"
+  mk_lib_tbd libc++.1 "$STAGE_LIB/libc++.1.tbd" "$STAGE_WORK/libcxx.syms" --reexport-symbols "$STAGE_WORK/libcxxabi.syms"
+  ln -sf libc++.1.tbd "$STAGE_LIB/libc++.tbd"
 }
