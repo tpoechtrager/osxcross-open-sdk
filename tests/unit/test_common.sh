@@ -24,6 +24,7 @@ lib() (
 libffi libffi-40 4567"
   . "$ROOT/lib/common.sh"
   . "$ROOT/lib/fetch.sh"
+  . "$ROOT/lib/multi.sh"
   "$@"
 )
 
@@ -104,6 +105,26 @@ check "stage_mark_check of another variant fails" "$(lib stage_mark_check varian
 check "stage_mark_check of another libc++ fails" "$(lib stage_mark_check libcxx=20.1.0 >/dev/null 2>&1 && echo no || echo ok)"
 lib stage_mark_set release 14.3
 check "stage_mark_set replaces a key and keeps the others" "$(is "$(sort "$T/stage/.open-sdk-stage" | tr '\n' ' ')" 'libcxx 21.1.8 release 14.3 variant core ')"
+
+# --macos LIST (lib/multi.sh)
+nl=$'\n'
+check "a list of two releases" "$(is "$(lib expand_macos_list 14.3,26.5 full)" "14.3 full${nl}26.5 full")"
+check "a release twice is made once" "$(is "$(lib expand_macos_list 26.5,14.3,26.5 core)" "26.5 core${nl}14.3 core")"
+check "a single release is a list of one" "$(is "$(lib expand_macos_list 14.3 full)" "14.3 full")"
+check "all with --core: every release is core" "$(is "$(lib expand_macos_list all core | cut -d' ' -f2 | sort -u)" core)"
+check "all: core for the releases without a full SDK, else full" "$(is "$(lib expand_macos_list all full | tr '\n' ' ')" "11.3 core 12.3 core 13.3 core 14.3 full 15.5 full 26.0 full 26.5 full ")"
+check "all has every release of data/releases.txt" "$(is "$(lib expand_macos_list all full | wc -l | tr -d ' ')" "$(lib releases | wc -l | tr -d ' ')")"
+check "a named release without a full SDK fails (2)" "$(lib expand_macos_list 14.3,13.3 full >/dev/null 2>&1; [ $? = 2 ] && echo ok || echo no)"
+check "  but not with --core" "$(is "$(lib expand_macos_list 14.3,13.3 core | wc -l | tr -d ' ')" 2)"
+check "an unknown release fails (1)" "$(lib expand_macos_list 14.3,9.9 core >/dev/null 2>&1; [ $? = 1 ] && echo ok || echo no)"
+for bad in "" "," "14.3," ",14.3" 14.3,,26.5 "14.3 26.5" x 14.3,x ALL 14; do
+  check "the list '$bad' is refused (2)" "$(lib expand_macos_list "$bad" full >/dev/null 2>&1; [ $? = 2 ] && echo ok || echo no)"
+done
+check "--release: the full and the core SDK, the core one only for 11.3 to 13.3" "$(is "$(lib expand_release_list | tr '\n' ' ')" "11.3 core 12.3 core 13.3 core 14.3 full 14.3 core 15.5 full 15.5 core 26.0 full 26.0 core 26.5 full 26.5 core ")"
+check "tarball_name of the full SDK" "$(is "$(lib tarball_name 14.3 full abc1234)" MacOSX14.3-open-sdk-abc1234.tar.xz)"
+check "tarball_name of the core SDK" "$(is "$(lib tarball_name 14.3 core abc1234)" MacOSX14.3-open-core-sdk-abc1234.tar.xz)"
+printf 'abc\n' > "$T/sum.txt"
+check "sha256_of" "$(is "$(lib sha256_of "$T/sum.txt")" edeaaff3f1774ad2888673770c6d64097e391bc362d7d6fb34982ddf0efd18cb)"
 
 echo "1..$n"
 exit $fail

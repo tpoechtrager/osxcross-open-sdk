@@ -21,7 +21,12 @@
 #   --macos VERSION      the SDK of another macOS release (default 26.5; the
 #                        numbers of Xcode's SDKs: 11.3 12.3 13.3 14.3 15.5 26.0 ...;
 #                        the full SDK is made for 14.3 and later, --core for 11.3
-#                        and later; data/releases.txt, --list-releases)
+#                        and later; data/releases.txt, --list-releases).
+#                        A list (14.3,26.5) or "all" makes several SDKs one after
+#                        the other, each in <work-dir>/<VERSION>[-core] (the sources
+#                        are not shared); one that fails does not stop the others,
+#                        the exit status is 1 then.  "all" makes the core SDK of the
+#                        releases that have no full SDK; --libcxx: one release only
 #   --libcxx VERSION     libc++ of another LLVM release (default: 21.1.8 for
 #                        26.5, 16.0.6 for 14.3, see data/releases.txt and
 #                        docs/LIBCXX.md)
@@ -30,6 +35,9 @@
 #                        names (default 11.0, the major version of the oldest
 #                        release of data/releases.txt; VERSION like 10.13 or
 #                        11.0, not above the SDK's release)
+#   --release            every release, the full and the core SDK of each (the full SDK
+#                        where there is one), into <output-dir>/release/<COMMIT>/ with
+#                        SHA256SUMS; only from a clean commit; with --tree-hash their tree hashes
 #   --core               only C, C++ and POSIX (the steps libs and frameworks
 #                        are left out; macOS 11.3 and later); without it (macOS
 #                        14.3 and later) the SDK also has the
@@ -107,7 +115,7 @@ DATA=$SELF/data
 ALL_STEPS="fetch host headers stubs cxx libs frameworks meta tarball swift"
 
 # the common functions and the steps (only functions and constants)
-for f in common $ALL_STEPS; do
+for f in common multi $ALL_STEPS; do
   # shellcheck source=/dev/null
   . "$SELF/lib/$f.sh"
 done
@@ -129,6 +137,7 @@ DEFAULT_MIN_DEPLOYMENT_TARGET=$(releases | head -n 1 | cut -d. -f1).0
 MIN_DEPLOYMENT_TARGET=${OPEN_SDK_MIN_DEPLOYMENT_TARGET:-$DEFAULT_MIN_DEPLOYMENT_TARGET}
 BUILD_VERSION=${OPEN_SDK_BUILD_VERSION:-}
 VARIANT=full
+RELEASE=0
 FORCE=0
 CLEAN=
 TREE_HASH=0
@@ -148,6 +157,7 @@ while [ $# -gt 0 ]; do
     -s|--steps) opt_value "$1" $#; STEPS=$2; shift 2;;
     --min-deployment-target) opt_value "$1" $#; MIN_DEPLOYMENT_TARGET=$2; shift 2;;
     --core) VARIANT=core; shift;;
+    --release) RELEASE=1; shift;;
     --macos) opt_value "$1" $#; SDK_VERSION=$2; shift 2;;
     --libcxx) opt_value "$1" $#; LIBCXX_VERSION=$2; shift 2;;
     --clang) opt_value "$1" $#; CLANG=$2; shift 2;;
@@ -169,6 +179,41 @@ done
 WORK=$(abs_path "$WORK")
 OUT_DIR=$(abs_path "$OUT_DIR")
 case $CLANG in */*) CLANG=$(abs_path "$CLANG");; esac
+# Several SDKs (--macos with a list or "all", --release): this script runs
+# itself for each one (lib/multi.sh); a list with one SDK is a single run.
+MULTI_LIST=
+if [ "$SHOW_VERSION" = 0 ] && [ "$LIST" = 0 ]; then
+  if [ "$RELEASE" = 1 ]; then
+    if [ "$SDK_VERSION" != "$DEFAULT_MACOS" ] || [ "$VARIANT" = core ]; then
+      echo "make-open-sdk.sh: --release makes every SDK of every release: not with --macos or --core" >&2; exit 2
+    fi
+    MULTI_LIST=$(expand_release_list)
+  else
+    case $SDK_VERSION in
+      all|*,*)
+        MULTI_LIST=$(expand_macos_list "$SDK_VERSION" "$VARIANT") || exit $?
+        if [ "$(printf '%s\n' "$MULTI_LIST" | wc -l)" -eq 1 ]; then
+          SDK_VERSION=${MULTI_LIST% *}; VARIANT=${MULTI_LIST#* }; MULTI_LIST=
+        fi;;
+    esac
+  fi
+fi
+if [ -n "$MULTI_LIST" ]; then
+  [ -z "$LIBCXX_VERSION" ] || { echo "make-open-sdk.sh: --libcxx is only allowed with one release" >&2; exit 2; }
+  [ -z "$BUILD_VERSION" ] || { echo "make-open-sdk.sh: OPEN_SDK_BUILD_VERSION is only allowed with one release" >&2; exit 2; }
+  MULTI_OUT=$OUT_DIR
+  if [ "$RELEASE" = 1 ]; then
+    c=$(generator_commit)
+    if [ -z "$CLEAN" ] && [ "$SHOW" = 0 ]; then
+      case $c in
+        unknown|*-modified) die "--release needs a clean commit of this repository, this one is \"$(generator_label "$c")\"";;
+      esac
+    fi
+    MULTI_OUT=$OUT_DIR/release/$(generator_label "$c")
+  fi
+  run_multi "$RELEASE" "$MULTI_OUT" "$MULTI_LIST"
+  exit $?
+fi
 case $SDK_VERSION in
   [0-9]*.[0-9]*) ;;
   *) echo "make-open-sdk.sh: --macos expects a version like 26.5, not '$SDK_VERSION'" >&2; exit 2;;
@@ -267,11 +312,7 @@ GENERATOR_COMMIT=$(generator_commit)
 GENERATOR_LABEL=$(generator_label "$GENERATOR_COMMIT")
 set_notice_date "$GENERATOR_COMMIT"   # NOTICE_DATE of the notices in the changed headers
 # the tarball (made by the step tarball, lib/tarball.sh)
-if [ "$VARIANT" = full ]; then
-  SDK_TARBALL=$OUT_DIR/MacOSX$SDK_VERSION-open-sdk-$GENERATOR_LABEL.tar.xz
-else
-  SDK_TARBALL=$OUT_DIR/MacOSX$SDK_VERSION-open-core-sdk-$GENERATOR_LABEL.tar.xz
-fi
+SDK_TARBALL=$OUT_DIR/$(tarball_name "$SDK_VERSION" "$VARIANT" "$GENERATOR_LABEL")
 # the start: what is built, with what, and where the results are (paths relative to
 # the current directory where possible); it is not a step, so it has no "==" heading
 rel_path() { case $1 in "$PWD"/*) echo "${1#"$PWD"/}";; *) echo "$1";; esac; }

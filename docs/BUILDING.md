@@ -8,6 +8,9 @@ How to build the SDK with `make-open-sdk.sh`. Back to the [README](../README.md)
 ./make-open-sdk.sh                  # full SDK of macOS 26.5 -> out/
 ./make-open-sdk.sh --core           # core SDK
 ./make-open-sdk.sh --macos 14.3     # SDK of macOS 14.3
+./make-open-sdk.sh --macos 14.3,26.5  # both, one after the other
+./make-open-sdk.sh --macos all --core # the core SDK of every release
+./make-open-sdk.sh --release        # every SDK of every release, with SHA256SUMS
 ./make-open-sdk.sh --list-releases  # releases that can be built
 ./make-open-sdk.sh --help           # all options
 ```
@@ -68,6 +71,8 @@ the symbol scans then bring their own (see [SOURCES.md](SOURCES.md#c-headers-of-
 | Option | Meaning |
 |---|---|
 | `--macos VERSION` | another macOS release (`--list-releases`, `data/releases.txt`; default 26.5; full SDK from 14.3, core SDK from 11.3) |
+| `--macos LIST` | several releases, comma-separated (`14.3,26.5`) or `all` (every release of `data/releases.txt`) |
+| `--release` | every release, the full SDK (where there is one) and the core SDK of each |
 | `--min-deployment-target VERSION` | lowest deployment target in `SDKSettings.json` (default 11.0, from `data/releases.txt`) |
 | `--core` | the core SDK (no `libs` and `frameworks` steps) |
 | `--libcxx VERSION` | libc++ of another LLVM release (16.0.6 to 22.1.8, see [libc++](LIBCXX.md)) |
@@ -89,6 +94,21 @@ The variables of OSXCross (`SDK_VERSION`, `TARBALL_DIR`, ...) have no effect.
 **Output:** `out/MacOSX<VER>-open-sdk-<hash>.tar.xz`, or `MacOSX<VER>-open-core-sdk-<hash>.tar.xz` with `--core`.  
 The `-open` keeps it apart from a tarball made from Apple's SDK. What `<hash>` is, and how an SDK names its  
 commit, is in the [README](../README.md#download).
+
+**Several SDKs.** With `--macos LIST` (or `all`) the script builds the SDKs one after the other, each by a run of itself  
+in `<work-dir>/<VERSION>` (`<VERSION>-core` with `--core`); a list of one release is a normal run.  
+
+- The sources are not shared: the clones of `src/` hold one tag per project, and the releases use different tags.
+- Without `--core`, `all` makes the core SDK of the releases that have no full SDK (11.3 to 13.3);
+  a release that is named needs `--core` for that, as with one release.
+- A SDK that fails does not stop the others; the script lists the failed ones and exits with status 1.
+- `--libcxx` and `OPEN_SDK_BUILD_VERSION` need exactly one release.
+- `--clean`, `--clean-all` and `--show-config` act on every SDK of the list.
+
+`--release` builds every SDK of every release (not with `--macos` or `--core`) into `<output-dir>/release/<commit>/`,  
+with a `SHA256SUMS` file there (sorted by name, the format of `sha256sum` and `shasum -a 256`; only if all were made).  
+It stops if the commit of this repository is `-modified` or `unknown`.  
+With `--tree-hash`, the tree hashes of all SDKs are printed again at the end.
 
 **Steps:** `fetch host headers stubs cxx libs frameworks meta tarball`. `fetch` checks every clone  
 against the commit in `data/manifests/` and stops if a tag was moved. A failing step stops the script;  

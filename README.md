@@ -129,7 +129,8 @@ that the SDK names is 11.0 (`--min-deployment-target` changes it, see [Options](
 
 ## Building the SDK
 
-`make-open-sdk.sh` builds the SDK from the public sources.  
+`make-open-sdk.sh` builds the SDK from the public sources;  
+`--macos 14.3,26.5` or `--macos all` builds several, `--release` all of them with `SHA256SUMS`.  
 The full guide, with dependencies, options, steps and tests, is in [docs/BUILDING.md](docs/BUILDING.md).
 
 ---

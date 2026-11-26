@@ -148,5 +148,27 @@ out=$(vt 1 quiet echo count); check "  and shows it with -v" "$( [ "$out" = coun
 out=$(vt 0 show_log "$T/v.log"); check "show_log shows nothing without -v" "$( [ -z "$out" ] && echo ok || echo no)"
 out=$(vt 1 show_log "$T/v.log"); check "  and the file with -v" "$( [ "$out" = err ] && echo ok || echo no)"
 
+# several SDKs: --macos LIST, --release
+gen --show-config --macos 14.3,26.5
+check "--macos LIST: the config of every SDK" "$( [ "$(has 'macos 14.3')$(has 'macos 26.5')$(has '/build/14.3')$(has '/build/26.5')" = okokokok ] && echo ok || echo no)"
+gen --show-config --macos all --core -w w
+check "--macos all --core: a work directory <version>-core for each release" "$( [ "$(has "work $T/w/11.3-core")$(has "work $T/w/26.5-core")" = okok ] && echo ok || echo no)"
+gen --show-config --macos all -w w
+check "--macos all: core where there is no full SDK, else full" "$( [ "$(has "work $T/w/13.3-core")$(has "work $T/w/14.3
+")" = okok ] && echo ok || echo no)"
+gen --show-config --macos 26.5,26.5 -w w
+check "a list of one release is a single run (work directory as before)" "$( [ "$(has "work $T/w
+")" = ok ] && echo ok || echo no)"
+gen --macos 14.3,13.3;              check "--macos LIST: a full SDK that does not exist is refused (rc 2)" "$(isrc 2)"
+gen --macos 14.3,;                  check "--macos LIST: an empty entry is refused (rc 2)" "$(isrc 2)"
+gen --macos 14.3,9.9;               check "--macos LIST: an unknown release is refused (rc 1)" "$(isrc 1)"
+gen --macos all --libcxx 16.0.6;    check "--libcxx needs one release (rc 2)" "$(isrc 2)"
+gen --show-config --macos 14.3,26.5 --libcxx 17.0.6 --core; check "  also with a list" "$(isrc 2)"
+gen --release --macos 14.3;         check "--release refuses --macos (rc 2)" "$(isrc 2)"
+gen --release --core;               check "--release refuses --core (rc 2)" "$(isrc 2)"
+gen --release --show-config;        check "--release --show-config works (11 SDKs)" "$( [ "$rc" = 0 ] && [ "$(printf '%s\n' "$out" | grep -c '^macos ')" = 11 ] && echo ok || echo no)"
+check "  the output goes to release/<commit>/" "$(has '/out/release/')"
+gen --help;                         check "--help names --release" "$(has '--release')"
+
 echo "1..$n"
 exit $fail

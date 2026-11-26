@@ -36,15 +36,16 @@ perl_first_include() {
 # symlinks and modes (cp -a is not available on OpenBSD)
 copy_tree() { cp -RPp "$1/." "$2/"; }
 
-# sha256_check HASH FILE
-sha256_check() {
-  local sum
-  if command -v sha256sum >/dev/null 2>&1; then sum=$(sha256sum "$2" | cut -d' ' -f1)
-  elif command -v shasum >/dev/null 2>&1; then sum=$(shasum -a 256 "$2" | cut -d' ' -f1)
-  elif command -v sha256 >/dev/null 2>&1; then sum=$(sha256 -q "$2")
-  else sum=$(openssl dgst -sha256 "$2" | sed 's/.*= *//'); fi
-  [ "$sum" = "$1" ]
+# sha256_of FILE: the SHA-256 of FILE (hex)
+sha256_of() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | cut -d' ' -f1
+  elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | cut -d' ' -f1
+  elif command -v sha256 >/dev/null 2>&1; then sha256 -q "$1"
+  else openssl dgst -sha256 "$1" | sed 's/.*= *//'; fi
 }
+
+# sha256_check HASH FILE
+sha256_check() { [ "$(sha256_of "$2")" = "$1" ]; }
 
 # GNU make for the Makefiles of xnu: gmake on the BSDs, make elsewhere
 # shellcheck disable=SC2209
