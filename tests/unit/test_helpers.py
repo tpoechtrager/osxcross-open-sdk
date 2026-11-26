@@ -61,6 +61,19 @@ class Tmp(unittest.TestCase):
 
 
 class MkTbd(Tmp):
+    def test_reexport_library(self):
+        syms = self.write("s", "x86_64 _a\narm64 _a\n")
+        out = self.path("o.tbd")
+        rc, _, err = run("write_tbd.py", out, "/x/A", "1", syms, "--compat", "1",
+                         "--reexport-library", "/x/B.framework/B", "--reexport-library", "/x/C")
+        self.assertEqual(rc, 0, err)
+        t = read(out)
+        self.assertIn("reexported-libraries:\n  - targets:         [ x86_64-macos, arm64-macos, arm64e-macos ]\n"
+                      "    libraries:       [ '/x/B.framework/B', '/x/C' ]\nexports:", t)
+        rc, _, err = run("write_tbd.py", out, "/x/A", "1", syms)
+        self.assertEqual(rc, 0, err)
+        self.assertNotIn("reexported-libraries", read(out))
+
     def test_two_architectures(self):
         syms = self.write("s", "x86_64 _a\nx86_64 _b\narm64 _a\narm64 _c\n")
         out = self.path("o.tbd")

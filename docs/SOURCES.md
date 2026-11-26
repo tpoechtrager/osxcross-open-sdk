@@ -357,6 +357,18 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - `data/symbols/CoreServices-fsevents.txt` names the source and release of every symbol; the step frameworks stops  
   if the declarations of the header differ from the list.
 - **Left out, no C name in these sources:** the flags of dotnet/macios `WithDocId`, `DeviceState` and the key `docID`.
+- The stub re-exports `CoreFoundation` (`reexported-libraries`, install name from `data/libraries.txt`);  
+  `CoreFoundation.framework/Versions/A/CoreFoundation.tbd` is a link to `CoreFoundation.tbd`:  
+  the linker looks for a re-exported library at its install name below the SDK plus `.tbd`  
+  (ld64: `Options::findFile` in `ld/Options.cpp` of cctools-port; ld64.lld does the same).
+- Why CoreServices re-exports CoreFoundation: open projects link only `CoreServices`  
+  and call CF functions, so they rely on it (default branches as of 2026-11-26):
+  - `git` (commit acba8bf): `config.mak.uname` links `-framework CoreServices`;  
+    `compat/fsmonitor/fsm-listen-darwin.c` calls `CFStringCreateWithCString` and `CFArrayCreate`.
+  - `fswatch` (commit 40dfff9): `libfswatch/CMakeLists.txt` finds only `CoreServices`;  
+    `fsevents_monitor.cpp` calls `CFRunLoopGetCurrent`.
+  - Go `fsnotify/fsevents` (v0.2.0, commit f73112e): `wrap.go` links `-framework CoreServices`;  
+    it calls `CFArrayCreateMutable`.
 
 ---
 

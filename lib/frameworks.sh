@@ -191,11 +191,18 @@ step_frameworks() {
   # data/symbols/CoreServices-fsevents.txt gives the source of every symbol,
   # and the declarations of FSEvents.h must be exactly the names of the list.
   # Install name: the layout that the CF and Security sources use for the
-  # frameworks inside it (data/libraries.txt).
+  # frameworks inside it (data/libraries.txt).  The stub re-exports
+  # CoreFoundation, so that a program that links only CoreServices (git, fswatch,
+  # Go fsevents; docs/SOURCES.md) also finds the CF functions.
   echo "CoreServices"
   header_syms "$STAGE_WORK/fw-CoreServices.all" "-F$STAGE_FW" CoreServices/CoreServices.h CoreServices/FSEvents.h
   syms_for_archs "$DATA/symbols/CoreServices-fsevents.txt" | sort > "$STAGE_WORK/fw-CoreServices.syms"
   sort "$STAGE_WORK/fw-CoreServices.all" | cmp -s - "$STAGE_WORK/fw-CoreServices.syms" ||
     die "the declarations of CoreServices/FSEvents.h and data/symbols/CoreServices-fsevents.txt differ (see $STAGE_WORK/fw-CoreServices.all)"
-  mk_lib_tbd CoreServices "$STAGE_FW/CoreServices.framework/CoreServices.tbd" "$STAGE_WORK/fw-CoreServices.syms"
+  mk_lib_tbd CoreServices "$STAGE_FW/CoreServices.framework/CoreServices.tbd" "$STAGE_WORK/fw-CoreServices.syms" \
+    --reexport-library "$(lib_field CoreFoundation 2)"
+  # The linker (ld64, ld64.lld) finds a re-exported library by its install name below the SDK's
+  # root plus ".tbd" (.../CoreFoundation.framework/Versions/A/CoreFoundation.tbd)
+  mkdir -p "$STAGE_FW/CoreFoundation.framework/Versions/A"
+  ln -sf ../../CoreFoundation.tbd "$STAGE_FW/CoreFoundation.framework/Versions/A/CoreFoundation.tbd"
 }

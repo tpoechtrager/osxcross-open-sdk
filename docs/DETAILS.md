@@ -44,8 +44,8 @@ the generator wrote, and `data/headers/` has these headers by their path in the 
   and `XPC_TYPE_*` for the types other than array, bool, connection, dictionary, endpoint, error and string  
   (use `xpc_type_get_name`), see [SOURCES.md](SOURCES.md#xpcxpch-and-its-symbols).
 - `CoreServices/FSEvents.h` (full SDK): File System Events, the documented C interface; `CoreServices/CoreServices.h`  
-  includes only it. The stub of `CoreServices` does not re-export `CoreFoundation`: a program that calls CF functions  
-  links `-framework CoreFoundation` as well (`git` and `fswatch` link only `CoreServices`).  
+  includes only it. The stub of `CoreServices` re-exports `CoreFoundation` (`reexported-libraries`):  
+  a program that links only `-framework CoreServices` (`git`, `fswatch`) finds the CF functions too.  
   A program that watches a directory ran on macOS 26.0 (x86_64), see [SOURCES.md](SOURCES.md#coreservicesfseventsh-and-its-symbols).
 
 ## Changes to the sources

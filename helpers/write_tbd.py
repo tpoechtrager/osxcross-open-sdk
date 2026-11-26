@@ -3,6 +3,7 @@
 """Write a TAPI text stub (tbd v4).
 
 usage: write_tbd.py OUT INSTALL_NAME CURRENT_VERSION SYMFILE [--compat V] [--reexport-symbols SYMFILE]
+       [--reexport-library INSTALL_NAME]...
 SYMFILE lines: "<arch> <symbol>" with arch x86_64 or arm64 (arm64e/x86_64h
 share the symbols of arm64/x86_64).
 """
@@ -49,6 +50,8 @@ def main(argv):
     ap.add_argument("--compat", help="the compatibility version")
     ap.add_argument("--reexport-symbols", dest="resyms", metavar="SYMFILE",
                     help="symbols re-exported from another library")
+    ap.add_argument("--reexport-library", dest="relibs", action="append", default=[], metavar="INSTALL_NAME",
+                    help="re-export a whole library (tbd reexported-libraries), may be repeated")
     args = ap.parse_args(argv[1:])
     out, install, cur, compat, resyms = args.out, args.install, args.current, args.compat, args.resyms
     syms = read_arch_symbols(args.symfile)
@@ -71,6 +74,10 @@ def main(argv):
          "targets:         [ %s ]" % ", ".join(allt),
          "install-name:    '%s'" % install, "current-version: %s" % cur]
     if compat: o.append("compatibility-version: %s" % compat)
+    if args.relibs:
+        o.append("reexported-libraries:")
+        o.append("  - targets:         [ %s ]" % ", ".join(allt))
+        o.append("    libraries:       [ %s ]" % ", ".join(q(n) for n in args.relibs))
     o.append("exports:")
     def block(targets, names, key="symbols"):
         if not names: return
