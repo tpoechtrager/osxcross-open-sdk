@@ -54,6 +54,9 @@ check "compiler-rt.txt: 132 symbols for x86_64 and 119 for arm64" "$(is "$(echo 
 check "  ___udivti3 for both, the x87 and arm64-less ones only for x86_64" "$(is "$(echo "$crt" | grep -E ' (___udivti3|___divxc3|___enable_execute_stack)$' | tr '\n' ',')" "x86_64 ___divxc3,x86_64 ___enable_execute_stack,x86_64 ___udivti3,arm64 ___udivti3,")"
 check "  no tf variants" "$(echo "$crt" | grep -qE '(tf|tc3)' && echo no || echo ok)"
 check "  and no duplicates" "$(is "$(echo "$crt" | sort | uniq -d | wc -l | tr -d ' ')" 0)"
+unw=$(lib syms_by_arch "$ROOT/data/symbols/libunwind.txt")
+check "libunwind.txt: 3 symbols for each architecture" "$(is "$(echo "$unw" | grep -c '^x86_64 ') $(echo "$unw" | grep -c '^arm64 ')" "3 3")"
+check "  and no duplicates" "$(is "$(echo "$unw" | sort | uniq -d | wc -l | tr -d ' ')" 0)"
 
 lib mk_lib_tbd libz.1 "$T/libz.1.tbd" <(lib syms_for_archs "$T/syms.txt") >/dev/null 2>&1
 check "mk_lib_tbd writes the install name of data/libraries.txt" "$(grep -q "^install-name: *'/usr/lib/libz.1.dylib'" "$T/libz.1.tbd" && echo ok || echo no)"

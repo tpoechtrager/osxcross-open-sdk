@@ -13,6 +13,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | Install names and versions of the `.tbd` | The project files named in `data/libraries.txt` ([details](#install-names-and-versions-of-the-tbd)) |
 | Symbols of `libSystem.B.tbd` | Headers, alias lists, system calls, export lists ([details](#symbols-of-libsystembtbd)) |
 | compiler-rt builtins in `libSystem.B.tbd` | LLVM `apple_versioning.c` and `CMakeLists.txt` ([details](#compiler-rt-builtins-in-libsystembtbd)) |
+| Functions of libunwind without a header | `libunwind/src/libunwind.cpp` of libunwind-201 ([details](#functions-of-libunwind-without-a-header)) |
 | Private symbols for the sanitizers | Private headers of dyld, libmalloc, libdispatch, libplatform ([details](#private-symbols-for-the-sanitizers)) |
 | libedit's readline layer | libedit's own install script ([details](#libedits-readline-layer)) |
 | `__exp10`, `__exp10f` in `math.h` | LLVM `RuntimeLibcalls.td` ([details](#__exp10-__exp10f-in-mathh)) |
@@ -88,6 +89,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - The extra and excluded symbols with the file that defines them  
   (the libcalls `__exp10` and `__sincos_stret` with LLVM's `RuntimeLibcalls.td`).
 - The builtins of compiler-rt: [below](#compiler-rt-builtins-in-libsystembtbd).
+- The functions of libunwind that no header declares: [below](#functions-of-libunwind-without-a-header).
 - The private symbols that the sanitizers of compiler-rt need: [below](#private-symbols-for-the-sanitizers).
 - The symbols of libxpc (full SDK): [below](#xpcxpch-and-its-symbols).
 
@@ -114,6 +116,28 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ---
 
+### Functions of libunwind without a header
+
+**Files:** `data/symbols/libunwind.txt`, `lib/stubs.sh`
+
+- `libunwind/src/libunwind.cpp` of `libunwind-201` (manifest) defines `__unw_add_dynamic_fde` and `__unw_remove_dynamic_fde`
+  without `_LIBUNWIND_HIDDEN`.
+  - `libunwind/src/CMakeLists.txt` compiles with `-fvisibility=hidden` only the objects of the static library
+    (`unwind_static_objects`), so the dynamic library exports them.
+  - They are declared in `libunwind/src/libunwind_ext.h`, which is not installed.
+  - `UnwindLevel1-gcc-ext.c` (`__register_frame`, `__deregister_frame`) calls them; LLVM's JIT (RTDyldMemoryManager, ORC) uses these.
+- `_unw_iterate_dwarf_unwind_cache`: `_LIBUNWIND_WEAK_ALIAS(__unw_iterate_dwarf_unwind_cache, unw_iterate_dwarf_unwind_cache)`
+  exports the alias (`_LIBUNWIND_EXPORT` in `libunwind/src/config.h`); the function itself is hidden.
+- The other `__unw_*` functions are `_LIBUNWIND_HIDDEN`; their aliases `unw_*` are in `libunwind.h`.
+- LLVM's libunwind (`llvmorg-17.0.0` and later) has the same names and four more exports
+  (`__unw_add_dynamic_eh_frame_section`, `__unw_add_find_dynamic_unwind_sections` and their `remove` functions).
+  Nothing open shows that macOS has them, so they are not in the list.
+- `_dyld_find_unwind_sections`, which libunwind calls (`libunwind/src/AddressSpace.hpp`, under `__APPLE__`),
+  is in `data/symbols/libsystem-spi.txt`: dyld `include/mach-o/dyld_priv.h` declares it,
+  `libdyld/libdyldGlue.cpp` defines it.
+
+---
+
 ### Private symbols for the sanitizers
 
 **Files:** `data/symbols/libsystem-spi.txt`, `helpers/spi_syms.py`, `data/symbols/libsystem-extra.txt`, `lib/stubs.sh`
@@ -122,7 +146,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   themselves and refer to them; the list names the user of each.
   The SDK gets only the symbols in `libSystem.B.tbd`, no private header.
 - Each symbol is declared in a private header of the project of the manifest that defines it:
-  - dyld `include/mach-o/dyld_priv.h` (`_dyld_get_shared_cache_uuid`, `_dyld_get_shared_cache_range`, `_dyld_get_image_slide`,
+  - dyld `include/mach-o/dyld_priv.h` (`_dyld_get_shared_cache_uuid`, `_dyld_get_shared_cache_range`, `_dyld_get_image_slide`, `_dyld_find_unwind_sections`,
     `dyld_shared_cache_iterate_text`, `_dyld_get_dyld_header`; defined in `libdyld/libdyldGlue.cpp`)
   - libmalloc `private/make_tapi_happy.h` (`malloc_zones`, `malloc_num_zones`)
   - libdispatch `private/mach_private.h` (`dispatch_mach_create`, `dispatch_mach_create_f`)

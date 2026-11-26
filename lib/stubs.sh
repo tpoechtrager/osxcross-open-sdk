@@ -19,6 +19,7 @@ step_stubs() {
     stubs_xpc
   fi
   stubs_compiler_rt
+  stubs_libunwind
   stubs_spi
   stubs_libsystem_tbd
   echo "libresolv"
@@ -109,6 +110,12 @@ stubs_xpc() {
 # integer division, __atomic_* ...), per architecture (data/symbols/compiler-rt.txt)
 stubs_compiler_rt() {
   syms_by_arch "$DATA/symbols/compiler-rt.txt" >> "$STAGE_WORK/libsystem.syms"
+}
+
+# stubs_libunwind: the exported functions of libunwind that no header declares
+# (data/symbols/libunwind.txt)
+stubs_libunwind() {
+  syms_by_arch "$DATA/symbols/libunwind.txt" >> "$STAGE_WORK/libsystem.syms"
 }
 
 # stubs_spi: the private symbols of libSystem that the sanitizer runtimes of

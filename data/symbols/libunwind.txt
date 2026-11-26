@@ -1,0 +1,18 @@
+# Functions of libunwind (part of libSystem) that no header of the SDK declares.
+# <symbol> <architectures>      all, x86_64 or arm64; the Mach-O name, with the underscore
+#
+# Source: libunwind-201 of the manifest, libunwind/src/libunwind.cpp.  The functions
+# are not marked _LIBUNWIND_HIDDEN; libunwind/src/CMakeLists.txt applies
+# -fvisibility=hidden only to unwind_static_objects, not to the dynamic library.
+# JIT compilers use them to register unwind information (__register_frame and
+# __deregister_frame in UnwindLevel1-gcc-ext.c call the first two).
+# Declared in libunwind/src/libunwind_ext.h, which the SDK does not install.
+# LLVM's libunwind (llvmorg-17.0.0 and later) has the same names; its
+# additional exports are not taken over, only what libunwind-201 has.
+#
+# Not taken over: the __unw_* functions marked _LIBUNWIND_HIDDEN (their aliases
+# without the first underscore are declared in libunwind.h) and __unw_save_vfp_as_X (32-bit ARM only).
+___unw_add_dynamic_fde                        all   # libunwind.cpp: "IPI: for __register_frame()"
+___unw_remove_dynamic_fde                     all   # libunwind.cpp: "IPI: for __deregister_frame()"
+# alias of __unw_iterate_dwarf_unwind_cache: _LIBUNWIND_WEAK_ALIAS declares it _LIBUNWIND_EXPORT (the SPI is hidden itself)
+_unw_iterate_dwarf_unwind_cache               all   # libunwind.cpp, under _LIBUNWIND_SUPPORT_DWARF_UNWIND
