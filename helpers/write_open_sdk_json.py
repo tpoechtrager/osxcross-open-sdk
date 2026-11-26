@@ -14,27 +14,12 @@ a "fallback" entry is listed if the file of the SDK is the one of
 --own-headers (data/headers).
 """
 import argparse
-import filecmp
 import json
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # python3 -I leaves it out
-from data_files import read_own_files  # noqa: E402
-
-
-def own_files(path, headers, sdk, variant):
-    """The entries of the own files that the SDK of VARIANT has"""
-    res = []
-    for p, var, how in read_own_files(path):
-        if var != "all" and var != variant:
-            continue
-        if how == "fallback":
-            f = os.path.join(sdk, p)
-            if not (os.path.isfile(f) and filecmp.cmp(f, os.path.join(headers, p), shallow=False)):
-                continue
-        res.append(p)
-    return res
+from data_files import own_files_of  # noqa: E402
 
 
 def main(argv):
@@ -57,7 +42,7 @@ def main(argv):
     if kv.get("sqlite_url"):
         projects.append({"name": "sqlite", "url": kv["sqlite_url"], "sha256": kv["sqlite_sha256"]})
     projects.sort(key=lambda p: p["name"].lower())
-    own = own_files(a.own_files, a.own_headers, os.path.dirname(out), kv["variant"])
+    own = [p for p, _ in own_files_of(a.own_files, a.own_headers, os.path.dirname(out), kv["variant"])]
     doc = {
         "format": 1,
         "name": "osxcross-open-sdk",

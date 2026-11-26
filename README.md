@@ -91,7 +91,9 @@ of this repository that built the SDK.
 - `SDKSettings.json` and `SDKSettings.plist`: the generator commit hash (key `OpenSDKGeneratorCommit`).
 
 The hash is `unknown` if the generator is not a git checkout, and ends with `-modified` if tracked files  
-are changed; the script warns in both cases.
+are changed; the script warns in both cases.  
+With `unknown`, the notices in the changed headers carry the day of the build instead of the date of the commit,  
+and the SDK is not reproducible; the script warns about that too.
 
 **Reproducible.** Two builds give the same file tree if they use
 

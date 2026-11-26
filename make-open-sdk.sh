@@ -14,6 +14,8 @@
 # "-modified" if tracked files have changes, or "unknown" (not a git checkout);
 # then a warning is printed.  SDKSettings.plist, SDKSettings.json and
 # OpenSDK.json name the whole commit (with "-modified", or "unknown").
+# The notices in the headers that the script changes carry the date of that
+# commit; without a readable commit they carry the day of the build (a warning).
 #
 # Options:
 #   --macos VERSION      the SDK of another macOS release (default 26.5; the
@@ -262,6 +264,7 @@ BUILD_LOG=$WORK/build.log
 # the commit of this repository: in the tarball's name and in three files of the SDK
 GENERATOR_COMMIT=$(generator_commit)
 GENERATOR_LABEL=$(generator_label "$GENERATOR_COMMIT")
+set_notice_date "$GENERATOR_COMMIT"   # NOTICE_DATE of the notices in the changed headers
 # the tarball (made by the step tarball, lib/tarball.sh)
 if [ "$VARIANT" = full ]; then
   SDK_TARBALL=$OUT_DIR/MacOSX$SDK_VERSION-open-sdk-$GENERATOR_LABEL.tar.xz
@@ -286,6 +289,7 @@ rel_path() { case $1 in "$PWD"/*) echo "${1#"$PWD"/}";; *) echo "$1";; esac; }
     unknown) echo "make-open-sdk.sh: warning: the commit of this repository cannot be read (no git checkout, or no git): the SDK names it \"unknown\""; echo;;
     *-modified) echo "make-open-sdk.sh: warning: tracked files of this repository are changed: the SDK names the commit with the suffix \"-modified\""; echo;;
   esac
+  if [ -n "$NOTICE_DATE_WARNING" ]; then echo "make-open-sdk.sh: warning: $NOTICE_DATE_WARNING"; echo; fi
 } | tee "$BUILD_LOG" >&2
 # awk indents the lines below a heading ("== ..."); the messages of this script
 # ("make-open-sdk.sh: ...") and empty lines stay as they are.

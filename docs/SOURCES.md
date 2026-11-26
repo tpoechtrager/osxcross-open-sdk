@@ -27,7 +27,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `xpc/xpc.h` | xnu `libkern/os/trace.h` ([details](#xpcxpch)) |
 | `CoreFoundation.modulemap`, `CFCompat.h.in` | Own work ([details](#corefoundationmodulemap-cfcompathin)) |
 | `SDKSettings.json`, `SDKSettings.plist` | The keys that Clang and OSXCross read ([details](#sdksettingsjson-sdksettingsplist)) |
-| `SystemVersion.plist`, the releases | AppleDB for the build number of 14.3 ([details](#systemversionplist-the-releases)) |
+| `SystemVersion.plist`, the releases | AppleDB for the build number of each release ([details](#systemversionplist-the-releases)) |
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | Foundation and CoreServices placeholders | dyld, CF and Security sources ([details](#foundation-and-coreservices-placeholders)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
@@ -263,9 +263,15 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 - `ProductVersion` is the macOS release of the SDK (`--macos`), `ProductName` is `macOS`.
 - `ProductBuildVersion` is the public build of the release where `data/releases.txt` names one, else empty  
-  (`OPEN_SDK_BUILD_VERSION` sets another value):
-  - macOS 14.3: `23D56`, the build of macOS 14.3 that was released on 2024-01-22  
-    (AppleDB, https://appledb.dev, the entry "macOS 14.3 (23D56)").
+  (`OPEN_SDK_BUILD_VERSION` sets another value). The source of every build is AppleDB (https://appledb.dev),  
+  the page `https://appledb.dev/firmware/macOS/<build>.html` of the release (x.y, as the manifests are pinned):
+  - macOS 11.3: `20E232`
+  - macOS 12.3: `21E230`
+  - macOS 13.3: `22E252`
+  - macOS 14.3: `23D56`, released on 2024-01-22
+  - macOS 15.5: `24F74`
+  - macOS 26.0: `25A354`
+  - macOS 26.5: `25F71`, released on 2026-05-11
 - The releases, their default libc++ and the variants (full and core, or core only) are choices of the generator.
 
 ---

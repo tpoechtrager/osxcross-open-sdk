@@ -7,8 +7,9 @@ Marks a header that the generator changed: puts the comment
 behind the license comment at the top of FILE (APSL 2.0 section 2.2 and
 Apache 2.0 section 4 ask for a notice in a changed file).  A file that
 has a notice already gets the new text as a further notice line behind the
-last one, unless that line is there; the same call twice changes nothing.  DATE is fixed by the generator, not
-the date of the build, so that the SDK is reproducible.
+last one, unless that line is there; the same call twice changes nothing.
+DATE is the date of the generator commit (the generator passes NOTICE_DATE),
+not the date of the build, so that the SDK is reproducible.
 """
 import argparse
 import sys

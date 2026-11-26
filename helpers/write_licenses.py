@@ -3,12 +3,16 @@
 """Install the license texts of every project that contributes to the SDK.
 
 usage: write_licenses.py SRC OUTDIR VARIANT OWN_LICENSE --apache-license FILE
+                        --own-files FILE --own-headers DIR --sdk DIR
                         [--sqlite DIR] [--swift-license FILE] [--projects-out FILE]
 VARIANT is core, full or swift (the full SDK with the Swift stubs).
 Writes OUTDIR/<project>/<license files> and OUTDIR/README.txt / LICENSES.md.
 --apache-license is the text of the Apache License 2.0 for the projects whose
 files only name it; --sqlite the directory of the sqlite amalgamation (its
 name and the version in sqlite3.h are named in the overview).
+--own-files is data/own-files.txt: the section "Files written for this SDK" of
+LICENSES.md lists the files of the variant (a "fallback" file only if the file
+in --sdk is the copy of --own-headers, data/headers), with their notes.
 --projects-out writes the projects that contribute ("name<TAB>tag<TAB>commit",
 sorted); the commit is the HEAD of the clone.
 A project without a license file of its own gets the APSL 2.0 text from xnu
@@ -21,6 +25,9 @@ import re
 import shutil
 import subprocess
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # python3 -I leaves it out
+from data_files import own_files_of  # noqa: E402
 
 # name, source dir (below SRC), license summary, what comes from it ({tag}: the
 # tag of the project, {version}: the version of sqlite), part of the SDK (core,
@@ -80,21 +87,24 @@ WANT = {"core": ("core",), "full": ("core", "libs", "frameworks"), "swift": ("co
 TITLE = {"core": "core SDK", "full": "full SDK", "swift": "full SDK with Swift"}
 LIC = re.compile(r"^(LICENSE|LICENCE|COPYING|APPLE_LICENSE|COPYRIGHT|Copyright|NOTICE)", re.I)
 
-OWN_FILES_TEXT = ("\n## Files written for this SDK\n\n"
+# The paragraphs around the list of the files written for this SDK (the list is
+# made from data/own-files.txt, see own_files_text)
+OWN_FILES_HEAD = ("\n## Files written for this SDK\n\n"
                   "These files are not taken from any other project. They are under the BSD Zero Clause\n"
-                  "License (own-files-0BSD/LICENSE.txt): TargetConditionals.h, architecture/arm64/fenv.h, os/log.h,\n"
-                  "os/signpost.h, os/activity.h and os/trace.h (stand-ins that trace nothing),\n"
-                  "xpc/xpc.h (the typedef of xpc_object_t that xnu's libkern/os/trace.h also has),\n"
-                  "libDER/DERItem.h where xnu has no EXTERNAL_HEADERS/libDER (releases before macOS 26.5),\n"
-                  "the CoreFoundation module map, SDKSettings.json, SDKSettings.plist, SystemVersion.plist,\n"
-                  "OpenSDK.json, README.LICENSE.txt and the .tbd files. The .tbd files list names (facts)\n"
-                  "that were taken from the headers and sources of the projects above, which are under\n"
-                  "the licenses of those projects; the file layout is the generator's own work.\n"
+                  "License (own-files-0BSD/LICENSE.txt):\n\n")
+OWN_FILES_TAIL = ("\nThe .tbd files list names (facts) that were taken from the headers and sources of the projects\n"
+                  "above, which are under the licenses of those projects; the file layout is the generator's own work.\n"
                   "The compatibility macros appended to CoreFoundation's CFAvailability.h\n"
                   "belong to that file and are under its license (APSL 2.0).\n"
                   "The changes that the generator makes to other projects' headers are marked in those\n"
                   "files (APSL 2.0 section 2.2) and listed in the generator's documentation.\n"
                   "Not shipped: unifdef (developer_cmds), decomment, migcom and the other build tools.\n")
+
+
+def own_files_text(own):
+    """The section of the files written for this SDK; OWN is [(path in the SDK, note)]"""
+    items = "".join("- `%s`%s\n" % (p, ": " + n if n else "") for p, n in own)
+    return OWN_FILES_HEAD + items + OWN_FILES_TAIL
 
 
 def commit_of(src, d):
@@ -200,6 +210,9 @@ def main(argv):
     ap.add_argument("--sqlite", help="the directory of the sqlite amalgamation")
     ap.add_argument("--swift-license")
     ap.add_argument("--projects-out")
+    ap.add_argument("--own-files", required=True, help="data/own-files.txt")
+    ap.add_argument("--own-headers", required=True, help="data/headers")
+    ap.add_argument("--sdk", required=True, help="the SDK directory (the staged files, for the fallback entries)")
     a = ap.parse_args(argv[1:])
     out = a.out
     os.makedirs(out, exist_ok=True)
@@ -211,7 +224,7 @@ def main(argv):
         f.write("| Project | Tag | License | What in the SDK comes from it | Note |\n|---|---|---|---|---|\n")
         for r in rows:
             f.write("| %s | %s | %s | %s | %s |\n" % r)
-        f.write(OWN_FILES_TEXT)
+        f.write(own_files_text(own_files_of(a.own_files, a.own_headers, a.sdk, "core" if a.variant == "core" else "full")))
     os.makedirs(os.path.join(out, "own-files-0BSD"), exist_ok=True)
     shutil.copy(a.own_license, os.path.join(out, "own-files-0BSD", "LICENSE.txt"))
     if a.projects_out:

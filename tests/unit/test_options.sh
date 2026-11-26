@@ -103,6 +103,23 @@ if command -v git >/dev/null 2>&1; then
   echo two > "$T/repo/f"
   check "generator_commit adds -modified if a tracked file is changed" "$( [ "$(gcr)" = "$(git -C "$T/repo" rev-parse HEAD)-modified" ] && echo ok || echo no)"
 fi
+# NOTICE_DATE: the date of the generator commit; the day of the build and a warning if it cannot be read
+# shellcheck disable=SC2034  # SELF is read by set_notice_date
+nd() { ( SELF=$1; . "$HERE/../../lib/common.sh"; set_notice_date "$2"; echo "$NOTICE_DATE|$NOTICE_DATE_WARNING" ); }
+today=$(date -u +%Y-%m-%d)
+r=$(nd "$T/nogit" unknown)
+check "the notice date without a commit is the day of the build" "$( [ "${r%%|*}" = "$today" ] && echo ok || echo no)"
+check "  and a warning says so" "$(case ${r#*|} in *"date of the build"*"not reproducible"*) echo ok;; *) echo no;; esac)"
+if command -v git >/dev/null 2>&1; then
+  GIT_COMMITTER_DATE='2020-02-03T12:00:00+0000' git -C "$T/repo" -c user.name=t -c user.email=t@example.com commit -q -a -m two
+  r=$(nd "$T/repo" "$(git -C "$T/repo" rev-parse HEAD)")
+  check "the notice date is the date of the generator commit" "$( [ "$r" = "2020-02-03|" ] && echo ok || echo no)"
+  echo three > "$T/repo/f"
+  r=$(nd "$T/repo" "$(git -C "$T/repo" rev-parse HEAD)-modified")
+  check "  also for a modified commit, without a warning" "$( [ "$r" = "2020-02-03|" ] && echo ok || echo no)"
+  r=$(nd "$T/repo" 0123456789abcdef0123456789abcdef01234567)
+  check "a commit that git does not know falls back to the build day with a warning" "$( [ "${r%%|*}" = "$today" ] && [ -n "${r#*|}" ] && echo ok || echo no)"
+fi
 gen --help
 check "--help names the commit in the tarball name" "$(has 'open-sdk-<COMMIT>.tar.xz')"
 

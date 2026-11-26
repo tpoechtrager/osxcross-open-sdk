@@ -2,7 +2,7 @@
 # own-files-0BSD of the license texts).  Every other file comes from a
 # project of the manifest.  OpenSDK.json lists these entries ("own_files").
 #
-# <path in the SDK> <variant> <how>
+# <path in the SDK> <variant> <how> [note]
 #   variant  all: the core and the full SDK; full: only the full SDK
 #   how      written: a step writes the file (lib/meta.sh, the .tbd of the
 #            steps stubs, cxx, libs and frameworks);
@@ -10,6 +10,8 @@
 #            install_own_files);
 #            fallback: copied from data/headers/<path> only for a release
 #            whose project does not have the file (lib/frameworks.sh)
+#   note     the rest of the line, optional: it follows the file in the
+#            list of LICENSES.md of the SDK (write_licenses.py)
 OpenSDK.json                                                                 all   written
 README.LICENSE.txt                                                           all   written
 SDKSettings.json                                                             all   written
@@ -17,12 +19,12 @@ SDKSettings.plist                                                            all
 System/Library/CoreServices/SystemVersion.plist                              all   written
 usr/include/TargetConditionals.h                                             all   copied
 usr/include/architecture/arm64/fenv.h                                        all   copied
-usr/include/os/activity.h                                                    all   copied
-usr/include/os/log.h                                                         all   copied
-usr/include/os/signpost.h                                                    all   copied
-usr/include/os/trace.h                                                       all   copied
+usr/include/os/activity.h                                                    all   copied     stand-ins that trace nothing
+usr/include/os/log.h                                                         all   copied     stand-ins that trace nothing
+usr/include/os/signpost.h                                                    all   copied     stand-ins that trace nothing
+usr/include/os/trace.h                                                       all   copied     stand-ins that trace nothing
 usr/lib/*.tbd                                                                all   written
 System/Library/Frameworks/*.framework/*.tbd                                  full  written
 System/Library/Frameworks/CoreFoundation.framework/Modules/module.modulemap  full  copied
-usr/include/xpc/xpc.h                                                        full  copied
-usr/include/libDER/DERItem.h                                                 full  fallback
+usr/include/xpc/xpc.h                                                        full  copied     the typedef of xpc_object_t that xnu's libkern/os/trace.h also has
+usr/include/libDER/DERItem.h                                                 full  fallback   only where xnu has no EXTERNAL_HEADERS/libDER (releases before macOS 26.5)

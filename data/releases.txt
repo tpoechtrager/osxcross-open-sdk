@@ -12,8 +12,10 @@
 # The lowest deployment target that SDKSettings.json names by default is the
 # major version of the first release, with ".0" (--min-deployment-target).
 #
-# ProductBuildVersion 23D56 of macOS 14.3: the public build of macOS 14.3,
-# released on 2024-01-22 (AppleDB, https://appledb.dev, "macOS 14.3 (23D56)").
+# ProductBuildVersion: the public build of the release, from AppleDB
+# (https://appledb.dev/firmware/macOS/<build>.html, the entry "macOS <release> (<build>)").
+# Every build is that of the x.y release that data/manifests/ is pinned to;
+# 14.3 (23D56) was released on 2024-01-22.
 #
 # The libc++ releases.  The default is a choice of the generator, not a statement
 # about the libc++ that a macOS release has.  What protects programs is the
@@ -30,10 +32,10 @@
 # oldest LLVM release with an entry in the table that Clang 16 to 23 can use),
 # 19.1.7 for macOS 15.x and 20.1.8 and 21.1.8 for the macOS releases of 2025 and
 # 2026.  17.0.6 to 22.1.8 are also tested (--libcxx).
-11.3  16.0.6  core       -
-12.3  16.0.6  core       -
-13.3  16.0.6  core       -
+11.3  16.0.6  core       20E232
+12.3  16.0.6  core       21E230
+13.3  16.0.6  core       22E252
 14.3  16.0.6  full,core  23D56
-15.5  19.1.7  full,core  -
-26.0  20.1.8  full,core  -
-26.5  21.1.8  full,core  -      default
+15.5  19.1.7  full,core  24F74
+26.0  20.1.8  full,core  25A354
+26.5  21.1.8  full,core  25F71   default

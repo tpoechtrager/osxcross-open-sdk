@@ -175,9 +175,31 @@ mk_lib_tbd() {
   python3 -I "$HELPERS/write_tbd.py" "$out" "$inst" "$cur" "$syms" --compat "$compat" ${1+"$@"}
 }
 
+# set_notice_date COMMIT: NOTICE_DATE, the date in the notices of changed headers
+# (helpers/notice.py): "changed by the generator as of DATE".  It is the date of
+# the generator commit (COMMIT of generator_commit, with or without "-modified";
+# the date that git shows for it, YYYY-MM-DD), so that two builds of the same
+# commit give the same headers.  If the commit cannot be read, it is the day of the
+# build (UTC) and NOTICE_DATE_WARNING says what that means; else the warning is empty.
+NOTICE_DATE=
+NOTICE_DATE_WARNING=
+# shellcheck disable=SC2034  # NOTICE_DATE_WARNING is read by make-open-sdk.sh
+set_notice_date() {
+  local d=
+  case $1 in
+    unknown) ;;
+    *) d=$(git -C "$SELF" log -1 --format=%cd --date=short "${1%-modified}" 2>/dev/null) || d=;;
+  esac
+  case $d in
+    [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) NOTICE_DATE=$d; NOTICE_DATE_WARNING=;;
+    *)
+      NOTICE_DATE=$(date -u +%Y-%m-%d)
+      NOTICE_DATE_WARNING="the date of the generator commit cannot be read: the notices in the changed headers carry the date of the build ($NOTICE_DATE), and the SDK is not reproducible (two builds on different days differ)";;
+  esac
+}
+
 # add_notice FILE TEXT: the notice that a header was changed by this script
-# (helpers/notice.py).  The date is the one of the change, not of the build.
-NOTICE_DATE=2026-11-24
+# (helpers/notice.py), dated by NOTICE_DATE.
 add_notice() { python3 -I "$HELPERS/notice.py" "$NOTICE_DATE" "$1" "$2"; }
 
 # run_unifdef ARGS...: the unifdef of the step host.  Its status 1 means that

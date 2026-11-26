@@ -45,7 +45,10 @@ Headers are installed with the projects' own scripts and Makefiles (xnu header l
 `mach_install_mig.sh`, AvailabilityVersions, `unifdef`); headers that are only filtered with `unifdef`  
 stay as they are. If the generator changes a header, it adds the line  
 `Modified by osxcross-open-sdk (DATE): <what>` behind the license comment (APSL 2.0 section 2.2,  
-Apache 2.0 section 4).
+Apache 2.0 section 4).  
+`DATE` is the date of the generator commit, so the same commit gives the same headers.  
+If the commit cannot be read (not a checkout, no `git`), it is the day of the build (UTC);  
+the script warns, and the SDK is then not reproducible.
 
 The changes:
 

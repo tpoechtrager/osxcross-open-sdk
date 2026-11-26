@@ -296,7 +296,8 @@ class MakeLicenses(Tmp):
         out = self.path("out")
         args = [src, out, variant, os.path.join(DATA, "licenses", "0BSD.txt"),
                 "--apache-license", os.path.join(DATA, "licenses", "Apache-2.0.txt"),
-                "--projects-out", self.path("projects.tsv")]
+                "--own-files", os.path.join(DATA, "own-files.txt"), "--own-headers", os.path.join(DATA, "headers"),
+                "--sdk", self.path("sdk"), "--projects-out", self.path("projects.tsv")]
         if with_sqlite:
             args += ["--sqlite", os.path.join(src, "sqlite-amalgamation-3430200")]
         rc, _, err = run("write_licenses.py", *args)
@@ -315,6 +316,37 @@ class MakeLicenses(Tmp):
         rows = [l.split("\t") for l in read(self.path("projects.tsv")).splitlines()]
         self.assertIn(["llvm-project", "llvm-project-1.0", "?"], rows)
         self.assertEqual(len(rows), len({r[0] for r in rows}))
+
+    def own_section(self, md):
+        """The paths in the list of the files written for this SDK, and the list items"""
+        sec = md.split("## Files written for this SDK\n", 1)[1]
+        items = [l for l in sec.splitlines() if l.startswith("- ")]
+        return [re.match(r"- `([^`]+)`", l).group(1) for l in items], items
+
+    def expected_own(self, variant):
+        return sorted(p for p, var, how, _ in data_files.read_own_files(os.path.join(DATA, "own-files.txt"))
+                      if (var == "all" or var == variant) and how != "fallback")
+
+    def test_own_files_are_those_of_the_variant(self):
+        for variant in ("core", "full"):
+            _, md = self.run_it(variant, variant != "core")
+            paths, _ = self.own_section(md)
+            self.assertEqual(sorted(paths), self.expected_own(variant), variant)
+        _, core = self.run_it("core", False)
+        for p in ("xpc/xpc.h", "libDER/DERItem.h", "CoreFoundation.framework/Modules/module.modulemap"):
+            self.assertNotIn(p, core)
+
+    def test_own_files_have_their_notes_and_the_fallback_its_condition(self):
+        der = "usr/include/libDER/DERItem.h"
+        _, md = self.run_it("full", True)
+        self.assertNotIn(der, md)       # the SDK has no copy of ours: the file is xnu's
+        self.write("sdk/" + der, read(os.path.join(DATA, "headers", der)))
+        _, md = self.run_it("full", True)
+        paths, items = self.own_section(md)
+        self.assertIn(der, paths)
+        self.assertIn("`%s`: only where xnu has no EXTERNAL_HEADERS/libDER" % der, md)
+        self.assertIn("- `usr/include/os/log.h`: stand-ins that trace nothing", items)
+        self.assertIn("- `OpenSDK.json`", items)
 
     def test_full_names_the_versions_of_sqlite_and_cf(self):
         _, md = self.run_it("full", True)
@@ -483,7 +515,7 @@ class DataFiles(unittest.TestCase):
         """data/headers/ has exactly the files that data/own-files.txt copies"""
         own = data_files.read_own_files(os.path.join(DATA, "own-files.txt"))
         copied = set()
-        for p, var, how in own:
+        for p, var, how, _ in own:
             self.assertIn(var, ("all", "full"), p)
             self.assertIn(how, ("written", "copied", "fallback"), p)
             if how != "written":

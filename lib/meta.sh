@@ -86,6 +86,7 @@ EOF
   echo "license texts"
   quiet python3 -I "$HELPERS/write_licenses.py" "$SRC" "$M/usr/share/licenses/open-sdk" "$lic_variant" \
     "$DATA/licenses/0BSD.txt" --apache-license "$DATA/licenses/Apache-2.0.txt" --sqlite "$(sqlite_dir)" \
+    --own-files "$DATA/own-files.txt" --own-headers "$DATA/headers" --sdk "$M" \
     ${swl:+--swift-license "$swl"} --projects-out "$STAGE_WORK/projects.tsv"   # (it prints a count)
   local sq=
   [ "$VARIANT" = core ] || sq="sqlite_url=$SQLITE_URL sqlite_sha256=$SQLITE_SHA256"

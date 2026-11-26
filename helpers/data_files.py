@@ -2,6 +2,8 @@
 """Readers of the files of data/ (the shell has the same readers in
 lib/common.sh and lib/fetch.sh).  "#" starts a comment in every file; empty
 lines are skipped."""
+import filecmp
+import os
 
 
 def lines(path):
@@ -46,8 +48,23 @@ def read_releases(path):
 
 
 def read_own_files(path):
-    """data/own-files.txt: [(path in the SDK, all or full, written, copied or fallback)]."""
-    return [tuple(w[:3]) for w in lines(path)]
+    """data/own-files.txt: [(path in the SDK, all or full, written, copied or fallback, note or "")]."""
+    return [tuple(w[:3]) + (" ".join(w[3:]),) for w in lines(path)]
+
+
+def own_files_of(path, headers, sdk, variant):
+    """The own files that the SDK of VARIANT (core or full) has: [(path, note)].  A fallback
+    file counts only if the SDK has the copy of data/headers/ (HEADERS), not the file of a project."""
+    res = []
+    for p, var, how, note in read_own_files(path):
+        if var != "all" and var != variant:
+            continue
+        if how == "fallback":
+            f = os.path.join(sdk, p)
+            if not (os.path.isfile(f) and filecmp.cmp(f, os.path.join(headers, p), shallow=False)):
+                continue
+        res.append((p, note))
+    return res
 
 
 def read_libraries(path):
