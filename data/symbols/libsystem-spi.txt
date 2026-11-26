@@ -1,0 +1,41 @@
+# Private functions and variables of libSystem (SPI) that the sanitizer
+# runtimes of compiler-rt (libclang_rt.asan_osx_dynamic.dylib, ubsan, lsan,
+# tsan, rtsan, tysan, stats) refer to.  compiler-rt declares them itself
+# (it includes no private header), so the SDK only gets the symbols, no
+# header.  Without them the runtimes do not link against the SDK.
+#
+# <symbol> <project> <header>     the Mach-O name, the project of the manifest,
+#                                 the header of the project that declares it
+#
+# helpers/spi_syms.py takes a symbol for a release only if the header of
+# that release declares it and a source file of the project (not a test)
+# names it; a symbol that the header of the release lacks is left out (the
+# step prints it).  The comment names the user in compiler-rt (LLVM 23,
+# compiler-rt/lib/) and the definition in the sources of macOS 26.5.
+
+# libdyld, re-exported by libSystem.  Users: sanitizer_common/sanitizer_procmaps_mac.cpp,
+# sanitizer_common/sanitizer_mac.cpp (every sanitizer runtime); definitions: dyld/libdyld/libdyldGlue.cpp,
+# dyld/libdyld/LibSystemHelpers.cpp
+__dyld_get_shared_cache_uuid      dyld        include/mach-o/dyld_priv.h
+__dyld_get_shared_cache_range     dyld        include/mach-o/dyld_priv.h
+__dyld_get_image_slide            dyld        include/mach-o/dyld_priv.h
+_dyld_shared_cache_iterate_text   dyld        include/mach-o/dyld_priv.h
+# compiler-rt imports it weakly (SANITIZER_WEAK_IMPORT, -Wl,-U); dyld_priv.h declares it since dyld-1378 (macOS 26.5)
+__dyld_get_dyld_header            dyld        include/mach-o/dyld_priv.h
+
+# libsystem_malloc.  User: sanitizer_common/sanitizer_mac.cpp (the malloc zone of the sanitizers,
+# every runtime); definitions: libmalloc/src/malloc.c, src/malloc_exclaves.c
+_malloc_zones                     libmalloc   private/make_tapi_happy.h
+_malloc_num_zones                 libmalloc   private/make_tapi_happy.h
+
+# libdispatch.  User: asan/asan_mac.cpp (interceptors); definition: libdispatch/src/mach.c
+_dispatch_mach_create             libdispatch private/mach_private.h
+_dispatch_mach_create_f           libdispatch private/mach_private.h
+# User: tsan/rtl/tsan_interceptors_libdispatch.cpp; definition: libdispatch/src/init.c
+_dispatch_queue_offsets           libdispatch private/layout_private.h
+
+# libsystem_platform.  User: tsan/rtl/tsan_interceptors_mac.cpp (interceptors); definition: libplatform/src/os/lock.c
+_os_unfair_lock_lock_with_options libplatform private/os/lock_private.h
+_os_lock_lock                     libplatform private/os/lock_private.h
+_os_lock_unlock                   libplatform private/os/lock_private.h
+_os_lock_trylock                  libplatform private/os/lock_private.h

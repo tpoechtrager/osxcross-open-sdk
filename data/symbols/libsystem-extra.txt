@@ -47,6 +47,10 @@ _bootstrap_look_up_per_user     # launchd's own launchctl.c call it, which the p
 __res                           # _res of <resolv.h>: libresolv/res_state.c says the main thread's __res_state comes from libSystem, not from libresolv
 __os_log_impl                   # the function that os_log calls: swift-5.2.5-RELEASE stdlib/public/Darwin/os/os.m (_swift_os_log) calls _os_log_impl(dso, log, type,
                                 # format, buffer, length); libsystem_trace.dylib is part of libSystem (Libsystem/init.c: _libtrace_init)
+_fileno_unlocked                # Libc/stdio/FreeBSD/fileno.c (the out-of-line copy of the macro of stdio.h, _stdio.h since macOS 15;
+                                # documented in Libc/stdio/FreeBSD/ferror.3); tsan of compiler-rt calls it (lib/tsan/rtl/tsan_interceptors_posix.cpp)
+__os_nospin_lock_lock           # libplatform/src/os/lock.c; libkern/OSSpinLockDeprecated.h of libplatform declares it only with OSSPINLOCK_USE_INLINED=1,
+                                # which the scan of the headers does not set; rtsan of compiler-rt intercepts it (lib/rtsan/rtsan_interceptors_posix.cpp)
 __os_log_default                # the default log object (OS_LOG_DEFAULT): xnu libkern/os/log.h, config/Libkern.exports
 _os_log_create                  # xnu libkern/os/log.h, config/Libkern.exports
 _os_log_type_enabled            # called in configd SystemConfiguration.fproj/SCD.c (line 590): os_log_type_enabled(log, type)

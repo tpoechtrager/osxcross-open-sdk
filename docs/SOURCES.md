@@ -13,6 +13,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | Install names and versions of the `.tbd` | The project files named in `data/libraries.txt` ([details](#install-names-and-versions-of-the-tbd)) |
 | Symbols of `libSystem.B.tbd` | Headers, alias lists, system calls, export lists ([details](#symbols-of-libsystembtbd)) |
 | compiler-rt builtins in `libSystem.B.tbd` | LLVM `apple_versioning.c` and `CMakeLists.txt` ([details](#compiler-rt-builtins-in-libsystembtbd)) |
+| Private symbols for the sanitizers | Private headers of dyld, libmalloc, libdispatch, libplatform ([details](#private-symbols-for-the-sanitizers)) |
 | libedit's readline layer | libedit's own install script ([details](#libedits-readline-layer)) |
 | `__exp10`, `__exp10f` in `math.h` | LLVM `RuntimeLibcalls.td` ([details](#__exp10-__exp10f-in-mathh)) |
 | Symbols of the other `.tbd` | Headers and export lists of the projects ([details](#symbols-of-the-other-tbd)) |
@@ -84,6 +85,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - The extra and excluded symbols with the file that defines them  
   (the libcalls `__exp10` and `__sincos_stret` with LLVM's `RuntimeLibcalls.td`).
 - The builtins of compiler-rt: [below](#compiler-rt-builtins-in-libsystembtbd).
+- The private symbols that the sanitizers of compiler-rt need: [below](#private-symbols-for-the-sanitizers).
 
 ---
 
@@ -105,6 +107,29 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
     "Don't build enable_execute_stack on arm64 darwin" for Apple platforms (not yet in LLVM 21).
 - A check of the result, not a source of names: `libclang_rt.osx.a` of an open source build of LLVM 23.1.6
   defines the 92 (x86_64) and 79 (arm64) names of the first section and none of the names that are left out.
+
+---
+
+### Private symbols for the sanitizers
+
+**Files:** `data/symbols/libsystem-spi.txt`, `helpers/spi_syms.py`, `data/symbols/libsystem-extra.txt`, `lib/stubs.sh`
+
+- The sanitizer runtimes of compiler-rt (LLVM 23, `compiler-rt/lib/`) declare these private functions and variables
+  themselves and refer to them; the list names the user of each.
+  The SDK gets only the symbols in `libSystem.B.tbd`, no private header.
+- Each symbol is declared in a private header of the project of the manifest that defines it:
+  - dyld `include/mach-o/dyld_priv.h` (`_dyld_get_shared_cache_uuid`, `_dyld_get_shared_cache_range`, `_dyld_get_image_slide`,
+    `dyld_shared_cache_iterate_text`, `_dyld_get_dyld_header`; defined in `libdyld/libdyldGlue.cpp`)
+  - libmalloc `private/make_tapi_happy.h` (`malloc_zones`, `malloc_num_zones`)
+  - libdispatch `private/mach_private.h` (`dispatch_mach_create`, `dispatch_mach_create_f`)
+    and `private/layout_private.h` (`dispatch_queue_offsets`)
+  - libplatform `private/os/lock_private.h` (`os_unfair_lock_lock_with_options`, `os_lock_lock`, `os_lock_unlock`, `os_lock_trylock`)
+- `helpers/spi_syms.py` checks this for each release: the header must declare the name and a source file
+  of the project (not a test) must name it. `_dyld_get_dyld_header` is only in the sources of macOS 26.5,
+  so the other releases do not get it (compiler-rt imports it weakly).
+- Two public functions that the scan of the headers does not find, in `data/symbols/libsystem-extra.txt`:
+  - `fileno_unlocked` (`Libc/stdio/FreeBSD/fileno.c`; the header has only a macro)
+  - `_os_nospin_lock_lock` (`libplatform/src/os/lock.c`; `libkern/OSSpinLockDeprecated.h` declares it only with `OSSPINLOCK_USE_INLINED=1`)
 
 ---
 

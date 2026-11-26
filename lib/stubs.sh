@@ -18,6 +18,7 @@ step_stubs() {
     stubs_launchd
   fi
   stubs_compiler_rt
+  stubs_spi
   stubs_libsystem_tbd
   echo "libresolv"
   stubs_libresolv
@@ -93,6 +94,16 @@ stubs_launchd() {
 # integer division, __atomic_* ...), per architecture (data/symbols/compiler-rt.txt)
 stubs_compiler_rt() {
   syms_by_arch "$DATA/symbols/compiler-rt.txt" >> "$STAGE_WORK/libsystem.syms"
+}
+
+# stubs_spi: the private symbols of libSystem that the sanitizer runtimes of
+# compiler-rt need (data/symbols/libsystem-spi.txt), as far as the private
+# headers of the projects of this release declare them
+stubs_spi() {
+  python3 -I "$HELPERS/spi_syms.py" "$SRC" "$DATA/symbols/libsystem-spi.txt" "$STAGE_WORK/spi.syms" ||
+    die "spi_syms.py failed: data/symbols/libsystem-spi.txt does not fit the sources"
+  require_lines "$STAGE_WORK/spi.syms" 20 "too few symbols of data/symbols/libsystem-spi.txt"
+  cat "$STAGE_WORK/spi.syms" >> "$STAGE_WORK/libsystem.syms"
 }
 
 # stubs_libsystem_tbd: libSystem.B.tbd and the links of the libraries that are

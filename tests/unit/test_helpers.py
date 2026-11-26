@@ -420,6 +420,32 @@ class GenSymbols(Tmp):
         self.assertEqual(m.header_list(self.path("sdk")), ["stdio.h"])
 
 
+class SpiSymbols(Tmp):
+    def test_declared_defined_missing(self):
+        m = load("spi_syms")
+        self.write("src/p/private/a.h", "extern int a_one;\nvoid a_two(void);\n")
+        self.write("src/p/src/a.c", "int a_one;\nvoid a_two(void) {}\n")
+        self.write("src/p/tests/t.c", "int a_test(void);\n")
+        self.write("src/p/private/b.h", "int a_test(void);\n")
+        e = [("_a_one", "p", "private/a.h"), ("_a_two", "p", "private/a.h"), ("_a_new", "p", "private/a.h")]
+        self.assertEqual(m.spi_symbols(self.path("src"), e), (["_a_one", "_a_two"], ["_a_new"], []))
+        # declared, but only a test names it; a header that does not exist
+        _, _, err = m.spi_symbols(self.path("src"), [("_a_test", "p", "private/b.h"), ("_x", "p", "no.h")])
+        self.assertEqual(len(err), 2)
+        lst = self.write("l.txt", "# c\n_a_one p private/a.h # x\n_a_new p private/a.h\n")
+        rc, out, _ = run("spi_syms.py", self.path("src"), lst, self.path("out"))
+        self.assertEqual(rc, 0)
+        self.assertIn("_a_new", out)
+        self.assertEqual(read(self.path("out")), "x86_64 _a_one\narm64 _a_one\n")
+        self.write("bad.txt", "_a_one p\n")
+        self.assertNotEqual(run("spi_syms.py", self.path("src"), self.path("bad.txt"), self.path("out"))[0], 0)
+
+    def test_list_of_the_repository(self):
+        for sym, proj, hdr in data_files.lines(os.path.join(DATA, "symbols", "libsystem-spi.txt")):
+            self.assertTrue(sym.startswith("_"))
+            self.assertTrue(hdr.endswith(".h"))
+
+
 class CheckLibraries(Tmp):
     def test_differences(self):
         m = load("check_libraries", TOOLS)

@@ -40,6 +40,7 @@ install name and version. A real SDK was used only to test a result, never as a 
   Signposts, activities and `os_trace` compile and run but record nothing.
 - The frameworks `CoreFoundation`, `DiskArbitration`, `SystemConfiguration`, `Security` (including `SecureTransport`)  
   and `IOKit` (`IOKitLib`, power sources and power management; no device families).
+- The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `rtsan`, `tysan`.
 
 ### What does not work
 
@@ -48,6 +49,8 @@ install name and version. A real SDK was used only to test a result, never as a 
   links; `#import <Foundation/Foundation.h>` fails.
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
 - `XPC`, `libbsm`, the `IOKit` device families (`IOKit/storage`, `usb`, `hid`, ...), `FSEvents` and `LaunchServices`.
+- The thread sanitizer runtime of compiler-rt (`tsan`): it builds its XPC interceptors when `<xpc/xpc.h>` exists,  
+  and the `xpc/xpc.h` of the SDK has only `xpc_object_t`.
 
 ### Variants
 
