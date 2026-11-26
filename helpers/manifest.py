@@ -7,7 +7,9 @@ is at the commit of the manifest.  This tool makes and checks manifests; the
 generator itself never runs it.
 
   manifest.py --new VERSION [--base FILE] [--release-json FILE] [--out FILE]
-      Write the manifest of macOS VERSION (for example 26.6).  The tags come
+      Write the manifest of macOS VERSION (for example 26.6).  The sqlite
+      line is the one of the base manifest (of the newest manifest if the
+      base is a list of "<project> <tag>" lines).  The tags come
       from release.json of the tag macos-<VERSION without the dot> in
       github.com/apple-oss-distributions/distribution-macOS (or from
       --release-json); projects that release.json does not list (Libm,
@@ -26,6 +28,7 @@ Line format of a manifest (the generator reads the first three fields):
     <project> <tag> <commit> <release|fixed>
     sqlite <url> <sha256>
 """
+import argparse
 import json
 import os
 import re
@@ -34,13 +37,14 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from urllib.request import urlopen
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # python3 -I leaves it out
+from data_files import read_manifest  # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFESTS = os.path.join(ROOT, "data", "manifests")
 OSS = "https://github.com/apple-oss-distributions/"
 RELEASE_URL = ("https://raw.githubusercontent.com/apple-oss-distributions/"
                "distribution-macOS/macos-%s/release.json")
-SQLITE = ("https://www.sqlite.org/2023/sqlite-amalgamation-3430200.zip",
-          "a17ac8792f57266847d57651c5259001d1e4e4b46be96ec0d985c953925b2a1c")
 
 
 def die(msg):
@@ -73,12 +77,7 @@ def ls_remote(url, ref):
 
 def read_projects(path):
     """[(project, tag, rest...)] of a manifest or of a list of "name tag" lines."""
-    rows = []
-    for line in open(path):
-        line = line.split("#")[0].split()
-        if len(line) >= 2 and line[0] != "sqlite":
-            rows.append(line)
-    return rows
+    return read_manifest(path)[0]
 
 
 def newest_manifest():
@@ -96,8 +95,16 @@ def macos_dir(version):
 
 def cmd_new(version, base, release_json, out):
     base = base or newest_manifest()
+    sqlite = read_manifest(base)[1]
+    if sqlite is None:
+        # a base of "<project> <tag>" lines: the sqlite line of the newest manifest
+        newest = newest_manifest()
+        sqlite = read_manifest(newest)[1]
+        if sqlite is None:
+            die("neither %s nor %s has a sqlite line" % (base, newest))
     if release_json:
-        data = json.load(open(release_json))
+        with open(release_json) as f:
+            data = json.load(f)
     else:
         url = RELEASE_URL % version.replace(".", "")
         try:
@@ -125,7 +132,7 @@ def cmd_new(version, base, release_json, out):
     for (name, tag, origin), commit in zip(rows, commits):
         text.append("%s %s %s %s" % (name, tag, commit, origin))
     text.append("# sqlite: <url> <sha256 of the archive>")
-    text.append("sqlite %s %s" % SQLITE)
+    text.append("sqlite %s %s" % sqlite)
     out = out or os.path.join(MANIFESTS, macos_dir(version) + ".txt")
     with open(out, "w") as f:
         f.write("\n".join(text) + "\n")
@@ -151,31 +158,23 @@ def cmd_llvm(version):
 
 
 def main(argv):
-    args = argv[1:]
-    opts = {"--base": None, "--release-json": None, "--out": None}
-    mode = None
-    pos = []
-    i = 0
-    while i < len(args):
-        a = args[i]
-        if a in opts and i + 1 < len(args):
-            opts[a] = args[i + 1]
-            i += 2
-        elif a in ("--new", "--check", "--llvm"):
-            mode = a
-            i += 1
-        else:
-            pos.append(a)
-            i += 1
-    if mode is None or len(pos) != 1:
-        sys.stderr.write(__doc__)
-        return 2
-    if mode == "--new":
-        cmd_new(pos[0], opts["--base"], opts["--release-json"], opts["--out"])
-    elif mode == "--check":
-        return cmd_check(pos[0])
+    p = argparse.ArgumentParser(prog="manifest.py", description="Maintenance of data/manifests/.",
+                                epilog="See the comment at the top of the file.")
+    mode = p.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--new", action="store_const", const="new", dest="mode")
+    mode.add_argument("--check", action="store_const", const="check", dest="mode")
+    mode.add_argument("--llvm", action="store_const", const="llvm", dest="mode")
+    p.add_argument("version")
+    p.add_argument("--base")
+    p.add_argument("--release-json")
+    p.add_argument("--out")
+    a = p.parse_args(argv[1:])
+    if a.mode == "new":
+        cmd_new(a.version, a.base, a.release_json, a.out)
+    elif a.mode == "check":
+        return cmd_check(a.version)
     else:
-        cmd_llvm(pos[0])
+        cmd_llvm(a.version)
     return 0
 
 

@@ -205,7 +205,7 @@ libs_sqlite() {
   local sq
   echo "sqlite3"
   FETCH_QUIET=1 fetch_sqlite
-  sq=$SRC/$(basename "$SQLITE_URL" .zip)
+  sq=$(sqlite_dir)
   cp "$sq/sqlite3.h" "$sq/sqlite3ext.h" "$STAGE_INC/"
   ext_tbd libsqlite3 "" - sqlite3.h
 }

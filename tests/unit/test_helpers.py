@@ -240,6 +240,19 @@ class Manifest(Tmp):
         self.assertEqual(d["AvailabilityVersions"][1], "AvailabilityVersions-100")
         self.assertIn("sqlite", d)
 
+    def test_new_from_a_list_of_tags(self):
+        # a base of "<project> <tag>" lines has no sqlite line: the newest manifest gives it
+        m = load("manifest")
+        base = self.write("base.txt", "xnu xnu-1\nLibm Libm-1\n")
+        rel = self.write("rel.json", json.dumps({"projects": [{"project": "xnu", "tag": "xnu-2"}]}))
+        m.ls_remote = lambda url, ref: "e" * 40
+        out = self.path("out.txt")
+        with contextlib.redirect_stdout(io.StringIO()):
+            m.cmd_new("26.6", base, rel, out)
+        d = {l.split()[0]: l.split() for l in read(out).splitlines() if l.strip() and not l.startswith("#")}
+        self.assertEqual(d["xnu"][1], "xnu-2")
+        self.assertEqual(d["sqlite"][1:], list(m.read_manifest(m.newest_manifest())[1]))
+
 
 class DataFiles(unittest.TestCase):
     def manifests(self):

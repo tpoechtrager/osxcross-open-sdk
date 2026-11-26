@@ -11,13 +11,25 @@
 # --new) writes a manifest for a new release.
 # ---------------------------------------------------------------------------
 
+# Readers of the manifests and of data/libcxx-versions.txt (data_lines: without
+# comments; helpers/data_files.py reads them the same way)
+# manifest_projects FILE: "project tag commit" lines; manifest_sqlite FILE COLUMN:
+# 2 the URL, 3 the SHA-256 of the sqlite archive
+manifest_projects() { data_lines "$1" | awk '$1 != "sqlite" && NF >= 3 { print $1, $2, $3 }'; }
+manifest_sqlite() { data_lines "$1" | awk -v c="$2" '$1 == "sqlite" { print $c }'; }
+# libcxx_value KIND KEY: the value of the line "KIND KEY VALUE" (macos: the
+# default LLVM release of a macOS release, llvm: the commit of an LLVM release);
+# libcxx_keys KIND: the keys of the lines of KIND
+libcxx_value() { data_lines "$DATA/libcxx-versions.txt" | awk -v k="$1" -v v="$2" '$1 == k && $2 == v { print $3 }'; }
+libcxx_keys() { data_lines "$DATA/libcxx-versions.txt" | awk -v k="$1" '$1 == k { print $2 }'; }
+
 # list_releases: the releases that have a manifest
 list_releases() {
   local f v l
   for f in "$DATA"/manifests/macos-*.txt; do
     [ -f "$f" ] || continue
     v=$(sed -n 's/^# osxcross-open-sdk: pinned sources for macOS //p' "$f" | head -n 1)
-    l=$(awk -v v="$v" '$1=="macos" && $2==v {print $3}' "$DATA/libcxx-versions.txt")
+    l=$(libcxx_value macos "$v")
     printf '%s\tlibc++ %s\n' "$v" "$l"
   done | sort -t. -k1,1n -k2,2n | while IFS= read -r l; do
     v=${l%%"$(printf '\t')"*}
@@ -34,21 +46,21 @@ list_releases() {
 load_manifest() {
   local m=$DATA/manifests/$MACOS_REL.txt
   [ -f "$m" ] || die "no manifest for macOS $SDK_VERSION; releases with a manifest: $(list_releases | cut -f1 | tr '\n' ' ')"
-  PROJECTS=$(awk '$1 !~ /^#/ && $1 != "sqlite" && NF >= 3 { print $1, $2, $3 }' "$m")
-  SQLITE_URL=$(awk '$1 == "sqlite" { print $2 }' "$m")
-  SQLITE_SHA256=$(awk '$1 == "sqlite" { print $3 }' "$m")
+  PROJECTS=$(manifest_projects "$m")
+  SQLITE_URL=$(manifest_sqlite "$m" 2)
+  SQLITE_SHA256=$(manifest_sqlite "$m" 3)
   if [ -n "${OPEN_SDK_AV_TAG:-}" ]; then
     # a tag by hand cannot be in the manifest: it is not checked
     PROJECTS=$(echo "$PROJECTS" | awk -v t="$OPEN_SDK_AV_TAG" '$1 == "AvailabilityVersions" { $2 = t; $3 = "-" } { print }')
   fi
   local t=$DATA/libcxx-versions.txt
   if [ -z "$LIBCXX_VERSION" ]; then
-    LIBCXX_VERSION=$(awk -v v="$SDK_VERSION" '$1 == "macos" && $2 == v { print $3 }' "$t")
+    LIBCXX_VERSION=$(libcxx_value macos "$SDK_VERSION")
     [ -n "$LIBCXX_VERSION" ] || die "$t has no libc++ for macOS $SDK_VERSION"
   fi
   LLVM_TAG=llvmorg-$LIBCXX_VERSION
-  LLVM_COMMIT=$(awk -v v="$LIBCXX_VERSION" '$1 == "llvm" && $2 == v { print $3 }' "$t")
-  [ -n "$LLVM_COMMIT" ] || die "LLVM $LIBCXX_VERSION is not in $t; releases: $(awk '$1 == "llvm" { printf "%s ", $2 }' "$t") (helpers/manifest.py --llvm adds one)"
+  LLVM_COMMIT=$(libcxx_value llvm "$LIBCXX_VERSION")
+  [ -n "$LLVM_COMMIT" ] || die "LLVM $LIBCXX_VERSION is not in $t; releases: $(libcxx_keys llvm | tr '\n' ' ')(helpers/manifest.py --llvm adds one)"
 }
 
 # clone_is_current DIR TAG COMMIT: is DIR a complete clone of TAG (its mark
@@ -122,11 +134,14 @@ fetch_llvm() {
   echo "$LLVM_TAG" > "$SRC/llvm-project/.oc-tag"
 }
 
+# sqlite_dir: the directory of the sqlite amalgamation in SRC (the name of the archive)
+sqlite_dir() { echo "$SRC/$(basename "$SQLITE_URL" .zip)"; }
+
 # fetch_sqlite: the amalgamation of the manifest; the directory name is the
 # name of the archive.  The archive is checked before it is unpacked, and the
 # directory appears only when it is complete.
 fetch_sqlite() {
-  local d; d=$(basename "$SQLITE_URL" .zip)
+  local d; d=$(basename "$(sqlite_dir)")
   if [ -f "$SRC/$d/sqlite3.h" ]; then
     [ -n "${FETCH_QUIET:-}" ] || fetch_line sqlite "$d" present   # (the step libs calls this too)
     return 0

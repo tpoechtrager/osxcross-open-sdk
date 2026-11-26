@@ -9,6 +9,7 @@ what it does not find.  Maintenance tool, run it for a new macOS release; a
 difference is not always an error (an older release can have older values),
 but every difference should be understood.
 """
+import argparse
 import os
 import re
 import sys
@@ -75,10 +76,9 @@ CHECKS = {
 
 
 def main(argv):
-    if len(argv) != 2:
-        sys.stderr.write(__doc__)
-        return 2
-    src = argv[1]
+    p = argparse.ArgumentParser(prog="check_libraries.py", description="Check data/libraries.txt against the sources.")
+    p.add_argument("src", help="the directory with the clones (build/src)")
+    src = p.parse_args(argv[1:]).src
     bad = 0
     for name, checks in sorted(CHECKS.items()):
         for rel, rx in checks:

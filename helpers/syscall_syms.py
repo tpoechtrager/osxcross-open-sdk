@@ -13,23 +13,29 @@ architecture-specific global of custom.s that is not a stub file).
 
 Writes one symbol per line (Mach-O names, the same for x86_64 and arm64).
 """
+import argparse
 import os
 import re
-import subprocess
 import shutil
+import subprocess
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # python3 -I leaves it out
+from clang_scan import ARCHS  # noqa: E402
 
 
 def main(argv):
-    if len(argv) != 4:
-        sys.stderr.write(__doc__)
-        return 2
-    xnu, work, out = argv[1:4]
+    p = argparse.ArgumentParser(prog="syscall_syms.py", description="The system call stubs of libsystem_kernel.")
+    p.add_argument("xnu")
+    p.add_argument("work")
+    p.add_argument("out")
+    a = p.parse_args(argv[1:])
+    xnu, work, out = a.xnu, a.work, a.out
     ls = os.path.join(xnu, "libsyscall")
     outdir = os.path.join(work, "syscall-stubs")
     shutil.rmtree(outdir, ignore_errors=True)
     os.makedirs(outdir)
-    env = dict(os.environ, ARCHS="x86_64 arm64")
+    env = dict(os.environ, ARCHS=" ".join(ARCHS))
     r = subprocess.run(
         ["perl", os.path.join(ls, "xcodescripts", "create-syscalls.pl"),
          os.path.join(xnu, "bsd", "kern", "syscalls.master"),

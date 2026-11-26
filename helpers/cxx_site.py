@@ -11,6 +11,7 @@ ABI version 1, pthreads, vendor availability annotations on, libdispatch as
 the parallel STL backend, no hardening.  Options that the template does not
 list are not written; options that the table does not know are off.
 """
+import argparse
 import re
 import sys
 
@@ -37,8 +38,12 @@ VALUES = {
 OFF_BY_DEFAULT = {"_LIBCPP_ENABLE_ASSERTIONS_DEFAULT": 0}
 
 
-def main():
-    src, out = sys.argv[1:3]
+def main(argv):
+    p = argparse.ArgumentParser(prog="cxx_site.py", description="Write libc++'s __config_site.")
+    p.add_argument("template", help="__config_site.in")
+    p.add_argument("out")
+    a = p.parse_args(argv[1:])
+    src, out = a.template, a.out
     res = []
     for line in open(src).read().splitlines():
         m = re.match(r"#cmakedefine01\s+(\w+)", line)
@@ -56,7 +61,10 @@ def main():
             continue
         line = re.sub(r"@\w+@", "", line)
         res.append(line)
-    open(out, "w").write("\n".join(res) + "\n")
+    with open(out, "w") as f:
+        f.write("\n".join(res) + "\n")
+    return 0
 
 
-main()
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

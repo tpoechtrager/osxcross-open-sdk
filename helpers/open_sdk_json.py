@@ -10,6 +10,7 @@ sources by the same generator give the same file.  Keys:
   libcxx sqlite_url sqlite_sha256 (the last two only if sqlite is in the SDK)
 PROJECTS_FILE has lines "name<TAB>tag<TAB>commit" (make_licenses.py).
 """
+import argparse
 import json
 import os
 import sys
@@ -38,11 +39,15 @@ OWN_FILES_FULL = [
 
 
 def main(argv):
-    if len(argv) < 3:
-        sys.stderr.write(__doc__)
-        return 2
-    out, projects_file = argv[1], argv[2]
-    kv = dict(a.split("=", 1) for a in argv[3:])
+    p = argparse.ArgumentParser(prog="open_sdk_json.py", description="Write OpenSDK.json.")
+    p.add_argument("out")
+    p.add_argument("projects_file")
+    p.add_argument("values", nargs="*", metavar="KEY=VALUE")
+    a = p.parse_args(argv[1:])
+    out, projects_file = a.out, a.projects_file
+    if any("=" not in v for v in a.values):
+        p.error("the values are KEY=VALUE")
+    kv = dict(v.split("=", 1) for v in a.values)
     projects = []
     for line in open(projects_file):
         name, tag, commit = line.rstrip("\n").split("\t")

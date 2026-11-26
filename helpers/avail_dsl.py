@@ -18,6 +18,7 @@ The cut does what the RC_DARWIN_KERNEL_VERSION variable of Apple's
 version), but it works without it: all sets before macOS 13.3 have the Darwin
 version 0.0, and the lines of EXTRA.dsl have no set.
 """
+import argparse
 import re
 import sys
 
@@ -26,7 +27,7 @@ def words(line):
     return line.split("#", 1)[0].split()
 
 
-def info(dsl, target):
+def ios_version(dsl, target):
     """The iOS version of a macOS release (for SDKSettings.json) from an already cut DSL."""
     if re.fullmatch(r"\d+", target):
         target += ".0"
@@ -42,14 +43,11 @@ def info(dsl, target):
             # the newest iOS release up to the end of the macOS release's
             # group (it can come before the macOS line: macOS 11.3, iOS 14.5)
             ios = w[2]
-    print(ios)
+    return ios
 
 
-def main():
-    if sys.argv[1] == "--ios-version":
-        info(sys.argv[2], sys.argv[3])
-        return
-    base, extra, target, out = sys.argv[1:5]
+def cut(base, extra, target, out):
+    """Write OUT: BASE without the __OPENSOURCE__ blocks, EXTRA, cut after TARGET."""
     if re.fullmatch(r"\d+", target):
         target += ".0"
     lines = []
@@ -85,7 +83,7 @@ def main():
             start = i
             break
     if start is None:
-        sys.exit("macOS %s is not in the DSL" % target)
+        sys.exit("avail_dsl.py: macOS %s is not in the DSL" % target)
     end = len(lines)
     for i in range(start + 1, len(lines)):
         w = words(lines[i])
@@ -99,4 +97,24 @@ def main():
         f.write("\n".join(lines[:end]) + "\n")
 
 
-main()
+def main(argv):
+    if argv[1:2] == ["--ios-version"]:
+        p = argparse.ArgumentParser(prog="avail_dsl.py --ios-version", description="The iOS version of a macOS release.")
+        p.add_argument("dsl")
+        p.add_argument("macos")
+        a = p.parse_args(argv[2:])
+        print(ios_version(a.dsl, a.macos))
+        return 0
+    p = argparse.ArgumentParser(prog="avail_dsl.py", description="Prepare the DSL of AvailabilityVersions.",
+                                epilog="avail_dsl.py --ios-version DSL MACOS_VERSION prints the iOS version.")
+    p.add_argument("base")
+    p.add_argument("extra")
+    p.add_argument("macos")
+    p.add_argument("out")
+    a = p.parse_args(argv[1:])
+    cut(a.base, a.extra, a.macos, a.out)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

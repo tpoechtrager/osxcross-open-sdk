@@ -13,6 +13,7 @@ usage: scrub_platforms.py <include-dir> <notice-date>
 
 Every changed header gets the notice of notice.py.
 """
+import argparse
 import os
 import re
 import sys
@@ -41,7 +42,11 @@ def scrub(text, plat):
     return text, n
 
 def main(argv):
-    root, date = argv[1:3]
+    p = argparse.ArgumentParser(prog="scrub_platforms.py", description="Remove bridgeos from availability annotations.")
+    p.add_argument("include_dir")
+    p.add_argument("notice_date")
+    a = p.parse_args(argv[1:])
+    root, date = a.include_dir, a.notice_date
     total = files = 0
     for d, _, names in os.walk(root):
         for name in names:
@@ -63,7 +68,9 @@ def main(argv):
                 with open(path, "w", encoding="utf-8", errors="surrogateescape") as f:
                     f.write(t)
                 notice.add_notice(path, date, "the platform bridgeos removed from the availability macros")
-    print("scrub_platforms: %d substitutions in %d files" % (total, files))
+    print("scrub_platforms.py: %d substitutions in %d files" % (total, files))
+    return 0
+
 
 if __name__ == "__main__":
-    main(sys.argv)
+    sys.exit(main(sys.argv))

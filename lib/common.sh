@@ -115,9 +115,19 @@ generator_label() {
   esac
 }
 
+# ---------------------------------------------------------------------------
+# Readers of the files of data/ ("#" starts a comment, empty lines are
+# skipped; helpers/data_files.py has the same readers for Python)
+# ---------------------------------------------------------------------------
+# data_lines FILE: the lines of FILE without comments and empty lines
+data_lines() { sed 's/#.*//' "$1" | awk 'NF'; }
+
+# symbol_list FILE: the symbols of a symbol list or export list, one per line
+symbol_list() { data_lines "$1" | awk '{ print $1 }'; }
+
 # data/libraries.txt: install name, current and compatibility version of the
 # stub libraries.  lib_field NAME COLUMN, lib_current NAME.
-lib_field() { awk -v n="$1" -v c="$2" '$1 == n { print $c }' "$DATA/libraries.txt"; }
+lib_field() { data_lines "$DATA/libraries.txt" | awk -v n="$1" -v c="$2" '$1 == n { print $c }'; }
 
 # tag_version PROJECT: the number of the tag of PROJECT in the manifest
 # ("libffi-40" gives 40), at most three components
@@ -156,18 +166,18 @@ run_unifdef() { "$HOST/bin/unifdef" "$@" || [ $? -eq 1 ]; }
 # helpers/mk_tbd.py reads (it writes arm64e and x86_64h from them)
 TBD_ARCHS="x86_64 arm64"
 
-# syms_for_archs FILE: the symbols of FILE (one per line, "#" starts a
-# comment, empty lines are skipped) as "ARCH SYMBOL" lines for TBD_ARCHS
+# syms_for_archs FILE: the symbols of FILE (symbol_list) as "ARCH SYMBOL"
+# lines for TBD_ARCHS
 syms_for_archs() {
   local a
-  for a in $TBD_ARCHS; do sed 's/#.*//' "$1" | awk -v a="$a" 'NF { print a " " $0 }'; done
+  for a in $TBD_ARCHS; do symbol_list "$1" | awk -v a="$a" '{ print a " " $0 }'; done
 }
 
 # hdr_syms OUT CLANG-FLAGS HEADER...: the symbols that the HEADERs of the stage
 # declare, as "ARCH SYMBOL" lines (helpers/hdr_syms.py)
 hdr_syms() {
   local out=$1 flags=$2; shift 2
-  python3 -I "$HELPERS/hdr_syms.py" "$STAGE" "$CLANG_PATH" "$out" "$flags" -- "$@"
+  python3 -I "$HELPERS/hdr_syms.py" --flags="$flags" "$STAGE" "$CLANG_PATH" "$out" "$@"
 }
 
 # has_step NAME: is the step in the list of steps to run?

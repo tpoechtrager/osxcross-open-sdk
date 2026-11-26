@@ -7,8 +7,10 @@ INSTALL_MD_LIST, ...) and install them with unifdef.  The real build needs
 Xcode tools, so this script evaluates the Makefiles with a stub MakeInc.*
 and applies the same unifdef flags (SINCFRAME_UNIFDEF) itself.
 
-usage: xnu_headers.py XNU_SRC DESTDIR UNIFDEF DECOMMENT [--private]
+usage: xnu_headers.py XNU_SRC DESTDIR UNIFDEF DECOMMENT
+       xnu_headers.py XNU_SRC --print-flags
 """
+import argparse
 import os
 import re
 import shutil
@@ -42,17 +44,14 @@ def platform_prefix(src):
     return "XNU_PLATFORM_" if "-DXNU_PLATFORM_" in t else "PLATFORM_"
 
 
-def unifdef_flags(private, prefix="XNU_PLATFORM_"):
+def unifdef_flags(prefix="XNU_PLATFORM_"):
     f = []
     for p in PLATFORMS:
         f.append(("-D%s%s" if p == "MacOSX" else "-U%s%s") % (prefix, p))
     f += XNU_PRIVATE
     f += ["-UKERNEL_PRIVATE", "-UKERNEL", "-UDRIVERKIT", "-UEXCLAVEKIT", "-UEXCLAVECORE",
           "-USCHED_TEST_HARNESS"]
-    if private:
-        f += ["-DPRIVATE", "-U_OPEN_SOURCE_", "-U__OPEN_SOURCE__"]
-    else:
-        f += ["-UPRIVATE", "-D_OPEN_SOURCE_", "-D__OPEN_SOURCE__"]
+    f += ["-UPRIVATE", "-D_OPEN_SOURCE_", "-D__OPEN_SOURCE__"]
     return f
 
 
@@ -103,7 +102,7 @@ class Evaluator:
         r = subprocess.run([os.environ.get("MAKE", "make"), "-s", "-r"] + extra + ["-f", wrapper, "dump"], cwd=os.path.join(self.src, d),
                            env=env, capture_output=True, text=True)
         if r.returncode:
-            sys.stderr.write("make failed in %s: %s\n" % (d, r.stderr[-500:]))
+            sys.stderr.write("xnu_headers.py: make failed in %s: %s\n" % (d, r.stderr[-500:]))
             return None
         out = {}
         for line in r.stdout.splitlines():
@@ -129,20 +128,28 @@ def walk(ev, d, arch, seen, result):
 MIN_FILES = 300
 
 
-def main():
-    if "--print-flags" in sys.argv:
-        # xnu_headers.py XNU_DIR --print-flags: the unifdef flags for the headers of that xnu
-        print(" ".join(unifdef_flags(False, platform_prefix(sys.argv[1]))))
-        return
-    src, dest, unifdef, decomment = sys.argv[1:5]
-    private = "--private" in sys.argv
-    flags = unifdef_flags(private, platform_prefix(src))
+def main(argv):
+    p = argparse.ArgumentParser(prog="xnu_headers.py", description="Install the public xnu headers.")
+    p.add_argument("xnu_src")
+    p.add_argument("--print-flags", action="store_true",
+                   help="only print the unifdef flags for the headers of that xnu")
+    p.add_argument("rest", nargs="*", metavar="DESTDIR UNIFDEF DECOMMENT")
+    a = p.parse_args(argv[1:])
+    if a.print_flags:
+        print(" ".join(unifdef_flags(platform_prefix(a.xnu_src))))
+        return 0
+    if len(a.rest) != 3:
+        p.error("DESTDIR, UNIFDEF and DECOMMENT are needed")
+    src = a.xnu_src
+    dest, unifdef, decomment = a.rest
+    flags = unifdef_flags(platform_prefix(src))
     os.makedirs(dest, exist_ok=True)
     ev = Evaluator(src, os.path.dirname(os.path.abspath(dest)))
     try:
         run(ev, src, dest, unifdef, decomment, flags)
     finally:
         ev.close()
+    return 0
 
 
 def run(ev, src, dest, unifdef, decomment, flags):
@@ -153,9 +160,6 @@ def run(ev, src, dest, unifdef, decomment, flags):
         result = []
         seen = set()
         tops = ("security", "bsd", "osfmk", "pexpert", "libkern", "libsa", "san", "EXTERNAL_HEADERS")
-        for a_ in sys.argv:
-            if a_.startswith("--tops="):
-                tops = tuple(a_[7:].split(","))
         for top in tops:
             walk(ev, top, arch, seen, result)
         for d, vals in result:
@@ -182,7 +186,7 @@ def run(ev, src, dest, unifdef, decomment, flags):
                     dst = os.path.normpath(os.path.join(dest, "usr/include", dd, fn))
                     r = subprocess.run([unifdef] + flags + [srcf], capture_output=True)
                     if r.returncode == 2:
-                        sys.stderr.write("unifdef failed: %s\n" % srcf)
+                        sys.stderr.write("xnu_headers.py: unifdef failed: %s\n" % srcf)
                         failed += 1
                         continue
                     content = r.stdout
@@ -191,7 +195,7 @@ def run(ev, src, dest, unifdef, decomment, flags):
                     if not p.stdout.strip():
                         continue
                     if dst in installed and installed[dst] != content:
-                        sys.stderr.write("note: %s differs between archs\n" % dst)
+                        sys.stderr.write("xnu_headers.py: note: %s differs between archs\n" % dst)
                     installed[dst] = content
     for dst, content in installed.items():
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -212,4 +216,4 @@ def run(ev, src, dest, unifdef, decomment, flags):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(sys.argv))

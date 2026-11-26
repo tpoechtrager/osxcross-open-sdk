@@ -2,12 +2,18 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Write a TAPI text stub (tbd v4).
 
-usage: mk_tbd.py OUT INSTALL_NAME CURRENT_VERSION SYMFILE [--compat V] [--reexport LIB]...
+usage: mk_tbd.py OUT INSTALL_NAME CURRENT_VERSION SYMFILE [--compat V] [--reexport-symbols SYMFILE]
 SYMFILE lines: "<arch> <symbol>" with arch x86_64 or arm64 (arm64e/x86_64h
-share the symbols of arm64/x86_64).  Prefix "w " on the symbol column is not
-supported; a line "<arch> weak <symbol>" marks a weak symbol.
+share the symbols of arm64/x86_64).
 """
-import os, re, sys
+import argparse
+import os
+import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # python3 -I leaves it out
+from clang_scan import ARCHS  # noqa: E402
+
 
 def q(s):
     return s if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", s) else "'" + s.replace("'", "''") + "'"
@@ -23,24 +29,32 @@ def wrap(items, indent, width=96, first_prefix=""):
     lines.append(cur)
     return ("\n" + " " * indent).join(lines)
 
-def main():
-    out, install, cur, symfile = sys.argv[1:5]
-    compat = None; reexports = []; resyms = None
-    a = sys.argv[5:]
-    while a:
-        if a[0] == "--compat": compat = a[1]; a = a[2:]
-        elif a[0] == "--reexport": reexports.append(a[1]); a = a[2:]
-        elif a[0] == "--reexport-symbols": resyms = a[1]; a = a[2:]
-        else: raise SystemExit("bad arg " + a[0])
-    syms = {"x86_64": set(), "arm64": set()}
-    weak = {"x86_64": set(), "arm64": set()}
-    for l in open(symfile):
-        p = l.split()
-        if len(p) == 2: syms[p[0]].add(p[1])
-        elif len(p) == 3 and p[1] == "weak": weak[p[0]].add(p[2])
-    objc = {"x86_64": set(), "arm64": set()}
-    eh = {"x86_64": set(), "arm64": set()}
-    for a_ in ("x86_64", "arm64"):
+def read_arch_symbols(path):
+    """{arch: set of symbols} of a file of "<arch> <symbol>" lines"""
+    syms = {a: set() for a in ARCHS}
+    with open(path) as f:
+        for l in f:
+            p = l.split()
+            if len(p) == 2:
+                syms[p[0]].add(p[1])
+    return syms
+
+
+def main(argv):
+    ap = argparse.ArgumentParser(prog="mk_tbd.py", description="Write a TAPI text stub (tbd v4).")
+    ap.add_argument("out")
+    ap.add_argument("install")
+    ap.add_argument("current")
+    ap.add_argument("symfile")
+    ap.add_argument("--compat", help="the compatibility version")
+    ap.add_argument("--reexport-symbols", dest="resyms", metavar="SYMFILE",
+                    help="symbols re-exported from another library")
+    args = ap.parse_args(argv[1:])
+    out, install, cur, compat, resyms = args.out, args.install, args.current, args.compat, args.resyms
+    syms = read_arch_symbols(args.symfile)
+    objc = {a: set() for a in ARCHS}
+    eh = {a: set() for a in ARCHS}
+    for a_ in ARCHS:
         for n in list(syms[a_]):
             if n.startswith("_OBJC_CLASS_$_"):
                 objc[a_].add(n[len("_OBJC_CLASS_$_"):]); syms[a_].discard(n)
@@ -57,10 +71,6 @@ def main():
          "targets:         [ %s ]" % ", ".join(allt),
          "install-name:    '%s'" % install, "current-version: %s" % cur]
     if compat: o.append("compatibility-version: %s" % compat)
-    if reexports:
-        o.append("reexported-libraries:")
-        o.append("  - targets:         [ %s ]" % ", ".join(allt))
-        o.append("    libraries:       [ %s ]" % wrap(["'%s'" % r for r in reexports], 21))
     o.append("exports:")
     def block(targets, names, key="symbols"):
         if not names: return
@@ -77,14 +87,9 @@ def main():
     block(allt, eb, "objc-eh-types")
     block(tmap["x86_64"], eh["x86_64"] - eb, "objc-eh-types")
     block(tmap["arm64"], eh["arm64"] - eb, "objc-eh-types")
-    wboth = weak["x86_64"] & weak["arm64"]
-    block(allt, wboth, "weak-symbols")
     if resyms:
         # symbols re-exported from another library (as tapi writes them)
-        rs = {"x86_64": set(), "arm64": set()}
-        for l in open(resyms):
-            p = l.split()
-            if len(p) == 2: rs[p[0]].add(p[1])
+        rs = read_arch_symbols(resyms)
         rb = rs["x86_64"] & rs["arm64"]
         o.append("reexports:")
         for tg, names in ((allt, rb), (tmap["x86_64"], rs["x86_64"] - rb), (tmap["arm64"], rs["arm64"] - rb)):
@@ -94,6 +99,10 @@ def main():
     o.append("...")
     if os.path.lexists(out):
         os.unlink(out)   # never write through a symlink
-    open(out, "w").write("\n".join(o) + "\n")
+    with open(out, "w") as f:
+        f.write("\n".join(o) + "\n")
+    return 0
 
-main()
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

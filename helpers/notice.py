@@ -10,6 +10,7 @@ has a notice already gets the new text as a further notice line behind the
 last one, unless that line is there; the same call twice changes nothing.  DATE is fixed by the generator, not
 the date of the build, so that the SDK is reproducible.
 """
+import argparse
 import sys
 
 MARK = "Modified by osxcross-open-sdk"
@@ -50,10 +51,12 @@ def add_notice(path, date, text):
 
 
 def main(argv):
-    if len(argv) != 4:
-        sys.stderr.write(__doc__)
-        return 2
-    add_notice(argv[2], argv[1], argv[3])
+    p = argparse.ArgumentParser(prog="notice.py", description="Mark a header that the generator changed.")
+    p.add_argument("date")
+    p.add_argument("file")
+    p.add_argument("text")
+    a = p.parse_args(argv[1:])
+    add_notice(a.file, a.date, a.text)
     return 0
 
 

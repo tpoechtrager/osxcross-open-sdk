@@ -7,6 +7,7 @@ type, executable bit, name and content hash (or link target). It does not
 depend on the tar and xz versions, owners or times, so two SDKs of the same
 sources have the same value on every host.
 """
+import argparse
 import hashlib
 import os
 import stat
@@ -41,10 +42,10 @@ def tree_hash(root):
 
 
 def main(argv):
-    if len(argv) != 2:
-        sys.stderr.write(__doc__)
-        return 2
-    print(tree_hash(argv[1]))
+    p = argparse.ArgumentParser(prog="tree_hash.py", description="The SHA-256 of a directory tree.")
+    p.add_argument("dir")
+    a = p.parse_args(argv[1:])
+    print(tree_hash(a.dir))
     return 0
 
 

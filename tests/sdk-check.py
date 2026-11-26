@@ -108,13 +108,10 @@ def check_files(sdk, rep, core):
 
 
 def libraries():
-    table = {}
-    with open(os.path.join(ROOT, "data", "libraries.txt")) as f:
-        for l in f:
-            w = l.split()
-            if w and not l.startswith("#"):
-                table[w[1]] = w[0]
-    return table
+    """{install name: name} of data/libraries.txt"""
+    sys.path.insert(0, os.path.join(ROOT, "helpers"))
+    from data_files import read_libraries
+    return {v[0]: k for k, v in read_libraries(os.path.join(ROOT, "data", "libraries.txt")).items()}
 
 
 def check_tbd(sdk, rep):

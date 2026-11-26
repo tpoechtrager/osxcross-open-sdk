@@ -30,7 +30,8 @@ stubs_libsystem_headers() {
   python3 -I "$HELPERS/syscall_syms.py" "$SRC/xnu" "$STAGE_WORK" "$STAGE_WORK/syscalls.syms" ||
     die "the system call stubs of xnu could not be listed"
   python3 -I "$HELPERS/gen_symbols.py" "$STAGE" "$CLANG_PATH" "$STAGE_WORK/libsystem.syms" "$SRC" \
-    "$STAGE_WORK/libsystem.errors" "$STAGE_WORK/syscalls.syms" ||
+    --extra "$DATA/symbols/libsystem-extra.txt" --exclude "$DATA/symbols/libsystem-exclude.txt" \
+    --errors "$STAGE_WORK/libsystem.errors" --syscalls "$STAGE_WORK/syscalls.syms" ||
     die "gen_symbols.py failed (the errors of clang are in $STAGE_WORK/libsystem.errors)"
   show_log "$STAGE_WORK/libsystem.errors"
 }
