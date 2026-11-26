@@ -94,7 +94,7 @@ class MkTbd(Tmp):
         self.assertEqual(read(a), read(b))
 
 
-class Scrub(unittest.TestCase):
+class Scrub(Tmp):
     def test_scrub_forms(self):
         m = load("scrub_platforms")
         cases = [
@@ -102,11 +102,30 @@ class Scrub(unittest.TestCase):
             ("__API_AVAILABLE(macos(10.0), bridgeos(2.0))", "__API_AVAILABLE(macos(10.0))"),
             ("__API_AVAILABLE(bridgeos(2.0), macos(10.0))", "__API_AVAILABLE(macos(10.0))"),
             ("__API_UNAVAILABLE(macos, bridgeos)", "__API_UNAVAILABLE(macos)"),
+            # the macros of the framework headers have no underscores
+            ("OSStatus f(void) API_UNAVAILABLE(bridgeos);", "OSStatus f(void) ;"),
+            ("API_AVAILABLE(macos(10.0), bridgeos(2.0))", "API_AVAILABLE(macos(10.0))"),
+            ("API_UNAVAILABLE(macos, bridgeos)", "API_UNAVAILABLE(macos)"),
+            ("API_UNAVAILABLE(bridgeos, macos)", "API_UNAVAILABLE(macos)"),
+            ("MY_API_UNAVAILABLE(bridgeos)", "MY_API_UNAVAILABLE(bridgeos)"),
             ("nothing here", "nothing here"),
         ]
         for src, want in cases:
             got, _ = m.scrub(src, "bridgeos")
             self.assertEqual(got.strip(), want.strip(), src)
+
+    def test_every_directory_and_the_notice(self):
+        self.write("inc/a.h", "/* l */\nint a API_UNAVAILABLE(bridgeos);\n")
+        self.write("fw/Security.framework/Headers/b.h", "/* l */\nint b API_UNAVAILABLE(bridgeos);\nint c __API_AVAILABLE(macos(10.0), bridgeos(2.0));\n")
+        self.write("fw/Other.framework/Headers/c.h", "int d;\n")
+        rc, out, err = run("scrub_platforms.py", "2026-11-26", self.path("inc"), self.path("fw/Security.framework/Headers"),
+                           self.path("fw/Other.framework/Headers"))
+        self.assertEqual(rc, 0, err)
+        self.assertIn("3 substitutions in 2 files", out)
+        b = read(self.path("fw/Security.framework/Headers/b.h"))
+        self.assertNotRegex(read(self.path("inc/a.h")) + b, r"(?m)^[^/].*bridgeos")   # not in the lines of code
+        self.assertIn("/* Modified by osxcross-open-sdk (2026-11-26): the platform bridgeos removed", b)
+        self.assertEqual(read(self.path("fw/Other.framework/Headers/c.h")), "int d;\n")
 
 
 class Notice(Tmp):

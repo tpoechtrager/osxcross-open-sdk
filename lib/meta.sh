@@ -11,8 +11,13 @@ step_meta() {
   local V=$SDK_VERSION M=$STAGE
   mkdir -p "$M/System/Library/CoreServices" "$M/usr/share/licenses/open-sdk"
   # GCC does not know the platform bridgeos in availability attributes; the
-  # public headers of an SDK do not name it either.
-  quiet python3 -I "$HELPERS/scrub_platforms.py" "$M/usr/include" "$NOTICE_DATE"   # (it prints a count)
+  # public headers of an SDK do not name it either (usr/include and the headers
+  # of the frameworks: Security, SystemConfiguration).
+  local scrub_dirs=("$M/usr/include") fw
+  for fw in "$M"/System/Library/Frameworks/*.framework/Headers; do
+    [ -d "$fw" ] && scrub_dirs+=("$fw")   # (the pattern stays as it is if there are no frameworks: core)
+  done
+  quiet python3 -I "$HELPERS/scrub_platforms.py" "$NOTICE_DATE" "${scrub_dirs[@]}"   # (it prints a count)
   echo "SystemVersion.plist"
   cat > "$M/System/Library/CoreServices/SystemVersion.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>

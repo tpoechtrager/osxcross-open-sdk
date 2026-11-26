@@ -57,7 +57,8 @@ The changes:
 - Libm's ARM `math.h` and `complex.h` are used for arm64 too, with the condition of the Intel variant  
   for `llrint` and `llround`; `__exp10` and `__exp10f` are declared (Clang emits calls to them);
 - `mach/port.h` (macOS 26.4 and later) compiles with g++;
-- the platform `bridgeos` is removed from availability annotations (GCC does not know it);
+- the platform `bridgeos` is removed from availability annotations (GCC does not know it), in `usr/include`  
+  and in the `Headers` of the frameworks (`Security`, `SystemConfiguration`);
 - CoreFoundation: an include of `CFMachPort.h` and a small block of macros in  
   `CFAvailability.h` (CF-1153.18 of 2018 lacks them);
 - CommonCrypto: `<availability.h>` is written `<Availability.h>`;
