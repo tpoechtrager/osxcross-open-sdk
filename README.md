@@ -40,7 +40,8 @@ install name and version. A real SDK was used only to test a result, never as a 
   Signposts, activities and `os_trace` compile and run but record nothing.
 - The frameworks `CoreFoundation`, `DiskArbitration`, `SystemConfiguration`, `Security` (including `SecureTransport`)  
   and `IOKit` (`IOKitLib`, power sources and power management; no device families).
-- The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `rtsan`, `tysan`.
+- XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
+- The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `tsan`, `rtsan`, `tysan`.
 
 ### What does not work
 
@@ -48,9 +49,9 @@ install name and version. A real SDK was used only to test a result, never as a 
   `Foundation` and `CoreServices` are empty placeholders, so that `-framework Foundation`  
   links; `#import <Foundation/Foundation.h>` fails.
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
-- `XPC`, `libbsm`, the `IOKit` device families (`IOKit/storage`, `usb`, `hid`, ...), `FSEvents` and `LaunchServices`.
-- The thread sanitizer runtime of compiler-rt (`tsan`): it builds its XPC interceptors when `<xpc/xpc.h>` exists,  
-  and the `xpc/xpc.h` of the SDK has only `xpc_object_t`.
+- `libbsm`, the `IOKit` device families (`IOKit/storage`, `usb`, `hid`, ...), `FSEvents` and `LaunchServices`.
+- XPC sessions and listeners (`xpc_session`, `xpc_listener`) and the parts of XPC that have no public value  
+  (see [docs/SOURCES.md](docs/SOURCES.md#xpcxpch-and-its-symbols)).
 
 ### Variants
 

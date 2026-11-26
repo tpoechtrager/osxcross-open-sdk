@@ -17,22 +17,19 @@ projects were also built with the stable flavor (cctools/ld64).
 - **GNU and other tools:** `coreutils`, `grep`, `sed`, `gawk`, `findutils`, `file`, `gettext`, `libiconv`,  
   `gmp`, `mpfr`, `libffi`, `xxhash`, `lmdb`, `redis`
 - **Version control:** `git`, `libgit2` (also with SecureTransport)
-- **Compilers and tools:** `LLVM/Clang` (configure with `-DCLANGD_BUILD_XPC=OFF`, the SDK has no XPC;  
-  the Clang that it builds works on macOS), `cctools-port` (builds, and its tools work on macOS),  
-  the sanitizers of compiler-rt 23.1.6 (`asan`, `ubsan`, `lsan`, `rtsan`, `tysan` build for x86_64 and arm64;  
-  `asan`, `ubsan`, `lsan` and `rtsan` found the error of a test program on macOS)
+- **Compilers and tools:** `LLVM/Clang` (the compiler works on macOS), `cctools-port` (builds, and its tools work on macOS),  
+  `compiler-rt` (builds, and its runtimes work on macOS)
 
 **Not covered**
 
 - `htop` needs the headers of `IOKit/storage`; they are not open source.
 - The `git` fsmonitor daemon and the Xcode generator of `cmake` are switched off: they need `CoreServices`  
   and `ApplicationServices`.
-- `tsan` of compiler-rt does not build: it uses the XPC types when `<xpc/xpc.h>` exists, and the SDK's file has only `xpc_object_t`.  
-  `asan`, `lsan` and `tsan` need the full SDK (`CoreFoundation/CFBase.h`).
+- `asan`, `lsan` and `tsan` of compiler-rt need the full SDK (`CoreFoundation/CFBase.h`).
 - Projects that need `Foundation`, `AppKit` or `Metal` were not tried.
 
 **What the builds showed**
 
 - Some projects exposed errors of the SDK (missing headers or symbols); they are fixed.
 - Several projects needed a workaround in the project or the toolchain (a `configure` option, a `make` variable,  
-  a newer `config.sub`, `-DCLANGD_BUILD_XPC=OFF` for LLVM).
+  a newer `config.sub`).

@@ -26,7 +26,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `libDER/DERItem.h`, `libDER/libDER_config.h` | xnu `EXTERNAL_HEADERS/libDER/` ([details](#libderderitemh-libderlibder_configh)) |
 | `os/log.h` | LLVM, Swift 5.2.5, xnu, configd ([details](#oslogh)) |
 | `os/signpost.h`, `os/activity.h`, `os/trace.h` | Swift 5.2.5, Security, xnu; some own values ([details](#ossignposth-osactivityh-ostraceh)) |
-| `xpc/xpc.h` | xnu `libkern/os/trace.h` ([details](#xpcxpch)) |
+| `xpc/xpc.h` and its symbols | Apple's XPC documentation, WebKit `XPCSPI.h` ([details](#xpcxpch-and-its-symbols)) |
 | `CoreFoundation.modulemap`, `CFCompat.h.in` | Own work ([details](#corefoundationmodulemap-cfcompathin)) |
 | `SDKSettings.json`, `SDKSettings.plist` | The keys that Clang and OSXCross read ([details](#sdksettingsjson-sdksettingsplist)) |
 | `SystemVersion.plist`, the releases | AppleDB for the build number of each release ([details](#systemversionplist-the-releases)) |
@@ -86,6 +86,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   (the libcalls `__exp10` and `__sincos_stret` with LLVM's `RuntimeLibcalls.td`).
 - The builtins of compiler-rt: [below](#compiler-rt-builtins-in-libsystembtbd).
 - The private symbols that the sanitizers of compiler-rt need: [below](#private-symbols-for-the-sanitizers).
+- The symbols of libxpc (full SDK): [below](#xpcxpch-and-its-symbols).
 
 ---
 
@@ -278,12 +279,26 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ---
 
-### `xpc/xpc.h`
+### `xpc/xpc.h` and its symbols
 
-**Files:** `data/headers/usr/include/xpc/xpc.h`
+**Files:** `data/headers/usr/include/xpc/xpc.h`, `data/symbols/libsystem-xpc.txt`, `lib/stubs.sh` (`stubs_xpc`)
 
-- Own file with the one typedef `typedef void *xpc_object_t;` that `xnu/libkern/os/trace.h`  
-  (line 36) writes for the case that `<xpc/xpc.h>` does not exist; `SecCode.h` of Security needs the type.
+- Own text (0BSD), full SDK only. libxpc has no open source release. libSystem re-exports it, so its symbols are in `libSystem.B.tbd`:  
+  `Libsystem/requiredlibs` lists `xpc`, and `Libsystem/xcodescripts/linker_arguments.sh` links each of them with `-Wl,-reexport-l<lib>`.
+- The functions and variables, their parameters and the release that brought each one:  
+  Apple's XPC documentation (developer.apple.com/documentation/xpc), the C declaration on the page of each name.  
+  152 names, all from macOS 12.0 or earlier, so every release of the full SDK has them; each has `API_AVAILABLE` with that release.
+- The object and block types, `XPC_GLOBAL_OBJECT`, `XPC_ARRAY_APPEND`, `XPC_CONNECTION_MACH_SERVICE_LISTENER` (`1 << 0`),  
+  the order of the activity states and the 11 variables behind `XPC_TYPE_*`, `XPC_ERROR_*` and `XPC_ERROR_KEY_DESCRIPTION`:  
+  WebKit `Source/WTF/wtf/spi/darwin/XPCSPI.h` (BSD-2-Clause; facts only, no text).
+- Which functions return an object that the caller releases (`OS_OBJECT_RETURNS_RETAINED`): the names with create or copy,  
+  and `xpc_connection_send_message_with_reply_sync`, whose page says so.
+- `data/symbols/libsystem-xpc.txt` names the source and release of every symbol; the step stubs stops if the declarations  
+  of the header differ from the list.
+- **Left out, no public value:** `XPC_TYPE_*` of the other types (the documentation names the macros, not their variables),  
+  `XPC_BOOL_TRUE`/`FALSE`, `XPC_CONNECTION_MACH_SERVICE_PRIVILEGED`, `XPC_EVENT_KEY_NAME`.  
+  Also left out: the functions of macOS 14.4 and later (peer requirements; the full SDK of 14.3 must not have them),  
+  `xpc_session`, `xpc_listener` and `xpc_rich_error`.
 
 ---
 

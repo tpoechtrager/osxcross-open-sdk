@@ -16,6 +16,7 @@ step_stubs() {
     stubs_dnssd
     stubs_commoncrypto
     stubs_launchd
+    stubs_xpc
   fi
   stubs_compiler_rt
   stubs_spi
@@ -88,6 +89,20 @@ stubs_launchd() {
   awk 'NR == FNR { d["_" $1] = 1; next } ($2 in d)' "$STAGE_WORK/launchd.defs" "$STAGE_WORK/launchd.all" > "$STAGE_WORK/launchd.syms"
   require_lines "$STAGE_WORK/launchd.syms" 40 "liblaunch has too few declared and defined functions"
   cat "$STAGE_WORK/launchd.syms" >> "$STAGE_WORK/libsystem.syms"
+}
+
+# stubs_xpc: libxpc, which libSystem re-exports, has no open source.  The
+# own xpc/xpc.h (data/headers, full SDK) declares what Apple's documentation
+# and WebKit's XPCSPI.h name; data/symbols/libsystem-xpc.txt gives the
+# source of every symbol, and the declarations of the header must be
+# exactly the names of the list.
+stubs_xpc() {
+  install_own_file usr/include/xpc/xpc.h
+  header_syms "$STAGE_WORK/xpc.all" "" xpc/xpc.h
+  syms_for_archs "$DATA/symbols/libsystem-xpc.txt" | sort > "$STAGE_WORK/xpc.syms"
+  sort "$STAGE_WORK/xpc.all" | cmp -s - "$STAGE_WORK/xpc.syms" ||
+    die "the declarations of xpc/xpc.h and data/symbols/libsystem-xpc.txt differ (see $STAGE_WORK/xpc.all)"
+  cat "$STAGE_WORK/xpc.syms" >> "$STAGE_WORK/libsystem.syms"
 }
 
 # stubs_compiler_rt: the builtins of compiler-rt that libSystem has (128-bit

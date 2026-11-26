@@ -1,0 +1,181 @@
+# The symbols of libxpc that xpc/xpc.h of the full SDK declares.  libSystem
+# re-exports libxpc: Libsystem/requiredlibs lists xpc, and
+# Libsystem/xcodescripts/linker_arguments.sh links each library of that list
+# with -Wl,-reexport-l<lib>.  libxpc has no open source release; every name
+# has a public source:
+#
+# <symbol> <macOS> <source>
+#   macOS   the release that brought it, as the documentation gives it
+#           (- if it names none)
+#   source  doc:    Apple's documentation of XPC, the page of the name
+#                   (developer.apple.com/documentation/xpc), which shows
+#                   its C declaration and availability
+#           webkit: WebKit, Source/WTF/wtf/spi/darwin/XPCSPI.h
+#                   (BSD-2-Clause): the variables behind the macros
+#                   XPC_TYPE_*, XPC_ERROR_* and XPC_ERROR_KEY_DESCRIPTION
+#
+# The step stubs takes these names for libSystem.B.tbd and stops if the
+# declarations of xpc/xpc.h differ from this list.
+__xpc_type_array                                   -     webkit
+__xpc_type_bool                                    -     webkit
+__xpc_type_connection                              -     webkit
+__xpc_type_dictionary                              -     webkit
+__xpc_type_endpoint                                -     webkit
+__xpc_type_error                                   -     webkit
+__xpc_type_string                                  -     webkit
+__xpc_error_connection_interrupted                 -     webkit
+__xpc_error_connection_invalid                     -     webkit
+__xpc_error_termination_imminent                   -     webkit
+__xpc_error_key_description                        -     webkit
+_xpc_retain                                        10.7  doc
+_xpc_release                                       10.7  doc
+_xpc_get_type                                      10.7  doc
+_xpc_type_get_name                                 10.15 doc
+_xpc_copy                                          10.7  doc
+_xpc_equal                                         10.7  doc
+_xpc_hash                                          10.7  doc
+_xpc_copy_description                              10.7  doc
+_xpc_null_create                                   10.7  doc
+_xpc_bool_create                                   10.7  doc
+_xpc_bool_get_value                                10.7  doc
+_xpc_int64_create                                  10.7  doc
+_xpc_int64_get_value                               10.7  doc
+_xpc_uint64_create                                 10.7  doc
+_xpc_uint64_get_value                              10.7  doc
+_xpc_double_create                                 10.7  doc
+_xpc_double_get_value                              10.7  doc
+_xpc_date_create                                   10.7  doc
+_xpc_date_create_from_current                      10.7  doc
+_xpc_date_get_value                                10.7  doc
+_xpc_data_create                                   10.7  doc
+_xpc_data_create_with_dispatch_data                10.7  doc
+_xpc_data_get_length                               10.7  doc
+_xpc_data_get_bytes_ptr                            10.7  doc
+_xpc_data_get_bytes                                10.7  doc
+_xpc_string_create                                 10.7  doc
+_xpc_string_create_with_format                     10.7  doc
+_xpc_string_create_with_format_and_arguments       10.7  doc
+_xpc_string_get_length                             10.7  doc
+_xpc_string_get_string_ptr                         10.7  doc
+_xpc_uuid_create                                   10.7  doc
+_xpc_uuid_get_bytes                                10.7  doc
+_xpc_fd_create                                     10.7  doc
+_xpc_fd_dup                                        10.7  doc
+_xpc_shmem_create                                  10.7  doc
+_xpc_shmem_map                                     10.7  doc
+_xpc_array_create                                  10.7  doc
+_xpc_array_create_empty                            11.0  doc
+_xpc_array_get_count                               10.7  doc
+_xpc_array_set_value                               10.7  doc
+_xpc_array_append_value                            10.7  doc
+_xpc_array_get_value                               10.7  doc
+_xpc_array_apply                                   10.7  doc
+_xpc_array_set_connection                          10.7  doc
+_xpc_array_set_bool                                10.7  doc
+_xpc_array_set_int64                               10.7  doc
+_xpc_array_set_uint64                              10.7  doc
+_xpc_array_set_double                              10.7  doc
+_xpc_array_set_date                                10.7  doc
+_xpc_array_set_data                                10.7  doc
+_xpc_array_set_string                              10.7  doc
+_xpc_array_set_uuid                                10.7  doc
+_xpc_array_set_fd                                  10.7  doc
+_xpc_array_create_connection                       10.7  doc
+_xpc_array_get_bool                                10.7  doc
+_xpc_array_get_int64                               10.7  doc
+_xpc_array_get_uint64                              10.7  doc
+_xpc_array_get_double                              10.7  doc
+_xpc_array_get_date                                10.7  doc
+_xpc_array_get_data                                10.7  doc
+_xpc_array_get_string                              10.7  doc
+_xpc_array_get_uuid                                10.7  doc
+_xpc_array_dup_fd                                  10.7  doc
+_xpc_array_get_array                               10.11 doc
+_xpc_array_get_dictionary                          10.11 doc
+_xpc_dictionary_create                             10.7  doc
+_xpc_dictionary_create_empty                       11.0  doc
+_xpc_dictionary_create_reply                       10.7  doc
+_xpc_dictionary_set_value                          10.7  doc
+_xpc_dictionary_get_value                          10.7  doc
+_xpc_dictionary_get_count                          10.7  doc
+_xpc_dictionary_apply                              10.7  doc
+_xpc_dictionary_get_remote_connection              10.7  doc
+_xpc_dictionary_set_connection                     10.7  doc
+_xpc_dictionary_set_bool                           10.7  doc
+_xpc_dictionary_set_int64                          10.7  doc
+_xpc_dictionary_set_uint64                         10.7  doc
+_xpc_dictionary_set_double                         10.7  doc
+_xpc_dictionary_set_date                           10.7  doc
+_xpc_dictionary_set_data                           10.7  doc
+_xpc_dictionary_set_string                         10.7  doc
+_xpc_dictionary_set_uuid                           10.7  doc
+_xpc_dictionary_set_fd                             10.7  doc
+_xpc_dictionary_set_mach_send                      10.7  doc
+_xpc_dictionary_create_connection                  10.7  doc
+_xpc_dictionary_get_bool                           10.7  doc
+_xpc_dictionary_get_int64                          10.7  doc
+_xpc_dictionary_get_uint64                         10.7  doc
+_xpc_dictionary_get_double                         10.7  doc
+_xpc_dictionary_get_date                           10.7  doc
+_xpc_dictionary_get_data                           10.7  doc
+_xpc_dictionary_get_string                         10.7  doc
+_xpc_dictionary_get_uuid                           10.7  doc
+_xpc_dictionary_dup_fd                             10.7  doc
+_xpc_dictionary_copy_mach_send                     10.7  doc
+_xpc_dictionary_get_array                          10.11 doc
+_xpc_dictionary_get_dictionary                     10.11 doc
+_xpc_connection_create                             10.7  doc
+_xpc_connection_create_mach_service                10.7  doc
+_xpc_connection_create_from_endpoint               10.7  doc
+_xpc_connection_set_target_queue                   10.7  doc
+_xpc_connection_set_event_handler                  10.7  doc
+_xpc_connection_activate                           10.12 doc
+_xpc_connection_suspend                            10.7  doc
+_xpc_connection_resume                             10.7  doc
+_xpc_connection_send_message                       10.7  doc
+_xpc_connection_send_barrier                       10.7  doc
+_xpc_connection_send_message_with_reply            10.7  doc
+_xpc_connection_send_message_with_reply_sync       10.7  doc
+_xpc_connection_cancel                             10.7  doc
+_xpc_connection_get_name                           10.7  doc
+_xpc_connection_get_euid                           10.7  doc
+_xpc_connection_get_egid                           10.7  doc
+_xpc_connection_get_pid                            10.7  doc
+_xpc_connection_get_asid                           10.7  doc
+_xpc_connection_set_context                        10.7  doc
+_xpc_connection_get_context                        10.7  doc
+_xpc_connection_set_finalizer_f                    10.7  doc
+_xpc_connection_copy_invalidation_reason           12.0  doc
+_xpc_connection_set_peer_code_signing_requirement  12.0  doc
+_xpc_endpoint_create                               10.7  doc
+_xpc_main                                          10.7  doc
+_xpc_transaction_begin                             10.7  doc
+_xpc_transaction_end                               10.7  doc
+_xpc_set_event_stream_handler                      10.7  doc
+_XPC_ACTIVITY_CHECK_IN                             10.9  doc
+_XPC_ACTIVITY_INTERVAL                             10.9  doc
+_XPC_ACTIVITY_DELAY                                10.9  doc
+_XPC_ACTIVITY_GRACE_PERIOD                         10.9  doc
+_XPC_ACTIVITY_INTERVAL_1_MIN                       10.9  doc
+_XPC_ACTIVITY_INTERVAL_5_MIN                       10.9  doc
+_XPC_ACTIVITY_INTERVAL_15_MIN                      10.9  doc
+_XPC_ACTIVITY_INTERVAL_30_MIN                      10.9  doc
+_XPC_ACTIVITY_INTERVAL_1_HOUR                      10.9  doc
+_XPC_ACTIVITY_INTERVAL_4_HOURS                     10.9  doc
+_XPC_ACTIVITY_INTERVAL_8_HOURS                     10.9  doc
+_XPC_ACTIVITY_INTERVAL_1_DAY                       10.9  doc
+_XPC_ACTIVITY_INTERVAL_7_DAYS                      10.9  doc
+_XPC_ACTIVITY_PRIORITY                             10.9  doc
+_XPC_ACTIVITY_PRIORITY_MAINTENANCE                 10.9  doc
+_XPC_ACTIVITY_PRIORITY_UTILITY                     10.9  doc
+_XPC_ACTIVITY_ALLOW_BATTERY                        10.9  doc
+_XPC_ACTIVITY_REPEATING                            10.9  doc
+_XPC_ACTIVITY_REQUIRE_SCREEN_SLEEP                 10.9  doc
+_XPC_ACTIVITY_PREVENT_DEVICE_SLEEP                 12.0  doc
+_xpc_activity_register                             10.9  doc
+_xpc_activity_copy_criteria                        10.9  doc
+_xpc_activity_set_criteria                         10.9  doc
+_xpc_activity_get_state                            10.9  doc
+_xpc_activity_set_state                            10.9  doc
+_xpc_activity_should_defer                         10.9  doc
+_xpc_activity_unregister                           10.9  doc

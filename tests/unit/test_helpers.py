@@ -583,6 +583,23 @@ class DataFiles(unittest.TestCase):
                 if sym.strip():
                     self.assertTrue(named, "%s: %s has no source" % (fn, l.strip()))
 
+    def test_xpc_list_fits_the_header(self):
+        """data/symbols/libsystem-xpc.txt: the names that xpc/xpc.h declares, each with the
+        release of its API_AVAILABLE (doc) or none (webkit, the variables behind the macros)"""
+        hdr = read(os.path.join(DATA, "headers", "usr", "include", "xpc", "xpc.h"))
+        hdr = re.sub(r"^#.*$", "", re.sub(r"/\*.*?\*/", "", hdr, flags=re.S), flags=re.M)
+        avail = {}
+        for decl in hdr.split(";"):
+            m = re.search(r"\b(_?xpc_[a-z0-9_]+|XPC_[A-Z0-9_]+)\s*(\([^()]*(\([^()]*\)[^()]*)*\))?\s*(__dead2)?\s*$", decl)
+            if m and not re.search(r"\btypedef\b|\benum\b", decl):
+                v = re.search(r"API_AVAILABLE\(macos\(([0-9.]+)\)\)", decl)
+                avail["_" + m.group(1)] = v.group(1) if v else "-"
+        rows = data_files.lines(os.path.join(DATA, "symbols", "libsystem-xpc.txt"))
+        self.assertEqual({r[0]: r[1] for r in rows}, avail)
+        for r in rows:
+            self.assertEqual(len(r), 3, r)
+            self.assertEqual(r[2], "webkit" if r[1] == "-" else "doc", r)
+
     def test_own_headers_have_a_license(self):
         for root, _, files in os.walk(os.path.join(DATA, "headers")):
             for fn in files:

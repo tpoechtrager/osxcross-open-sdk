@@ -26,5 +26,5 @@ usr/include/os/trace.h                                                       all
 usr/lib/*.tbd                                                                all   written
 System/Library/Frameworks/*.framework/*.tbd                                  full  written
 System/Library/Frameworks/CoreFoundation.framework/Modules/module.modulemap  full  copied
-usr/include/xpc/xpc.h                                                        full  copied     the typedef of xpc_object_t that xnu's libkern/os/trace.h also has
+usr/include/xpc/xpc.h                                                        full  copied     part of XPC, written from Apple's documentation and WebKit's XPCSPI.h
 usr/include/libDER/DERItem.h                                                 full  fallback   only where xnu has no EXTERNAL_HEADERS/libDER (releases before macOS 26.5)

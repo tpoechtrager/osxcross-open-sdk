@@ -85,8 +85,7 @@ step_frameworks() {
   echo "Security"
   # Security's oids.h includes libDER/DERItem.h, which includes libDER_config.h; xnu
   # has both in EXTERNAL_HEADERS/libDER (APSL 2.0), unchanged here.  The rest of libDER is not
-  # installed.  xpc/xpc.h is the one typedef that xnu's libkern/os/trace.h also writes
-  # (line 36) for SecCode.h; libxpc itself has no open source.
+  # installed.  SecCode.h includes xpc/xpc.h, which the step stubs installs (stubs_xpc).
   # The own files of the full SDK (data/own-files.txt): xpc/xpc.h and the
   # module map of CoreFoundation.
   install_own_files full

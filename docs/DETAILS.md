@@ -37,7 +37,12 @@ the generator wrote, and `data/headers/` has these headers by their path in the 
   (x86_64).
 - `os/signpost.h`, `os/activity.h`, `os/trace.h`: stand-ins. A program that uses them builds, links and runs,  
   but nothing is recorded. The system's interface for them has no public source, so it is not used.
-- `xpc/xpc.h`: the one typedef that `Security` needs (`xpc_object_t`); nothing else of XPC.
+- `xpc/xpc.h` (full SDK): the documented C interface of XPC up to macOS 12.0: objects, arrays, dictionaries,  
+  connections, endpoints, `xpc_main`, transactions, event streams and activities. In Objective-C the objects are  
+  Objective-C objects, as with `libdispatch`. A message with reply over an anonymous connection ran on macOS 26.0 (x86_64).  
+  Not there: `xpc_session`, `xpc_listener`, the peer requirements,  
+  and `XPC_TYPE_*` for the types other than array, bool, connection, dictionary, endpoint, error and string  
+  (use `xpc_type_get_name`), see [SOURCES.md](SOURCES.md#xpcxpch-and-its-symbols).
 
 ## Changes to the sources
 
