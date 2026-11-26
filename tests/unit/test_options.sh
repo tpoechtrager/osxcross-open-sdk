@@ -11,10 +11,10 @@ trap 'rm -rf "$T"' EXIT
 fail=0 n=0
 
 # gen ARGS...: run the script in a clean environment; sets rc and out
-gen() { out=$(cd "$T" && env -i HOME="$HOME" PATH=/usr/bin:/bin:/usr/sbin bash "$GEN" "$@" 2>&1); rc=$?; }
+gen() { out=$(cd "$T" && env -i HOME="$HOME" PATH=/usr/bin:/bin:/usr/sbin "$BASH" "$GEN" "$@" 2>&1); rc=$?; }
 # genenv VAR=VALUE... -- ARGS...
 genenv() { local e=(); while [ "$1" != -- ]; do e+=("$1"); shift; done; shift
-  out=$(cd "$T" && env -i HOME="$HOME" PATH=/usr/bin:/bin:/usr/sbin ${e[@]+"${e[@]}"} bash "$GEN" "$@" 2>&1); rc=$?; }
+  out=$(cd "$T" && env -i HOME="$HOME" PATH=/usr/bin:/bin:/usr/sbin ${e[@]+"${e[@]}"} "$BASH" "$GEN" "$@" 2>&1); rc=$?; }
 check() { # description, condition result
   n=$((n + 1))
   if [ "$2" = ok ]; then echo "ok $n - $1"; else echo "not ok $n - $1"; echo "   rc=$rc out=$out" | head -5; fail=1; fi
@@ -109,7 +109,7 @@ nd() { ( SELF=$1; . "$HERE/../../lib/common.sh"; set_notice_date "$2"; echo "$NO
 today=$(date -u +%Y-%m-%d)
 r=$(nd "$T/nogit" unknown)
 check "the notice date without a commit is the day of the build" "$( [ "${r%%|*}" = "$today" ] && echo ok || echo no)"
-check "  and a warning says so" "$(case ${r#*|} in *"date of the build"*"not reproducible"*) echo ok;; *) echo no;; esac)"
+check "  and a warning says so" "$(case ${r#*|} in (*"date of the build"*"not reproducible"*) echo ok;; (*) echo no;; esac)"
 if command -v git >/dev/null 2>&1; then
   GIT_COMMITTER_DATE='2020-02-03T12:00:00+0000' git -C "$T/repo" -c user.name=t -c user.email=t@example.com commit -q -a -m two
   r=$(nd "$T/repo" "$(git -C "$T/repo" rev-parse HEAD)")

@@ -58,9 +58,10 @@ git curl python3 perl gmake bash xz
 The script looks for bison in `/opt/local/bin`, `/opt/homebrew/opt/bison/bin` and `/usr/local/opt/bison/bin`;  
 `OPEN_SDK_YACC` names another one.
 
-**Tested:** the SDKs are built and checked on Linux. The syntax of the script and its unit tests ran under  
-`/bin/bash` 3.2 of macOS 26.0. Earlier versions of the script also built the SDK on macOS 26.0, FreeBSD 15.1  
-and OpenBSD 8.0.
+**Tested:** the SDKs of macOS 26.5 (full and `--core`) are built on Linux, macOS 26.0 (Intel, `/bin/bash` 3.2),  
+FreeBSD 15.1 and OpenBSD 8.0 with the same `--tree-hash`; the unit tests ran on macOS.  
+The `clang` of FreeBSD and OpenBSD has no `stdbool.h`, `stdarg.h` and `float.h`;  
+the symbol scans then bring their own (see [SOURCES.md](SOURCES.md#c-headers-of-the-scans)).
 
 ## Options (`./make-open-sdk.sh`)
 

@@ -59,7 +59,10 @@ step_tarball() {
       fi)
   fi
   mv "$T.tmp" "$T"
-  echo "size: $(du -h "$T" | cut -f1)"
+  # the length of the file (du shows the blocks that ZFS has written so far, 512B for a new file)
+  echo "size: $(wc -c < "$T" | awk '{ b = $1; split("B K M G", u, " "); i = 1
+    while (b >= 1024 && i < 4) { b /= 1024; i++ }
+    if (i == 1) printf "%dB\n", b; else printf "%.1f%s\n", b, u[i] }')"
   if [ "$TREE_HASH" = 1 ]; then
     echo "tree hash ($VARIANT): $(python3 -I "$HELPERS/tree_hash.py" "$SDK")  MacOSX$V.sdk"
   fi

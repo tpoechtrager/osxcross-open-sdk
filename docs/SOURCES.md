@@ -38,6 +38,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | Foundation placeholder, CoreServices | dyld, CF and Security sources ([details](#foundation-placeholder-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
+| `stdbool.h`, `stdarg.h`, `float.h` of the scans | ISO C99, Clang's predefined macros ([details](#c-headers-of-the-scans)) |
 
 ## Details of the sources
 
@@ -498,6 +499,20 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 - `release.json` of distribution-macOS and `git ls-remote` of the projects (`tools/manifest.py`).
 - The `sqlite` and `xz` lines are the same in every manifest; `--new` copies them.
+
+---
+
+### C headers of the scans
+
+**Files:** `helpers/clang_scan.py`
+
+- The symbol scans (`header_syms.py`, `libsystem_syms.py`) need `stdbool.h`, `stdarg.h` and `float.h`.
+  The SDK does not contain them, the compiler provides them;
+  the `clang` of FreeBSD and OpenBSD does not (the system's own headers are in `/usr/include`).  
+  Only a header that is missing is supplied, in a temporary directory that is not part of the SDK.
+- `stdbool.h`: ISO C99 7.16.
+- `stdarg.h`: ISO C99 7.15, with the `__builtin_va_*` functions of Clang.
+- `float.h`: ISO C99 and C11 5.2.4.2.2, with the macros that Clang predefines (`__DBL_MAX__` and so on).
 
 <br>
 

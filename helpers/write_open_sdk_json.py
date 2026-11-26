@@ -29,7 +29,7 @@ def main(argv):
     p.add_argument("--own-files", required=True, help="data/own-files.txt")
     p.add_argument("--own-headers", required=True, help="data/headers")
     p.add_argument("values", nargs="*", metavar="KEY=VALUE")
-    a = p.parse_args(argv[1:])
+    a = p.parse_intermixed_args(argv[1:])  # KEY=VALUE after the options
     out, projects_file = a.out, a.projects_file
     if any("=" not in v for v in a.values):
         p.error("the values are KEY=VALUE")
