@@ -17,6 +17,8 @@ projects were also built with the stable flavor (cctools/ld64).
 - **GNU and other tools:** `coreutils`, `grep`, `sed`, `gawk`, `findutils`, `file`, `gettext`, `libiconv`,  
   `gmp`, `mpfr`, `libffi`, `xxhash`, `lmdb`, `redis`
 - **Version control:** `git`, `libgit2` (also with SecureTransport)
+- **Compilers and tools:** `LLVM/Clang` (configure with `-DCLANGD_BUILD_XPC=OFF`, the SDK has no XPC;  
+  the Clang that it builds works on macOS), `cctools-port` (builds, and its tools work on macOS)
 
 **Not covered**
 
@@ -27,6 +29,6 @@ projects were also built with the stable flavor (cctools/ld64).
 
 **What the builds showed**
 
-- 10 projects exposed errors of the SDK (missing headers or symbols); they are fixed.
-- 23 projects needed a workaround in the project or the toolchain (a `configure` option, a `make` variable,  
-  a newer `config.sub`).
+- Some projects exposed errors of the SDK (missing headers or symbols); they are fixed.
+- Several projects needed a workaround in the project or the toolchain (a `configure` option, a `make` variable,  
+  a newer `config.sub`, `-DCLANGD_BUILD_XPC=OFF` for LLVM).

@@ -64,7 +64,7 @@ install name and version. A real SDK was used only to test a result, never as a 
 ### Tested projects
 
 Open source projects built with the full Open SDK of macOS 26.5 for x86_64 and arm64 include  
-`zlib`, `curl`, `git`, `cmake`, `sqlite`, `bash`, `coreutils`, `fmt` and `redis`.
+`zlib`, `curl`, `git`, `cmake`, `sqlite`, `bash`, `coreutils`, `fmt`, `redis`, `LLVM/Clang` and `cctools-port`.
 
 The x86_64 builds ran on macOS 26.0. The full list, what each build needed and what does not build  
 is in [docs/TESTED.md](docs/TESTED.md).
