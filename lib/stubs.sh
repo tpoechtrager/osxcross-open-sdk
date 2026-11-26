@@ -136,12 +136,15 @@ stubs_libsystem_tbd() {
 # stubs_libresolv: libresolv (-lresolv): the project makes its stub from the
 # headers, with TAPI's installapi: resolv.h, nameser.h, dns.h, dns_util.h and
 # the extra header installapi.h of the project (OTHER_TAPI_FLAGS in
-# libresolv/xcodescripts/libresolv.xcconfig); links.sh makes the link
-# libresolv.tbd to libresolv.9.tbd
+# libresolv/xcodescripts/libresolv.xcconfig, with -D__BIND_INSTALLAPI) and
+# the Private header dns_private.h (libresolv.xcodeproj; it is not installed
+# in the SDK, its names that are not hidden are exported);
+# links.sh makes the link libresolv.tbd to libresolv.9.tbd
 stubs_libresolv() {
   mkdir -p "$STAGE_WORK/resolv-extra"
-  cp "$SRC/libresolv/installapi.h" "$STAGE_WORK/resolv-extra/"
-  header_syms "$STAGE_WORK/libresolv.syms" "-I$STAGE_WORK/resolv-extra" resolv.h nameser.h dns.h dns_util.h installapi.h
+  cp "$SRC/libresolv/installapi.h" "$SRC/libresolv/dns_private.h" "$STAGE_WORK/resolv-extra/"
+  header_syms "$STAGE_WORK/libresolv.syms" "-D__BIND_INSTALLAPI -I$STAGE_WORK/resolv-extra" \
+    resolv.h nameser.h dns.h dns_util.h installapi.h dns_private.h
   # _res (__res) is defined in libSystem: "the main thread's __res_state should
   # come from libSystem to avoid breaking compatibility with older binaries"
   # (libresolv/res_state.c); it is in data/symbols/libsystem-extra.txt

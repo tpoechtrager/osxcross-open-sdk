@@ -57,7 +57,8 @@ libs_bzip2() {
 libs_expat() {
   echo "expat"
   cp "$SRC/expat/expat/lib/expat.h" "$SRC/expat/expat/lib/expat_external.h" "$STAGE_INC/"
-  ext_tbd libexpat.1 "" - expat.h expat_external.h
+  # OTHER_TAPI_FLAGS = -DXML_DTD=1 -DXML_GE=1 (expat.xcodeproj) declares the functions of those features
+  ext_tbd libexpat.1 "-DXML_DTD=1 -DXML_GE=1" - expat.h expat_external.h
   ln -sf libexpat.1.tbd "$STAGE_LIB/libexpat.tbd"
 }
 
@@ -66,7 +67,8 @@ libs_libffi() {
   # PUBLIC_HEADERS_FOLDER_PATH[sdk=macosx*] = /usr/include/ffi (libffi.xcodeproj)
   mkdir -p "$STAGE_INC/ffi"
   cp "$SRC"/libffi/darwin/include/*.h "$STAGE_INC/ffi/"
-  ext_tbd libffi "" - ffi/ffi.h
+  # tramp.h is a Public header in libffi.xcodeproj
+  ext_tbd libffi "" - ffi/ffi.h ffi/tramp.h
 }
 
 # as libedit/xcodescripts/install_misc.sh installs it: histedit.h,
@@ -87,17 +89,17 @@ libs_libedit() {
 
 # the headers are in /usr/include/libxml (PUBLIC_HEADERS_FOLDER_PATH in
 # Configurations/libxml2.a.xcconfig) and /usr/include/libxml2/libxml is a link
-# to ../libxml (the "Create /usr/include/libxml2/libxml Symlink" phase of libxml2.xcodeproj)
+# to ../libxml (the "Create /usr/include/libxml2/libxml Symlink" phase of libxml2.xcodeproj).
+# The symbols are the whole export list of the project (EXPORTED_SYMBOLS_FILE
+# in Configurations/libxml2.xcconfig)
 libs_libxml2() {
-  local xh
   echo "libxml2"
   mkdir -p "$STAGE_INC/libxml" "$STAGE_INC/libxml2"
   cp "$SRC"/libxml2/libxml2/include/libxml/*.h "$STAGE_INC/libxml/"
   cp "$SRC/libxml2/Pregenerated Files/include/libxml/xmlversion.h" "$STAGE_INC/libxml/"
   ln -sf ../libxml "$STAGE_INC/libxml2/libxml"
-  xh=$(cd "$STAGE_INC/libxml" && ls *.h | sed 's#^#libxml/#' | tr '\n' ' ')
-  # shellcheck disable=SC2086
-  ext_tbd libxml2.2 "" - $xh
+  syms_for_archs "$SRC/libxml2/Pregenerated Files/libxml2.exp" > "$STAGE_WORK/libxml2.2.syms"
+  mk_lib_tbd libxml2.2 "$STAGE_LIB/libxml2.2.tbd" "$STAGE_WORK/libxml2.2.syms"
   ln -sf libxml2.2.tbd "$STAGE_LIB/libxml2.tbd"
 }
 

@@ -157,7 +157,13 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 (`libz.exp`, `unexports`, `libutil.exports`, `libxslt.exp`, ...)
 
 - The headers (clang AST) and the export lists of the projects.
-- libresolv: the headers of the project and its `installapi.h`, as the project's own build does (`libresolv.xcconfig`).
+- libxml2: the whole export list of the project, `Pregenerated Files/libxml2.exp` (`EXPORTED_SYMBOLS_FILE` in
+  `Configurations/libxml2.xcconfig`), not the headers.
+- expat: the headers, scanned with `-DXML_DTD=1 -DXML_GE=1` (`OTHER_TAPI_FLAGS` in `expat.xcodeproj`).
+- libffi: `ffi.h` and `tramp.h` (a Public header in `libffi.xcodeproj`).
+- libresolv: the headers of the project and its `installapi.h`, as the project's own build does (`libresolv.xcconfig`,
+  with `-D__BIND_INSTALLAPI`), and the Private header `dns_private.h` (`libresolv.xcodeproj`; not installed in the SDK).
+  Names declared with hidden visibility (`#pragma GCC visibility push(hidden)`) are not exported; the scan leaves them out.
 
 ---
 

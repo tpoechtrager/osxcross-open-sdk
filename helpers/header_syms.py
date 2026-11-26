@@ -3,8 +3,8 @@
 """Symbols declared in a set of headers of one library.
 
 usage: header_syms.py SDKROOT CLANG OUT [--flags "CLANG-FLAGS"] HEADER...
-Only declarations whose file name (basename) matches one of the HEADERs are
-kept.  An error of clang in a header stops the script, because declarations
+Declarations with hidden visibility are left out.  Only declarations whose
+file name (basename) matches one of the HEADERs are kept.  An error of clang in a header stops the script, because declarations
 after it may be missing.
 Output: lines "ARCH symbol" (ARCH = x86_64 | arm64).
 """
@@ -46,6 +46,12 @@ def file_of_nodes(nodes):
     return res
 
 
+def is_hidden(n):
+    """visibility("hidden"), or declared inside #pragma GCC visibility push(hidden):
+    the library does not export it (installapi leaves it out)."""
+    return any(i.get("kind") == "VisibilityAttr" and i.get("visibility") == "hidden" for i in n.get("inner", []))
+
+
 def scan(sdk, clang, flags, hdrs, arch, src):
     base = {os.path.basename(h) for h in hdrs}
     r = subprocess.run([clang] + target_args(clang, arch) + ["-isysroot", sdk, "-fsyntax-only",
@@ -57,6 +63,8 @@ def scan(sdk, clang, flags, hdrs, arch, src):
     names = set()
     for n, nfile in file_of_nodes(json.loads(r.stdout)["inner"]):
         if os.path.basename(nfile) not in base:
+            continue
+        if is_hidden(n):
             continue
         name = exported_name(n)
         if name:
