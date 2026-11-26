@@ -25,7 +25,6 @@ projects were also built with the stable flavor (cctools/ld64).
 **Not covered**
 
 - The Xcode generator of `cmake` is switched off: it needs `ApplicationServices`.
-- `asan`, `lsan` and `tsan` of compiler-rt need the full SDK (`CoreFoundation/CFBase.h`).
 - Projects that need `Foundation`, `AppKit` or `Metal` were not tried.
 
 **What the builds showed**
