@@ -121,6 +121,9 @@ class Scrub(Tmp):
             ("API_UNAVAILABLE(macos, bridgeos)", "API_UNAVAILABLE(macos)"),
             ("API_UNAVAILABLE(bridgeos, macos)", "API_UNAVAILABLE(macos)"),
             ("MY_API_UNAVAILABLE(bridgeos)", "MY_API_UNAVAILABLE(bridgeos)"),
+            # the platform argument of __OS_AVAILABILITY(_MSG) stays (objc/objc-api.h)
+            ("__OS_AVAILABILITY(bridgeos,introduced=_vers)", "__OS_AVAILABILITY(bridgeos,introduced=_vers)"),
+            ("__OS_AVAILABILITY_MSG(bridgeos,deprecated=_dep,_msg)", "__OS_AVAILABILITY_MSG(bridgeos,deprecated=_dep,_msg)"),
             ("nothing here", "nothing here"),
         ]
         for src, want in cases:

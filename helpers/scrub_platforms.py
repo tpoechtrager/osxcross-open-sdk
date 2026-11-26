@@ -41,7 +41,9 @@ def scrub(text, plat):
     sub(re.compile(r"\(\s*%s\([^()]*\)\s*,\s*" % p), "(")
     # plain list element: ", bridgeos"
     sub(re.compile(r",\s*%s\b(?!\s*\()" % p), "")
-    sub(re.compile(r"\(\s*%s\s*,\s*" % p), "(")
+    # first plain element: "(bridgeos, ..."; not the platform argument of
+    # __OS_AVAILABILITY(_MSG) (objc/objc-api.h defines __BRIDGEOS_AVAILABLE with it)
+    sub(re.compile(r"(?<!__OS_AVAILABILITY)(?<!__OS_AVAILABILITY_MSG)\(\s*%s\s*,\s*" % p), "(")
     return text, n
 
 def main(argv):
