@@ -138,7 +138,7 @@ step_headers() {
   install_own_files all
   headers_fixups
   headers_check
-  # the headers of this step: gen_symbols.py takes the symbols of libSystem from them
+  # the headers of this step: libsystem_syms.py takes the symbols of libSystem from them
   (cd "$STAGE_INC" && find . ! -type d -name '*.h' | sed 's#^\./##' | sort) > "$STAGE_WORK/headers.list"
 }
 
@@ -147,8 +147,8 @@ step_headers() {
 headers_libinfo_install() {
   (cd "$SRC/Libinfo" && aenv PLATFORM_NAME=macosx DSTROOT="$STAGE/libinfo" INSTALL_OWNER="$(id -un)" \
      INSTALL_GROUP="$(id -gn)" ACTION=installhdrs SRCROOT="$SRC/Libinfo" \
-     OC_SCRIPT="$STAGE/libinfo.sh" \
-     bash -c 'sed -n "1,/^# Don.t install man pages/p" xcodescripts/install_files.sh | sed '"'"'$d'"'"' > "$OC_SCRIPT"; bash -e "$OC_SCRIPT"; rm -f "$OC_SCRIPT"')
+     LIBINFO_SCRIPT="$STAGE/libinfo.sh" \
+     bash -c 'sed -n "1,/^# Don.t install man pages/p" xcodescripts/install_files.sh | sed '"'"'$d'"'"' > "$LIBINFO_SCRIPT"; bash -e "$LIBINFO_SCRIPT"; rm -f "$LIBINFO_SCRIPT"')
 }
 
 # The headers that every SDK has.  A step that "worked" but left one of them
@@ -211,7 +211,7 @@ headers_fixups() {
   # before C++11 there is no static assertion and the macro is a typedef that can
   # be repeated.  Releases before this xnu do not have the macros.
   if grep -q '^#define xnu_static_assert_struct_size_kernel_user(' "$STAGE_INC/mach/port.h"; then
-    OC_TEXT='/*
+    INSERT_TEXT='/*
  * Modified by osxcross-open-sdk ('"$NOTICE_DATE"'): GCC accepts _Static_assert only in C.
  * In C++ the macro uses static_assert (C++11 and later) or, before C++11, declares
  * a typedef that stands for no check.  In C it is unchanged.
@@ -230,7 +230,7 @@ headers_fixups() {
 #endif /* __cplusplus >= 201103L */
 #endif /* __cplusplus */
 
-' perl -0pi -e 's/^(#define xnu_static_assert_struct_size_kernel_user\()/$ENV{OC_TEXT}$1/m' "$STAGE_INC/mach/port.h"
+' perl -0pi -e 's/^(#define xnu_static_assert_struct_size_kernel_user\()/$ENV{INSERT_TEXT}$1/m' "$STAGE_INC/mach/port.h"
     grep -q 'Modified by osxcross-open-sdk' "$STAGE_INC/mach/port.h" || die "mach/port.h: the repair of xnu_static_assert_struct_size did not apply"
   fi
   # math.h: the published Libm does not declare __exp10 and __exp10f, the

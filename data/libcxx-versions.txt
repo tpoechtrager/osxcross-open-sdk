@@ -5,7 +5,7 @@
 #
 # llvm <LLVM release> <commit of the tag>   the releases that --libcxx accepts
 #
-# make a new line with: helpers/manifest.py --llvm <version>
+# make a new line with: tools/manifest.py --llvm <version>
 llvm 16.0.6 7cbf1a2591520c2491aa35339f227775f4d3adf6
 llvm 17.0.6 6009708b4367171ccdbf4b5905cb6a803753fe18
 llvm 18.1.8 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff

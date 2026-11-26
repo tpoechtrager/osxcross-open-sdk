@@ -61,14 +61,14 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - The install name, the current and the compatibility version of every `.tbd`.
 - The line of the table names the file of the project that states it  
   (xcconfig, Xcode project, Makefile, LLVM's install-property tests, dyld's source).
-- `helpers/check_libraries.py` checks the table against the sources.
+- `tools/check_libraries.py` checks the table against the sources.
 - Values without a public source are the lowest possible ones.
 
 ---
 
 ### Symbols of `libSystem.B.tbd`
 
-**Files:** `helpers/gen_symbols.py`, `helpers/syscall_syms.py`, `data/symbols/libsystem-*.txt`
+**Files:** `helpers/libsystem_syms.py`, `helpers/syscall_syms.py`, `data/symbols/libsystem-*.txt`
 
 - Declarations of the headers of the SDK (clang AST), kept if the name is in the sources of the userland projects.
 - The alias and map files of Libc, libpthread, libplatform, libdispatch and libsyscall.
@@ -104,7 +104,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### Symbols of the other `.tbd`
 
-**Files:** `helpers/hdr_syms.py`, the export lists of the projects  
+**Files:** `helpers/header_syms.py`, the export lists of the projects  
 (`libz.exp`, `unexports`, `libutil.exports`, `libxslt.exp`, ...)
 
 - The headers (clang AST) and the export lists of the projects.
@@ -301,7 +301,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 **Files:** `data/manifests/`
 
-- `release.json` of distribution-macOS and `git ls-remote` of the projects (`helpers/manifest.py`).
+- `release.json` of distribution-macOS and `git ls-remote` of the projects (`tools/manifest.py`).
 
 <br>
 

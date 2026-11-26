@@ -18,6 +18,6 @@ import sys
 for f in sys.argv[1:]:
     with open(f) as fh:
         compile(fh.read(), f, "exec")
-' helpers/*.py tests/*.py tests/unit/*.py || rc=1
+' helpers/*.py tools/*.py tests/*.py tests/unit/*.py || rc=1
 [ "$rc" = 0 ] && echo "tests/lint.sh: ok"
 exit $rc

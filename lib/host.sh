@@ -15,8 +15,8 @@ step_host() {
   # --macos changes the tags (a work directory can serve several releases).
   local p stamp=
   for p in bootstrap_cmds developer_cmds xnu; do
-    [ -f "$SRC/$p/.oc-tag" ] || die "no sources of $p in $SRC (step fetch)"
-    stamp="$stamp $p $(cat "$SRC/$p/.oc-tag")"
+    [ -f "$SRC/$p/.open-sdk-tag" ] || die "no sources of $p in $SRC (step fetch)"
+    stamp="$stamp $p $(cat "$SRC/$p/.open-sdk-tag")"
   done
   # (|| true: there is no stamp before the first build)
   if [ "$(cat "$HOST/.stamp" 2>/dev/null || true)" != "$stamp" ]; then
@@ -62,7 +62,7 @@ step_host() {
     (cd "$b" && "$YACC" $YACC_FLAGS -d -o parser.c parser.y && cp parser.h y.tab.h && flex -o lexxer.c lexxer.l &&
       "$CLANG" -w -O1 -std=gnu99 -D_GNU_SOURCE -DMIG_VERSION='"bootstrap_cmds"' \
         -D__unused='__attribute__((unused))' -include sys/types.h -include stdlib.h \
-        -include string.h -include unistd.h -include "$HOST/migshim/oc_shim.h" -I. "${shim_inc[@]}" -o "$HOST/bin/migcom" \
+        -include string.h -include unistd.h -include "$HOST/migshim/open_sdk_shim.h" -I. "${shim_inc[@]}" -o "$HOST/bin/migcom" \
         error.c global.c header.c lexxer.c mig.c parser.c routine.c server.c statement.c \
         string.c type.c user.c utils.c)
   else
@@ -92,9 +92,9 @@ EOF
   printf 'typedef int kern_return_t;\n#define KERN_SUCCESS 0\n#define KERN_NO_ACCESS 8\n' > "$S/mach/machine/kern_return.h"
   echo 'typedef unsigned int boolean_t;' > "$S/mach/machine/boolean.h"
   # newer xnu (macOS 26) declares options with __options_decl from sys/cdefs.h
-  cat > "$S/oc_shim.h" <<'EOF2'
-#ifndef OC_SHIM_H
-#define OC_SHIM_H
+  cat > "$S/open_sdk_shim.h" <<'EOF2'
+#ifndef OPEN_SDK_SHIM_H
+#define OPEN_SDK_SHIM_H
 #include <stdint.h>
 #define __options_decl(_name, _type, ...) typedef _type _name; enum __VA_ARGS__
 #define __enum_decl(_name, _type, ...) typedef _type _name; enum __VA_ARGS__
@@ -130,8 +130,8 @@ make_shims() {
   # `ed - FILE < strip-header.ed` as used by Libc/xcodescripts/headers.sh
   cat > "$b/ed" <<'EOF'
 #!/bin/sh
-sed '/^\/\/Begin-Libc$/,/^\/\/End-Libc$/d' "$2" > "$2.oc-ed.$$" && cat "$2.oc-ed.$$" > "$2"
-rm -f "$2.oc-ed.$$"
+sed '/^\/\/Begin-Libc$/,/^\/\/End-Libc$/d' "$2" > "$2.open-sdk-ed.$$" && cat "$2.open-sdk-ed.$$" > "$2"
+rm -f "$2.open-sdk-ed.$$"
 EOF
   # xcrun -find TOOL for Apple build scripts
   cat > "$b/xcrun" <<'EOF'

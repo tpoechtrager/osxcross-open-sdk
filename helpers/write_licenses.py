@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Install the license texts of every project that contributes to the SDK.
 
-usage: make_licenses.py SRC OUTDIR VARIANT OWN_LICENSE --apache-license FILE
+usage: write_licenses.py SRC OUTDIR VARIANT OWN_LICENSE --apache-license FILE
                         [--sqlite DIR] [--swift-license FILE] [--projects-out FILE]
 VARIANT is core, full or swift (the full SDK with the Swift stubs).
 Writes OUTDIR/<project>/<license files> and OUTDIR/README.txt / LICENSES.md.
@@ -104,7 +104,7 @@ def commit_of(src, d):
 
 
 def tag_of(src, d):
-    p = os.path.join(src, d.split("/")[0], ".oc-tag")
+    p = os.path.join(src, d.split("/")[0], ".open-sdk-tag")
     return open(p).read().strip() if os.path.exists(p) else "?"
 
 
@@ -112,7 +112,7 @@ def sqlite_version(header):
     """The version that sqlite3.h defines (SQLITE_VERSION)"""
     m = re.search(r'^#define SQLITE_VERSION\s+"([^"]+)"', open(header).read(), re.M)
     if not m:
-        sys.exit("make_licenses.py: %s has no SQLITE_VERSION" % header)
+        sys.exit("write_licenses.py: %s has no SQLITE_VERSION" % header)
     return m.group(1)
 
 
@@ -186,7 +186,7 @@ def install(src, out, variant, apache, sqlite, swift_lic):
 
 
 def main(argv):
-    ap = argparse.ArgumentParser(prog="make_licenses.py", description="Install the license texts.")
+    ap = argparse.ArgumentParser(prog="write_licenses.py", description="Install the license texts.")
     ap.add_argument("src")
     ap.add_argument("out")
     ap.add_argument("variant", choices=sorted(WANT))

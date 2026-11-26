@@ -14,7 +14,7 @@ fw_tbd() {
   local name=$1; shift
   local args="" h; for h in "$@"; do args="$args $name/$h"; done
   # shellcheck disable=SC2086
-  hdr_syms "$STAGE_WORK/fw-$name.syms" "-F$STAGE_FW" $args
+  header_syms "$STAGE_WORK/fw-$name.syms" "-F$STAGE_FW" $args
   if [ -f "$DATA/symbols/$name-extra.txt" ]; then
     syms_for_archs "$DATA/symbols/$name-extra.txt" >> "$STAGE_WORK/fw-$name.syms"
   fi

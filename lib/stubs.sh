@@ -29,10 +29,10 @@ step_stubs() {
 stubs_libsystem_headers() {
   python3 -I "$HELPERS/syscall_syms.py" "$SRC/xnu" "$STAGE_WORK" "$STAGE_WORK/syscalls.syms" ||
     die "the system call stubs of xnu could not be listed"
-  python3 -I "$HELPERS/gen_symbols.py" "$STAGE" "$CLANG_PATH" "$STAGE_WORK/libsystem.syms" "$SRC" \
+  python3 -I "$HELPERS/libsystem_syms.py" "$STAGE" "$CLANG_PATH" "$STAGE_WORK/libsystem.syms" "$SRC" \
     --extra "$DATA/symbols/libsystem-extra.txt" --exclude "$DATA/symbols/libsystem-exclude.txt" \
     --errors "$STAGE_WORK/libsystem.errors" --syscalls "$STAGE_WORK/syscalls.syms" ||
-    die "gen_symbols.py failed (the errors of clang are in $STAGE_WORK/libsystem.errors)"
+    die "libsystem_syms.py failed (the errors of clang are in $STAGE_WORK/libsystem.errors)"
   show_log "$STAGE_WORK/libsystem.errors"
 }
 
@@ -42,7 +42,7 @@ stubs_dnssd() {
   [ -f "$SRC/mDNSResponder/mDNSShared/dns_sd.h" ] ||
     die "mDNSResponder of this release has no mDNSShared/dns_sd.h"
   cp "$SRC/mDNSResponder/mDNSShared/dns_sd.h" "$STAGE_INC/"
-  hdr_syms "$STAGE_WORK/dnssd.syms" "" dns_sd.h
+  header_syms "$STAGE_WORK/dnssd.syms" "" dns_sd.h
   cat "$STAGE_WORK/dnssd.syms" >> "$STAGE_WORK/libsystem.syms"
 }
 
@@ -62,7 +62,7 @@ stubs_commoncrypto() {
     ccn="$ccn CommonCrypto/$(basename "$cch")"
   done
   # shellcheck disable=SC2086
-  hdr_syms "$STAGE_WORK/commoncrypto.all" "" $ccn
+  header_syms "$STAGE_WORK/commoncrypto.all" "" $ccn
   awk 'NR == FNR { e[$1] = 1; next } ($2 in e)' "$SRC/CommonCrypto/exports.exp-in" "$STAGE_WORK/commoncrypto.all" \
     > "$STAGE_WORK/commoncrypto.syms"
   require_lines "$STAGE_WORK/commoncrypto.syms" 40 "CommonCrypto has too few exported declarations"
@@ -81,7 +81,7 @@ stubs_launchd() {
   cp "$SRC/launchd/liblaunch/launch.h" "$SRC/launchd/liblaunch/vproc.h" "$STAGE_INC/"
   cp "$SRC/launchd/liblaunch/bootstrap.h" "$STAGE_INC/servers/"
   ln -sf bootstrap.h "$STAGE_INC/servers/bootstrap_defs.h"
-  hdr_syms "$STAGE_WORK/launchd.all" "" launch.h vproc.h servers/bootstrap.h
+  header_syms "$STAGE_WORK/launchd.all" "" launch.h vproc.h servers/bootstrap.h
   grep -ho '^[A-Za-z_][A-Za-z0-9_]*(' "$SRC"/launchd/liblaunch/*.c | sed 's/($//' | sort -u > "$STAGE_WORK/launchd.defs"
   awk 'NR == FNR { d["_" $1] = 1; next } ($2 in d)' "$STAGE_WORK/launchd.defs" "$STAGE_WORK/launchd.all" > "$STAGE_WORK/launchd.syms"
   require_lines "$STAGE_WORK/launchd.syms" 40 "liblaunch has too few declared and defined functions"
@@ -108,7 +108,7 @@ stubs_libsystem_tbd() {
 stubs_libresolv() {
   mkdir -p "$STAGE_WORK/resolv-extra"
   cp "$SRC/libresolv/installapi.h" "$STAGE_WORK/resolv-extra/"
-  hdr_syms "$STAGE_WORK/libresolv.syms" "-I$STAGE_WORK/resolv-extra" resolv.h nameser.h dns.h dns_util.h installapi.h
+  header_syms "$STAGE_WORK/libresolv.syms" "-I$STAGE_WORK/resolv-extra" resolv.h nameser.h dns.h dns_util.h installapi.h
   # _res (__res) is defined in libSystem: "the main thread's __res_state should
   # come from libSystem to avoid breaking compatibility with older binaries"
   # (libresolv/res_state.c); it is in data/symbols/libsystem-extra.txt

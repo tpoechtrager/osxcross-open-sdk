@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Write a TAPI text stub (tbd v4).
 
-usage: mk_tbd.py OUT INSTALL_NAME CURRENT_VERSION SYMFILE [--compat V] [--reexport-symbols SYMFILE]
+usage: write_tbd.py OUT INSTALL_NAME CURRENT_VERSION SYMFILE [--compat V] [--reexport-symbols SYMFILE]
 SYMFILE lines: "<arch> <symbol>" with arch x86_64 or arm64 (arm64e/x86_64h
 share the symbols of arm64/x86_64).
 """
@@ -41,7 +41,7 @@ def read_arch_symbols(path):
 
 
 def main(argv):
-    ap = argparse.ArgumentParser(prog="mk_tbd.py", description="Write a TAPI text stub (tbd v4).")
+    ap = argparse.ArgumentParser(prog="write_tbd.py", description="Write a TAPI text stub (tbd v4).")
     ap.add_argument("out")
     ap.add_argument("install")
     ap.add_argument("current")

@@ -118,7 +118,7 @@ and their x86_64 programs ran on macOS 26.0.
 
 ## New macOS releases
 
-`helpers/manifest.py --new <version>` writes the manifest of a release from distribution-macOS.  
+`tools/manifest.py --new <version>` writes the manifest of a release from distribution-macOS.  
 Then add a line to `data/releases.txt` (libc++ release, variants, `ProductBuildVersion` with its source),  
 the LLVM release to `data/libcxx-versions.txt` if it is new, and the versions of the other platforms  
 to `data/availability-extra.dsl`, build, check with `tests/sdk-check.sh` and `tests/run.sh`,  

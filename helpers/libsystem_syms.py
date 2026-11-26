@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Derive the exported symbol list of libSystem from the installed headers.
 
-usage: gen_symbols.py SDKROOT CLANG OUTFILE SRCDIR --extra FILE --exclude FILE
+usage: libsystem_syms.py SDKROOT CLANG OUTFILE SRCDIR --extra FILE --exclude FILE
                       [--errors FILE] [--syscalls FILE]
 Runs clang's AST dump (JSON) over one translation unit per architecture that
 includes the userland headers, and records every external function/variable
@@ -125,7 +125,7 @@ def symbols_mode(sdk, clang, hdrs, arch, mode, errfile):
         try:
             d = json.loads(r.stdout)
         except ValueError:
-            sys.exit("gen_symbols.py: clang gave no AST for %s" % arch)
+            sys.exit("libsystem_syms.py: clang gave no AST for %s" % arch)
     for n in d["inner"]:
         m = exported_name(n)
         if m:
@@ -212,7 +212,7 @@ def kept_symbols(arch, syms, inl, corpus, defs0, srcdir, syscalls, extra, exclud
 
 
 def main(argv):
-    p = argparse.ArgumentParser(prog="gen_symbols.py", description="The symbols of libSystem.")
+    p = argparse.ArgumentParser(prog="libsystem_syms.py", description="The symbols of libSystem.")
     p.add_argument("sdk")
     p.add_argument("clang")
     p.add_argument("out")

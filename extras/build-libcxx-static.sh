@@ -35,17 +35,19 @@ SDK=$(cd "$SDK" && pwd)
 mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
 
 SRC=$OUT/llvm-project
-if [ ! -f "$SRC/.oc-tag" ] || [ "$(cat "$SRC/.oc-tag")" != "llvmorg-$VER" ]; then
+# (a clone of an earlier version of this script has the mark .oc-tag)
+if [ -f "$SRC/.oc-tag" ] && [ ! -e "$SRC/.open-sdk-tag" ]; then mv "$SRC/.oc-tag" "$SRC/.open-sdk-tag"; fi
+if [ ! -f "$SRC/.open-sdk-tag" ] || [ "$(cat "$SRC/.open-sdk-tag")" != "llvmorg-$VER" ]; then
   rm -rf "${SRC:?}"
   git -c advice.detachedHead=false clone -q --depth 1 --branch "llvmorg-$VER" --filter=blob:none --sparse \
     https://github.com/llvm/llvm-project "$SRC"
   git --git-dir="$SRC/.git" --work-tree="$SRC" sparse-checkout set runtimes cmake llvm/cmake libcxx libcxxabi libunwind libc third-party
-  echo "llvmorg-$VER" > "$SRC/.oc-tag"
+  echo "llvmorg-$VER" > "$SRC/.open-sdk-tag"
 fi
 
 for a in $ARCHS; do
   B=$OUT/build-$a
-  # The options match the __config_site of the open SDK (cxx_site.py).
+  # The options match the __config_site of the open SDK (write_cxx_config_site.py).
   cmake -S "$SRC/runtimes" -B "$B" -G Ninja \
     -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_BUILD_TYPE=Release -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
     -DCMAKE_C_COMPILER="$BIN/clang" -DCMAKE_CXX_COMPILER="$BIN/clang++" \

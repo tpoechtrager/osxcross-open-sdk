@@ -21,7 +21,7 @@ log() {
 # argument for -i, and the two flavours disagree on what it means.
 sed_inplace() {
   local f=$1 t; shift
-  t=$f.oc-sed.$$
+  t=$f.open-sdk-sed.$$
   sed "$@" "$f" > "$t" && cat "$t" > "$f"
   rm -f "$t"
 }
@@ -29,7 +29,7 @@ sed_inplace() {
 # perl_first_include FILE TEXT: put TEXT (with \n for new lines) in front of
 # the first #include line of FILE (what GNU sed does with 0,/^#include/s//.../)
 perl_first_include() {
-  OC_TEXT=$2 perl -pi -e 'BEGIN { ($t = $ENV{OC_TEXT}) =~ s/\\n/\n/g } if (!$d && s/^#include/${t}#include/) { $d = 1 }' "$1"
+  INSERT_TEXT=$2 perl -pi -e 'BEGIN { ($t = $ENV{INSERT_TEXT}) =~ s/\\n/\n/g } if (!$d && s/^#include/${t}#include/) { $d = 1 }' "$1"
 }
 
 # copy_tree FROM TO: copy the contents of the directory FROM into TO, keeping
@@ -82,7 +82,7 @@ quiet() {
 }
 
 # show_log FILE: with -v, show a log that a helper wrote (the errors of clang
-# that gen_symbols.py expects)
+# that libsystem_syms.py expects)
 show_log() {
   if [ "${VERBOSE:-0}" = 1 ]; then cat "$1"; fi
 }
@@ -172,7 +172,7 @@ mk_lib_tbd() {
   local name=$1 out=$2 syms=$3 inst cur compat; shift 3
   inst=$(lib_field "$name" 2); cur=$(lib_current "$name"); compat=$(lib_field "$name" 4)
   [ -n "$inst" ] && [ -n "$cur" ] && [ -n "$compat" ] || die "data/libraries.txt has no complete line for $name"
-  python3 -I "$HELPERS/mk_tbd.py" "$out" "$inst" "$cur" "$syms" --compat "$compat" ${1+"$@"}
+  python3 -I "$HELPERS/write_tbd.py" "$out" "$inst" "$cur" "$syms" --compat "$compat" ${1+"$@"}
 }
 
 # add_notice FILE TEXT: the notice that a header was changed by this script
@@ -185,7 +185,7 @@ add_notice() { python3 -I "$HELPERS/notice.py" "$NOTICE_DATE" "$1" "$2"; }
 run_unifdef() { "$HOST/bin/unifdef" "$@" || [ $? -eq 1 ]; }
 
 # TBD_ARCHS: the architectures of the symbol lists ("ARCH SYMBOL" lines) that
-# helpers/mk_tbd.py reads (it writes arm64e and x86_64h from them)
+# helpers/write_tbd.py reads (it writes arm64e and x86_64h from them)
 TBD_ARCHS="x86_64 arm64"
 
 # syms_for_archs FILE: the symbols of FILE (symbol_list) as "ARCH SYMBOL"
@@ -195,11 +195,11 @@ syms_for_archs() {
   for a in $TBD_ARCHS; do symbol_list "$1" | awk -v a="$a" '{ print a " " $0 }'; done
 }
 
-# hdr_syms OUT CLANG-FLAGS HEADER...: the symbols that the HEADERs of the stage
-# declare, as "ARCH SYMBOL" lines (helpers/hdr_syms.py)
-hdr_syms() {
+# header_syms OUT CLANG-FLAGS HEADER...: the symbols that the HEADERs of the stage
+# declare, as "ARCH SYMBOL" lines (helpers/header_syms.py)
+header_syms() {
   local out=$1 flags=$2; shift 2
-  python3 -I "$HELPERS/hdr_syms.py" --flags="$flags" "$STAGE" "$CLANG_PATH" "$out" "$@"
+  python3 -I "$HELPERS/header_syms.py" --flags="$flags" "$STAGE" "$CLANG_PATH" "$out" "$@"
 }
 
 # has_step NAME: is the step in the list of steps to run?

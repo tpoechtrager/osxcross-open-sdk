@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-"""What the symbol scans (gen_symbols.py, hdr_syms.py) share: the architectures,
+"""What the symbol scans (libsystem_syms.py, header_syms.py) share: the architectures,
 the clang command line prefix and the test of a declaration.
 
 Clang 17 and later define __ENVIRONMENT_OS_VERSION_MIN_REQUIRED__ for the

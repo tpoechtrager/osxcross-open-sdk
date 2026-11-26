@@ -16,7 +16,7 @@
 #   --keep          keep the programs
 #   --core          the SDK is a --core SDK: only the programs that it supports
 #   --arch "A B"    architectures (default: x86_64 arm64)
-#   --ssh HOST      copy the programs of the architecture of HOST to ~/oc-open-sdk/tests.PID there,
+#   --ssh HOST      copy the programs of the architecture of HOST to ~/open-sdk-tests/tests.PID there,
 #                   run them, and delete the directory (the host is a Mac; it needs nothing installed)
 #   --gcc           also build with the GCC of the OSXCross (--osxcross only; C and C++ programs)
 #
@@ -156,7 +156,7 @@ if [ -n "$SSH" ]; then
   rarch=$(ssh "$SSH" uname -m 2>/dev/null)
   case $rarch in arm64) rarch=arm64;; x86_64) rarch=x86_64;; *) echo "run.sh: cannot ask $SSH for its architecture" >&2; rarch=;; esac
   if [ -n "$rarch" ]; then
-    rdir=oc-open-sdk/tests.$$
+    rdir=open-sdk-tests/tests.$$
     ssh "$SSH" "mkdir -p $rdir" && for p in $built; do
       case $p in *-"$rarch") scp -q "$OUT/$p" "$SSH:$rdir/" ;; esac
     done
@@ -168,7 +168,7 @@ if [ -n "$SSH" ]; then
           else echo "run FAIL    $p"; head -n 3 "$OUT/$p.run" | sed 's/^/    /'; runfailed=$((runfailed + 1)); fi;;
       esac
     done
-    ssh "$SSH" "rm -rf $rdir; rmdir oc-open-sdk 2>/dev/null; true"
+    ssh "$SSH" "rm -rf $rdir; rmdir open-sdk-tests 2>/dev/null; true"
   fi
 fi
 

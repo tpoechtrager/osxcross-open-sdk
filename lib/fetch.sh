@@ -7,7 +7,7 @@
 # The sources of a macOS release are listed in data/manifests/macos-NNN.txt:
 # project, tag and commit of github.com/apple-oss-distributions, and the
 # archive of sqlite with its SHA-256.  A clone is accepted only if its tag
-# points to the commit of the manifest.  (helpers/manifest.py
+# points to the commit of the manifest.  (tools/manifest.py
 # --new) writes a manifest for a new release.
 # ---------------------------------------------------------------------------
 
@@ -55,13 +55,24 @@ load_manifest() {
   fi
   LLVM_TAG=llvmorg-$LIBCXX_VERSION
   LLVM_COMMIT=$(llvm_commit "$LIBCXX_VERSION")
-  [ -n "$LLVM_COMMIT" ] || die "LLVM $LIBCXX_VERSION is not in $t; releases: $(llvm_releases | tr '\n' ' ')(helpers/manifest.py --llvm adds one)"
+  [ -n "$LLVM_COMMIT" ] || die "LLVM $LIBCXX_VERSION is not in $t; releases: $(llvm_releases | tr '\n' ' ')(tools/manifest.py --llvm adds one)"
+}
+
+# migrate_tag_marks: the clones of a work directory of an earlier version of
+# this script have the mark .oc-tag: it is renamed once to .open-sdk-tag, so
+# that they need not be cloned again
+migrate_tag_marks() {
+  local f
+  for f in "$SRC"/*/.oc-tag; do
+    [ -f "$f" ] || continue
+    [ -e "${f%/.oc-tag}/.open-sdk-tag" ] || mv "$f" "${f%/.oc-tag}/.open-sdk-tag"
+  done
 }
 
 # clone_is_current DIR TAG COMMIT: is DIR a complete clone of TAG (its mark
-# .oc-tag) at COMMIT ("-": any commit)?
+# .open-sdk-tag) at COMMIT ("-": any commit)?
 clone_is_current() {
-  [ -f "$1/.oc-tag" ] && [ "$(cat "$1/.oc-tag")" = "$2" ] || return 1
+  [ -f "$1/.open-sdk-tag" ] && [ "$(cat "$1/.open-sdk-tag")" = "$2" ] || return 1
   [ "$3" = - ] && return 0
   # (rev-parse fails if the clone has no commit: then it is not current)
   [ "$(git --git-dir="$1/.git" rev-parse HEAD 2>/dev/null || true)" = "$3" ]
@@ -70,7 +81,7 @@ clone_is_current() {
 # git_pinned DIR URL TAG COMMIT [FETCH-OPTION...]: fetch TAG of URL into DIR
 # and check that it is COMMIT ("-": do not check).  HEAD is set to the commit,
 # the work tree is left empty (the caller checks out).  A clone that is there
-# already stays if it is the same tag and commit.  The mark .oc-tag is written
+# already stays if it is the same tag and commit.  The mark .open-sdk-tag is written
 # last, so a clone that was interrupted is cloned again.
 #
 # init + fetch instead of "git clone --depth 1 --branch TAG": that clone warns
@@ -109,7 +120,7 @@ step_fetch() {
     fetch_line "$name" "$tag" cloning
     git_pinned "$SRC/$name" "https://github.com/apple-oss-distributions/$name" "$tag" "$commit"
     git --git-dir="$SRC/$name/.git" --work-tree="$SRC/$name" checkout -q -f HEAD
-    echo "$tag" > "$SRC/$name/.oc-tag"
+    echo "$tag" > "$SRC/$name/.open-sdk-tag"
   done <<EOF2
 $PROJECTS
 EOF2
@@ -126,7 +137,7 @@ fetch_llvm() {
   git_pinned "$SRC/llvm-project" https://github.com/llvm/llvm-project "$LLVM_TAG" "$LLVM_COMMIT" --filter=blob:none
   git --git-dir="$SRC/llvm-project/.git" --work-tree="$SRC/llvm-project" sparse-checkout set libcxx libcxxabi
   git --git-dir="$SRC/llvm-project/.git" --work-tree="$SRC/llvm-project" checkout -q -f HEAD
-  echo "$LLVM_TAG" > "$SRC/llvm-project/.oc-tag"
+  echo "$LLVM_TAG" > "$SRC/llvm-project/.open-sdk-tag"
 }
 
 # sqlite_dir: the directory of the sqlite amalgamation in SRC (the name of the archive)

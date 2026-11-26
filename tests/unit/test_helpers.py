@@ -15,14 +15,16 @@ import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 HELPERS = os.path.join(ROOT, "helpers")
+TOOLS = os.path.join(ROOT, "tools")
 DATA = os.path.join(ROOT, "data")
 sys.path.insert(0, HELPERS)
 import data_files  # noqa: E402
 
 
 def run(script, *args):
-    """Run a helper the way the generator does (python3 -I); (rc, stdout, stderr)."""
-    r = subprocess.run([sys.executable, "-I", os.path.join(HELPERS, script)] + list(args),
+    """Run a helper the way the generator does (python3 -I); (rc, stdout, stderr).
+    SCRIPT is below helpers/, or tools/NAME."""
+    r = subprocess.run([sys.executable, "-I", os.path.join(ROOT if script.startswith("tools/") else HELPERS, script)] + list(args),
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     return r.returncode, r.stdout, r.stderr
 
@@ -32,8 +34,8 @@ def read(path):
         return f.read()
 
 
-def load(name):
-    spec = importlib.util.spec_from_file_location(name, os.path.join(HELPERS, name + ".py"))
+def load(name, where=None):
+    spec = importlib.util.spec_from_file_location(name, os.path.join(where or HELPERS, name + ".py"))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -62,7 +64,7 @@ class MkTbd(Tmp):
     def test_two_architectures(self):
         syms = self.write("s", "x86_64 _a\nx86_64 _b\narm64 _a\narm64 _c\n")
         out = self.path("o.tbd")
-        rc, _, err = run("mk_tbd.py", out, "/usr/lib/libx.1.dylib", "1.2", syms, "--compat", "1")
+        rc, _, err = run("write_tbd.py", out, "/usr/lib/libx.1.dylib", "1.2", syms, "--compat", "1")
         self.assertEqual(rc, 0, err)
         t = read(out)
         self.assertIn("install-name:    '/usr/lib/libx.1.dylib'", t)
@@ -79,7 +81,7 @@ class MkTbd(Tmp):
         target = self.write("target.tbd", "keep me\n")
         link = self.path("link.tbd")
         os.symlink(target, link)
-        rc, _, err = run("mk_tbd.py", link, "/usr/lib/libx.dylib", "1", syms, "--compat", "1")
+        rc, _, err = run("write_tbd.py", link, "/usr/lib/libx.dylib", "1", syms, "--compat", "1")
         self.assertEqual(rc, 0, err)
         self.assertEqual(read(target), "keep me\n")
         self.assertFalse(os.path.islink(link))
@@ -87,8 +89,8 @@ class MkTbd(Tmp):
     def test_deterministic(self):
         syms = self.write("s", "arm64 _z\narm64 _a\nx86_64 _m\n")
         a, b = self.path("a.tbd"), self.path("b.tbd")
-        run("mk_tbd.py", a, "/usr/lib/libx.dylib", "1", syms, "--compat", "1")
-        run("mk_tbd.py", b, "/usr/lib/libx.dylib", "1", syms, "--compat", "1")
+        run("write_tbd.py", a, "/usr/lib/libx.dylib", "1", syms, "--compat", "1")
+        run("write_tbd.py", b, "/usr/lib/libx.dylib", "1", syms, "--compat", "1")
         self.assertEqual(read(a), read(b))
 
 
@@ -185,7 +187,7 @@ class CxxSite(Tmp):
         src = self.write("in", "#cmakedefine01 _LIBCPP_HAS_THREADS\n#cmakedefine _LIBCPP_ABI_VERSION @LIBCXX_ABI_VERSION@\n"
                                "#cmakedefine01 _LIBCPP_UNKNOWN_OPTION\n#cmakedefine _LIBCPP_PSTL_BACKEND_LIBDISPATCH\n")
         out = self.path("out")
-        rc, _, err = run("cxx_site.py", src, out)
+        rc, _, err = run("write_cxx_config_site.py", src, out)
         self.assertEqual(rc, 0, err)
         t = read(out)
         self.assertIn("#define _LIBCPP_HAS_THREADS 1", t)
@@ -202,7 +204,7 @@ class OpenSdkJson(Tmp):
         out = self.path("OpenSDK.json")
         args = ["generator_commit=unknown", "macos_version=26.5", "macos_release=macos-265",
                 "variant=full", "libcxx=21.1.8", "sqlite_url=https://example.org/s.zip", "sqlite_sha256=" + "c" * 64]
-        rc, _, err = run("open_sdk_json.py", out, projects, *(self.OWN + args))
+        rc, _, err = run("write_open_sdk_json.py", out, projects, *(self.OWN + args))
         self.assertEqual(rc, 0, err)
         d = json.loads(read(out))
         self.assertEqual(d["name"], "osxcross-open-sdk")
@@ -212,13 +214,13 @@ class OpenSdkJson(Tmp):
         text = read(out)
         self.assertNotRegex(text, r"20\d\d-\d\d-\d\d")
         out2 = self.path("2.json")
-        run("open_sdk_json.py", out2, projects, *(self.OWN + args))
+        run("write_open_sdk_json.py", out2, projects, *(self.OWN + args))
         self.assertEqual(text, read(out2))
 
     def test_core_has_no_sqlite_and_fewer_own_files(self):
         projects = self.write("p.tsv", "xnu\txnu-1\t" + "a" * 40 + "\n")
         out = self.path("c.json")
-        run("open_sdk_json.py", out, projects, *self.OWN, "generator_commit=0123456789abcdef0123456789abcdef01234567-modified", "macos_version=26.5",
+        run("write_open_sdk_json.py", out, projects, *self.OWN, "generator_commit=0123456789abcdef0123456789abcdef01234567-modified", "macos_version=26.5",
             "macos_release=macos-265", "variant=core", "libcxx=21.1.8")
         d = json.loads(read(out))
         self.assertEqual([p["name"] for p in d["projects"]], ["xnu"])
@@ -229,16 +231,16 @@ class OpenSdkJson(Tmp):
         args = ["generator_commit=unknown", "macos_version=14.3", "macos_release=macos-143", "variant=full", "libcxx=16.0.6"]
         der = "usr/include/libDER/DERItem.h"
         self.write("sdk/" + der, read(os.path.join(DATA, "headers", der)))
-        run("open_sdk_json.py", self.path("sdk/OpenSDK.json"), projects, *(self.OWN + args))
+        run("write_open_sdk_json.py", self.path("sdk/OpenSDK.json"), projects, *(self.OWN + args))
         self.assertIn(der, json.loads(read(self.path("sdk/OpenSDK.json")))["own_files"])
         self.write("sdk/" + der, "/* the file of xnu */\n")
-        run("open_sdk_json.py", self.path("sdk/OpenSDK.json"), projects, *(self.OWN + args))
+        run("write_open_sdk_json.py", self.path("sdk/OpenSDK.json"), projects, *(self.OWN + args))
         self.assertNotIn(der, json.loads(read(self.path("sdk/OpenSDK.json")))["own_files"])
 
 
 class Manifest(Tmp):
     def test_read_and_new_offline(self):
-        m = load("manifest")
+        m = load("manifest", TOOLS)
         base = self.write("base.txt", "# c\nxnu xnu-1 " + "a" * 40 + "\nLibm Libm-1 " + "b" * 40 + "\nAvailabilityVersions AvailabilityVersions-100 " + "c" * 40 + "\nsqlite u " + "d" * 64 + "\n")
         self.assertEqual([r[0] for r in m.read_projects(base)], ["xnu", "Libm", "AvailabilityVersions"])
         rel = self.write("rel.json", json.dumps({"projects": [{"project": "xnu", "tag": "xnu-2"},
@@ -257,7 +259,7 @@ class Manifest(Tmp):
 
     def test_new_from_a_list_of_tags(self):
         # a base of "<project> <tag>" lines has no sqlite line: the newest manifest gives it
-        m = load("manifest")
+        m = load("manifest", TOOLS)
         base = self.write("base.txt", "xnu xnu-1\nLibm Libm-1\n")
         rel = self.write("rel.json", json.dumps({"projects": [{"project": "xnu", "tag": "xnu-2"}]}))
         m.ls_remote = lambda url, ref: "e" * 40
@@ -272,7 +274,7 @@ class Manifest(Tmp):
 class MakeLicenses(Tmp):
     def src_tree(self, with_sqlite):
         """A source directory with a license file for every project of the list"""
-        m = load("make_licenses")
+        m = load("write_licenses")
         src = self.path("src")
         for ent in m.P:
             if ent[1] is None:
@@ -282,9 +284,9 @@ class MakeLicenses(Tmp):
             if ent[0] != "libdispatch":   # libdispatch: no license file, the Apache text is added
                 self.write(os.path.join("src", ent[1], "LICENSE"), ent[0] + " license\n")
             top = ent[1].split("/")[0]
-            self.write(os.path.join("src", top, ".oc-tag"), "%s-1.0\n" % top)
+            self.write(os.path.join("src", top, ".open-sdk-tag"), "%s-1.0\n" % top)
         self.write("src/xnu/APPLE_LICENSE", "APSL\n")
-        self.write("src/CF/.oc-tag", "CF-1153.18\n")
+        self.write("src/CF/.open-sdk-tag", "CF-1153.18\n")
         if with_sqlite:
             self.write("src/sqlite-amalgamation-3430200/sqlite3.h", '/* blessing */\n#define SQLITE_VERSION        "3.43.2"\n')
         return src
@@ -297,7 +299,7 @@ class MakeLicenses(Tmp):
                 "--projects-out", self.path("projects.tsv")]
         if with_sqlite:
             args += ["--sqlite", os.path.join(src, "sqlite-amalgamation-3430200")]
-        rc, _, err = run("make_licenses.py", *args)
+        rc, _, err = run("write_licenses.py", *args)
         self.assertEqual(rc, 0, err)
         return out, read(os.path.join(out, "LICENSES.md"))
 
@@ -337,7 +339,7 @@ class SecurityHeaders(Tmp):
 
 class GenSymbols(Tmp):
     def test_evidence_and_aliases(self):
-        m = load("gen_symbols")
+        m = load("libsystem_syms")
         self.assertTrue(m.has_evidence("_stat$INODE64", {"stat"}))
         self.assertTrue(m.has_evidence("__exit", {"_exit"}))
         self.assertFalse(m.has_evidence("_nothere", {"stat"}))
@@ -346,7 +348,7 @@ class GenSymbols(Tmp):
         self.assertEqual(m.alias_pairs(self.path("src")), [("_a", "_b"), ("_c", "_d")] * len(m.ALIAS_FILES))
 
     def test_header_list(self):
-        m = load("gen_symbols")
+        m = load("libsystem_syms")
         for h in ("stdio.h", "kern/x.h", "sys/ubc.h", "foo_private.h", "later.h"):
             self.write("sdk/usr/include/" + h, "\n")
         self.write("sdk/work/headers.list", "stdio.h\nkern/x.h\nsys/ubc.h\nfoo_private.h\n")
@@ -355,13 +357,13 @@ class GenSymbols(Tmp):
 
 class CheckLibraries(Tmp):
     def test_differences(self):
-        m = load("check_libraries")
+        m = load("check_libraries", TOOLS)
         os.makedirs(self.path("src"))
-        rc, out, _ = run("check_libraries.py", self.path("src"))
+        rc, out, _ = run("tools/check_libraries.py", self.path("src"))
         self.assertEqual(rc, 1)
         self.assertIn("libz.1: missing file zlib/zlib.xcconfig", out)
         self.write("src/zlib/zlib.xcconfig", "DYLIB_CURRENT_VERSION = 1.2.12\nDYLIB_COMPATIBILITY_VERSION = 1\n")
-        rc, out, _ = run("check_libraries.py", self.path("src"))
+        rc, out, _ = run("tools/check_libraries.py", self.path("src"))
         self.assertNotIn("libz.1:", out)
         # every library of the table has a check
         names = set(data_files.read_libraries(os.path.join(DATA, "libraries.txt")))

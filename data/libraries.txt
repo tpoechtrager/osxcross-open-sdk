@@ -11,7 +11,7 @@
 #              not lower, so a low value is always safe
 #   source     where the values are written
 #
-# helpers/check_libraries.py compares this table with the sources.
+# tools/check_libraries.py compares this table with the sources.
 #
 # name           install                                                   current      compat  source
 libSystem.B      /usr/lib/libSystem.B.dylib                                tag:Libsystem 1      Libsystem/Libsystem.xcconfig (INSTALL_PATH, DYLIB_NAME_VERSION_SUFFIX = .B, DYLIB_CURRENT_VERSION = tag); no compatibility version is set, the default is 1

@@ -71,5 +71,11 @@ check "install_own_files copies the own headers by their path" "$(cmp -s "$ROOT/
 check "  only those of the variant" "$([ ! -e "$T/stage/usr/include/xpc/xpc.h" ] && echo ok || echo no)"
 check "  and no fallback" "$([ ! -e "$T/stage/usr/include/libDER/DERItem.h" ] && echo ok || echo no)"
 
+mkdir -p "$T/src/old" "$T/src/new"; echo tag-1 > "$T/src/old/.oc-tag"; echo tag-2 > "$T/src/new/.open-sdk-tag"
+# shellcheck disable=SC2034  # SRC is read by migrate_tag_marks
+(SRC=$T/src; lib migrate_tag_marks)
+check "migrate_tag_marks renames the mark .oc-tag" "$(is "$(cat "$T/src/old/.open-sdk-tag" 2>/dev/null)" tag-1)"
+check "  and keeps the new marks" "$([ ! -e "$T/src/old/.oc-tag" ] && [ "$(cat "$T/src/new/.open-sdk-tag")" = tag-2 ] && echo ok || echo no)"
+
 echo "1..$n"
 exit $fail

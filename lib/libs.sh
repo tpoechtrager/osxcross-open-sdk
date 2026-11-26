@@ -30,7 +30,7 @@ step_libs() {
 # ext_tbd NAME CLANGFLAGS EXCLUDE-SYMFILE|- HEADER...  (NAME: a library of data/libraries.txt)
 ext_tbd() {
   local name=$1 flags=$2 excl=$3; shift 3
-  hdr_syms "$STAGE_WORK/$name.syms" "$flags" "$@"
+  header_syms "$STAGE_WORK/$name.syms" "$flags" "$@"
   if [ "$excl" != "-" ]; then
     # excl lists bare symbols; syms lines are "arch symbol"
     awk 'NR==FNR{e[$1]=1;next} !($2 in e)' "$excl" "$STAGE_WORK/$name.syms" > "$STAGE_WORK/$name.syms.f"

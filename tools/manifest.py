@@ -37,7 +37,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from urllib.request import urlopen
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # python3 -I leaves it out
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "helpers"))
 from data_files import read_manifest  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

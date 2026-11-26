@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Write libc++'s __config_site for macOS from the upstream template.
 
-usage: cxx_site.py __config_site.in OUT
+usage: write_cxx_config_site.py __config_site.in OUT
 
 Upstream creates the file with CMake (#cmakedefine).  The names and the
 meaning of the options change from release to release, so the template of
@@ -39,7 +39,7 @@ OFF_BY_DEFAULT = {"_LIBCPP_ENABLE_ASSERTIONS_DEFAULT": 0}
 
 
 def main(argv):
-    p = argparse.ArgumentParser(prog="cxx_site.py", description="Write libc++'s __config_site.")
+    p = argparse.ArgumentParser(prog="write_cxx_config_site.py", description="Write libc++'s __config_site.")
     p.add_argument("template", help="__config_site.in")
     p.add_argument("out")
     a = p.parse_args(argv[1:])

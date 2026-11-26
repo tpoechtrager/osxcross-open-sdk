@@ -19,5 +19,5 @@ step_swift() {
   local P; P=$(ls "$D"/x/*/Payload "$D"/x/Payload 2>/dev/null | head -1) || true
   (cd "$D/payload" && bsdtar -xf "$P" './usr/lib/swift/macosx/libswift*.dylib' './usr/share/swift/LICENSE.txt')
   python3 -I "$HELPERS/swift_stubs.py" "$D/payload/usr/lib/swift/macosx" "$L" \
-    "$(dirname "$CLANG_PATH")" "$HELPERS/mk_tbd.py"
+    "$(dirname "$CLANG_PATH")" "$HELPERS/write_tbd.py"
 }

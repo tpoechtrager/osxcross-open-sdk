@@ -4,7 +4,7 @@
 toolchain package (Apache 2.0 licensed, redistributable).
 
 usage: swift_stubs.py DYLIB_DIR OUT_DIR LLVM_BIN MK_TBD
-LLVM_BIN has llvm-otool and llvm-nm; MK_TBD is helpers/mk_tbd.py.
+LLVM_BIN has llvm-otool and llvm-nm; MK_TBD is helpers/write_tbd.py.
 """
 import argparse
 import glob
@@ -22,9 +22,9 @@ def main(argv):
     p.add_argument("dylib_dir")
     p.add_argument("out_dir")
     p.add_argument("llvm_bin")
-    p.add_argument("mk_tbd")
+    p.add_argument("write_tbd")
     a = p.parse_args(argv[1:])
-    src, out, llvm, mk = a.dylib_dir, a.out_dir, a.llvm_bin, a.mk_tbd
+    src, out, llvm, mk = a.dylib_dir, a.out_dir, a.llvm_bin, a.write_tbd
     os.makedirs(out, exist_ok=True)
     for dy in sorted(glob.glob(os.path.join(src, "*.dylib"))):
         base = os.path.basename(dy)[:-6]

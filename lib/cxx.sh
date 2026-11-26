@@ -26,7 +26,7 @@ step_cxx() {
     fi
   fi
   cp "$SRC"/llvm-project/libcxxabi/include/{cxxabi.h,__cxxabi_config.h} "$I/"
-  python3 -I "$HELPERS/cxx_site.py" "$SRC/llvm-project/libcxx/include/__config_site.in" "$I/__config_site"
+  python3 -I "$HELPERS/write_cxx_config_site.py" "$SRC/llvm-project/libcxx/include/__config_site.in" "$I/__config_site"
   # LLVM 17 and later: the header of the assertion handler is made by CMake
   # from the vendor template (a vendor may bring its own)
   local ah=$SRC/llvm-project/libcxx/vendor/llvm/default_assertion_handler.in

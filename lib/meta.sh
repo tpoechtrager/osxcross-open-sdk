@@ -84,14 +84,14 @@ EOF
     lic_variant=swift; swl=$WORK/swiftpkg/payload/usr/share/swift/LICENSE.txt
   fi
   echo "license texts"
-  quiet python3 -I "$HELPERS/make_licenses.py" "$SRC" "$M/usr/share/licenses/open-sdk" "$lic_variant" \
+  quiet python3 -I "$HELPERS/write_licenses.py" "$SRC" "$M/usr/share/licenses/open-sdk" "$lic_variant" \
     "$DATA/licenses/0BSD.txt" --apache-license "$DATA/licenses/Apache-2.0.txt" --sqlite "$(sqlite_dir)" \
     ${swl:+--swift-license "$swl"} --projects-out "$STAGE_WORK/projects.tsv"   # (it prints a count)
   local sq=
   [ "$VARIANT" = core ] || sq="sqlite_url=$SQLITE_URL sqlite_sha256=$SQLITE_SHA256"
   echo "OpenSDK.json"
   # shellcheck disable=SC2086
-  python3 -I "$HELPERS/open_sdk_json.py" "$M/OpenSDK.json" "$STAGE_WORK/projects.tsv" \
+  python3 -I "$HELPERS/write_open_sdk_json.py" "$M/OpenSDK.json" "$STAGE_WORK/projects.tsv" \
     --own-files "$DATA/own-files.txt" --own-headers "$DATA/headers" \
     generator_commit="$GENERATOR_COMMIT" \
     macos_version="$V" macos_release="$MACOS_REL" variant="$VARIANT" libcxx="$LIBCXX_VERSION" $sq

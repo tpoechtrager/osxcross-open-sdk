@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Symbols declared in a set of headers of one library.
 
-usage: hdr_syms.py SDKROOT CLANG OUT [--flags "CLANG-FLAGS"] HEADER...
+usage: header_syms.py SDKROOT CLANG OUT [--flags "CLANG-FLAGS"] HEADER...
 Only declarations whose file name (basename) matches one of the HEADERs are
 kept.  An error of clang in a header stops the script, because declarations
 after it may be missing.
@@ -53,7 +53,7 @@ def scan(sdk, clang, flags, hdrs, arch, src):
                        capture_output=True, text=True)
     if r.returncode != 0:
         # an error in a header can drop declarations silently: stop
-        sys.exit("hdr_syms.py: clang failed for %s (%s):\n%s" % (arch, ", ".join(hdrs), r.stderr[:3000]))
+        sys.exit("header_syms.py: clang failed for %s (%s):\n%s" % (arch, ", ".join(hdrs), r.stderr[:3000]))
     names = set()
     for n, nfile in file_of_nodes(json.loads(r.stdout)["inner"]):
         if os.path.basename(nfile) not in base:
@@ -67,7 +67,7 @@ def scan(sdk, clang, flags, hdrs, arch, src):
 
 
 def main(argv):
-    p = argparse.ArgumentParser(prog="hdr_syms.py", description="The symbols that headers declare.")
+    p = argparse.ArgumentParser(prog="header_syms.py", description="The symbols that headers declare.")
     p.add_argument("sdk")
     p.add_argument("clang")
     p.add_argument("out")

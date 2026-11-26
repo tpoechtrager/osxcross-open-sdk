@@ -19,7 +19,7 @@ At run time macOS loads its own libraries.
 - **The other libraries and frameworks**: the declarations in their headers and the export lists  
   of their projects.
 - **Install names and versions** are in `data/libraries.txt`, with the project file that states each value;  
-  `helpers/check_libraries.py` checks them. A value without a public source is the lowest possible one.
+  `tools/check_libraries.py` checks them. A value without a public source is the lowest possible one.
 
 ## Headers written for this SDK
 

@@ -96,7 +96,7 @@ export LC_ALL=C
 # TARBALL_DIR, ...) must not change what this script builds or where it
 # writes: it reads only the options and the OPEN_SDK_* variables.
 # (|| true: unset fails only for a variable that is read-only)
-unset WORK TARBALL_DIR SDK_VERSION LIBCXX_VERSION CLANG BUILD_VERSION SWIFT_PKG AV_TAG OC_BSDTAR || true
+unset WORK TARBALL_DIR SDK_VERSION LIBCXX_VERSION CLANG BUILD_VERSION SWIFT_PKG AV_TAG || true
 
 SELF=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 HELPERS=$SELF/helpers
@@ -254,6 +254,7 @@ check_tools
 CLANG_PATH=$(command -v "$CLANG") || CLANG_PATH=$CLANG
 mkdir -p "$WORK"
 : > "$WORK/.open-sdk-work"
+migrate_tag_marks
 
 # Everything the start and the steps print also goes to $WORK/build.log (a new
 # file for every run).
