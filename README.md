@@ -52,8 +52,8 @@ install name and version. A real SDK was used only to test a result, never as a 
   links; `#import <Foundation/Foundation.h>` fails.
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
 - `libbsm`, the other `IOKit` device families (`usb`, `storage/ata`, `network`, ...) and `CoreServices` except File System Events.
-- The functions of `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h` (but `IOHIDServiceClientGetTypeID`):  
-  the headers are there, the functions are not in `IOKit.tbd` (see [docs/SOURCES.md](docs/SOURCES.md#iokit-device-families)).
+- `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h`: no open source defines their functions  
+  (see [docs/SOURCES.md](docs/SOURCES.md#iokit-device-families)).
 - XPC sessions and listeners (`xpc_session`, `xpc_listener`) and the parts of XPC that have no public value  
   (see [docs/SOURCES.md](docs/SOURCES.md#xpcxpch-and-its-symbols)).
 

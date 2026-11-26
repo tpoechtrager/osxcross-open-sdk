@@ -449,7 +449,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### `IOKit` device families
 
-**Files:** `lib/frameworks.sh` (`iokit_families`, `fw_tbd`), `data/symbols/IOKit-exclude.txt`, `helpers/write_licenses.py`
+**Files:** `lib/frameworks.sh` (`iokit_families`, `fw_tbd`), `helpers/write_licenses.py`
 
 - The families: the modules `storage` (without `storage/ata`), `hid`, `hidsystem`, `graphics`, `i2c` and `ndrvsupport`  
   of IOKitUser's `Modules/IOKit.modulemap`.
@@ -463,9 +463,10 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - `storage/IOFireWireStorageCharacteristics.h` of the module map belongs to IOFireWireSerialBusProtocolTransport  
   and is not installed.
 - Symbols: the declarations of these headers (as for the other frameworks), defined in IOKitUser.
-- Not in `IOKit.tbd`: the functions of `hidsystem/IOHIDEventSystemClient.h` and `hidsystem/IOHIDServiceClient.h`  
-  but `IOHIDServiceClientGetTypeID` (`hid.subproj/IOHIDServiceClientObjc.m`): IOKitUser builds them from  
-  `hid.subproj/IOHIDEventSystemClient.c` and `IOHIDServiceClient.c`, which are empty in the open source releases.
+- Not installed: `hidsystem/IOHIDEventSystemClient.h` and `hidsystem/IOHIDServiceClient.h`  
+  (IOKitUser `hidsystem.subproj`): IOKitUser builds their functions from  
+  `hid.subproj/IOHIDEventSystemClient.c` and `IOHIDServiceClient.c`, which are empty in the open source releases  
+  (`IOKitUser` of macOS 14.3 to 26.5), so no open source defines them.
 - Licenses: APSL 2.0; the headers of IOGraphics carry the APSL 1.1 notice, its text is the `APPLE_LICENSE` of Libinfo.  
   IOHIDFamily has no license file (the notice of `IOHIDKeys.h` and the APSL 2.0 text of xnu).
 - Tags: `release.json` of distribution-macOS for 14.3, 15.5, 26.0 and 26.5 (see [Manifests](#manifests));  

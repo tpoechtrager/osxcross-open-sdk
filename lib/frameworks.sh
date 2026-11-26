@@ -72,7 +72,9 @@ iokit_families() {
   cp "$SRC"/IOHIDFamily/IOHIDSystem/IOKit/hidsystem/{IOHIDParameter,IOHIDShared,IOHIDTypes,IOLLEvent,ev_keymap}.h "$H/hidsystem/"
   # IOKitUser: the phases "Copy HID Headers", "Copy HIDSystem Headers" and "Copy Files B" of the target IOKit
   cp "$SRC"/IOKitUser/hid.subproj/{IOHIDBase,IOHIDDevice,IOHIDDevicePlugIn,IOHIDElement,IOHIDLib,IOHIDManager,IOHIDQueue,IOHIDTransaction,IOHIDValue}.h "$H/hid/"
-  cp "$SRC"/IOKitUser/hidsystem.subproj/{IOHIDEventSystemClient,IOHIDLib,IOHIDServiceClient,IOHIDUserDevice,event_status_driver}.h "$H/hidsystem/"
+  # hidsystem/IOHIDEventSystemClient.h and IOHIDServiceClient.h are not installed: IOKitUser builds their functions
+  # from hid.subproj/IOHIDEventSystemClient.c and IOHIDServiceClient.c, which are empty in the open source releases
+  cp "$SRC"/IOKitUser/hidsystem.subproj/{IOHIDLib,IOHIDUserDevice,event_status_driver}.h "$H/hidsystem/"
   cp "$SRC/IOKitUser/graphics.subproj/IOGraphicsLib.h" "$H/graphics/"
   # IOGraphics: the copy phases of the targets IOGraphics Headers and IONDRVSupport Headers
   cp "$SRC"/IOGraphics/IOGraphicsFamily/IOKit/graphics/{IOAccelClientConnect,IOAccelSurfaceConnect,IOAccelTypes,IOFramebufferShared,IOGraphicsEngine,IOGraphicsInterface,IOGraphicsInterfaceTypes,IOGraphicsTypes}.h "$H/graphics/"
@@ -128,8 +130,7 @@ step_frameworks() {
   # iokitmig.h (a MIG interface) includes iokitmig_c.h, which MIG makes while IOKit is built
   # and which is not in the sources: it is copied above but not scanned for symbols.
   # The functions that the headers of the device families declare are defined in
-  # IOKitUser (hid.subproj, hidsystem.subproj, graphics.subproj), but for those of
-  # data/symbols/IOKit-exclude.txt.
+  # IOKitUser (hid.subproj, hidsystem.subproj, graphics.subproj).
   # shellcheck disable=SC2086
   fw_tbd IOKit IOKitLib.h IOCFBundle.h IOCFPlugIn.h IOCFSerialize.h IOCFURLAccess.h IOCFUnserialize.h \
     IODataQueueClient.h ps/IOPowerSources.h ps/IOPSKeys.h pwr_mgt/IOPMLib.h pwr_mgt/IOPMKeys.h \
