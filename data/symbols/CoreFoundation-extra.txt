@@ -1,1 +1,1 @@
-___CFConstantStringClassReference   # target of the CFSTR() builtin
+___CFConstantStringClassReference   # target of the CFSTR() builtin; CF/CFInternal.h (line 338) exports it

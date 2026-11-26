@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-only
+# Tests of the functions of lib/common.sh and lib/fetch.sh that need neither
+# network nor a compiler: tests/unit/test_common.sh
+set -u
+HERE=$(cd "$(dirname "$0")" && pwd)
+ROOT=$(cd "$HERE/../.." && pwd)
+T=$(mktemp -d "${TMPDIR:-/tmp}/open-sdk-test.XXXXXX") || exit 2
+trap 'rm -rf "$T"' EXIT
+fail=0 n=0
+
+check() { # description, ok or no
+  n=$((n + 1))
+  if [ "$2" = ok ]; then echo "ok $n - $1"; else echo "not ok $n - $1"; fail=1; fi
+}
+is() { [ "$1" = "$2" ] && echo ok || { echo "   got '$1', want '$2'" >&2; echo no; }; }
+
+# lib: run a function of lib/common.sh and lib/fetch.sh in a subshell with
+# the variables of make-open-sdk.sh that it reads
+# shellcheck disable=SC2034  # the variables are read by the functions
+lib() (
+  SELF=$ROOT HELPERS=$ROOT/helpers DATA=$ROOT/data SDK_VERSION=26.5 STAGE=$T/stage
+  PROJECTS="Libsystem Libsystem-1356.100.2.0.1 0123
+libffi libffi-40 4567"
+  . "$ROOT/lib/common.sh"
+  . "$ROOT/lib/fetch.sh"
+  "$@"
+)
+
+check "version_lt 11.3 14.3" "$(lib version_lt 11.3 14.3 && echo ok || echo no)"
+check "version_lt 14.10 14.3 is false" "$(lib version_lt 14.10 14.3 && echo no || echo ok)"
+check "version_lt 14.3 14.3 is false" "$(lib version_lt 14.3 14.3 && echo no || echo ok)"
+check "version_lt 26.5 26.5.1" "$(lib version_lt 26.5 26.5.1 && echo ok || echo no)"
+
+check "tag_version takes at most three components" "$(is "$(lib tag_version Libsystem)" 1356.100.2)"
+check "tag_version of a short tag" "$(is "$(lib tag_version libffi)" 40)"
+check "tag_version of a project that is not in the manifest fails" "$(lib tag_version nothere >/dev/null 2>&1 && echo no || echo ok)"
+check "lib_current of a tag: entry" "$(is "$(lib lib_current libSystem.B)" 1356.100.2)"
+check "lib_current of a number" "$(is "$(lib lib_current libz.1)" 1.2.12)"
+check "lib_field reads the install name" "$(is "$(lib lib_field libz.1 2)" /usr/lib/libz.1.dylib)"
+
+printf '# head\n_a   # source\n\n  _b\n# _c\n' > "$T/syms.txt"
+check "symbol_list skips comments and empty lines" "$(is "$(lib symbol_list "$T/syms.txt" | tr '\n' ' ')" "_a _b ")"
+check "syms_for_archs gives both architectures" "$(is "$(lib syms_for_archs "$T/syms.txt" | tr '\n' ',')" "x86_64 _a,x86_64 _b,arm64 _a,arm64 _b,")"
+
+lib mk_lib_tbd libz.1 "$T/libz.1.tbd" <(lib syms_for_archs "$T/syms.txt") >/dev/null 2>&1
+check "mk_lib_tbd writes the install name of data/libraries.txt" "$(grep -q "^install-name: *'/usr/lib/libz.1.dylib'" "$T/libz.1.tbd" && echo ok || echo no)"
+check "  and its versions" "$(grep -q '^current-version: 1.2.12' "$T/libz.1.tbd" && grep -q '^compatibility-version: 1$' "$T/libz.1.tbd" && echo ok || echo no)"
+check "mk_lib_tbd of a library that is not in the table fails" "$(lib mk_lib_tbd nothere "$T/x.tbd" "$T/syms.txt" >/dev/null 2>&1 && echo no || echo ok)"
+
+printf 'one\ntwo\n' > "$T/f"
+lib sed_inplace "$T/f" 's/one/1/'
+check "sed_inplace changes the file" "$(is "$(tr '\n' ' ' < "$T/f")" "1 two ")"
+check "  and leaves no temporary file" "$(set -- "$T"/f.*; [ ! -e "$1" ] && echo ok || echo no)"
+
+mkdir -p "$T/from/d" "$T/to"; echo x > "$T/from/d/file"; ln -s d/file "$T/from/link"
+lib copy_tree "$T/from" "$T/to"
+check "copy_tree copies files" "$([ -f "$T/to/d/file" ] && echo ok || echo no)"
+check "  and keeps links" "$(is "$(readlink "$T/to/link")" d/file)"
+
+check "default_release is the release marked default" "$(is "$(lib default_release)" "$(awk '$5 == "default" { print $1 }' "$ROOT/data/releases.txt")")"
+check "releases full starts with 14.3" "$(is "$(lib releases full | head -n 1)" 14.3)"
+check "releases lists the core releases too" "$(is "$(lib releases | head -n 1)" 11.3)"
+check "release_value gives the libc++ of a release" "$(is "$(lib release_value 14.3 2)" 16.0.6)"
+check "llvm_commit of a release of the table" "$(lib llvm_commit 16.0.6 | grep -Eq '^[0-9a-f]{40}$' && echo ok || echo no)"
+check "manifest_projects gives three fields" "$(lib manifest_projects "$ROOT/data/manifests/macos-265.txt" | awk 'NF != 3 { bad = 1 } END { print (NR > 10 && !bad) ? "ok" : "no" }')"
+check "manifest_sqlite gives the URL" "$(lib manifest_sqlite "$ROOT/data/manifests/macos-265.txt" 2 | grep -q '^https://.*\.zip$' && echo ok || echo no)"
+
+lib install_own_files all
+check "install_own_files copies the own headers by their path" "$(cmp -s "$ROOT/data/headers/usr/include/os/log.h" "$T/stage/usr/include/os/log.h" && echo ok || echo no)"
+check "  only those of the variant" "$([ ! -e "$T/stage/usr/include/xpc/xpc.h" ] && echo ok || echo no)"
+check "  and no fallback" "$([ ! -e "$T/stage/usr/include/libDER/DERItem.h" ] && echo ok || echo no)"
+
+echo "1..$n"
+exit $fail

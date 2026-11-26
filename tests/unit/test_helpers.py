@@ -269,6 +269,118 @@ class Manifest(Tmp):
         self.assertEqual(d["sqlite"][1:], list(m.read_manifest(m.newest_manifest())[1]))
 
 
+class MakeLicenses(Tmp):
+    def src_tree(self, with_sqlite):
+        """A source directory with a license file for every project of the list"""
+        m = load("make_licenses")
+        src = self.path("src")
+        for ent in m.P:
+            if ent[1] is None:
+                continue
+            d = os.path.join(src, ent[1])
+            os.makedirs(d, exist_ok=True)
+            if ent[0] != "libdispatch":   # libdispatch: no license file, the Apache text is added
+                self.write(os.path.join("src", ent[1], "LICENSE"), ent[0] + " license\n")
+            top = ent[1].split("/")[0]
+            self.write(os.path.join("src", top, ".oc-tag"), "%s-1.0\n" % top)
+        self.write("src/xnu/APPLE_LICENSE", "APSL\n")
+        self.write("src/CF/.oc-tag", "CF-1153.18\n")
+        if with_sqlite:
+            self.write("src/sqlite-amalgamation-3430200/sqlite3.h", '/* blessing */\n#define SQLITE_VERSION        "3.43.2"\n')
+        return src
+
+    def run_it(self, variant, with_sqlite):
+        src = self.src_tree(with_sqlite)
+        out = self.path("out")
+        args = [src, out, variant, os.path.join(DATA, "licenses", "0BSD.txt"),
+                "--apache-license", os.path.join(DATA, "licenses", "Apache-2.0.txt"),
+                "--projects-out", self.path("projects.tsv")]
+        if with_sqlite:
+            args += ["--sqlite", os.path.join(src, "sqlite-amalgamation-3430200")]
+        rc, _, err = run("make_licenses.py", *args)
+        self.assertEqual(rc, 0, err)
+        return out, read(os.path.join(out, "LICENSES.md"))
+
+    def test_core(self):
+        out, md = self.run_it("core", False)
+        self.assertTrue(md.startswith("# Licenses of the open SDK (core SDK)\n"))
+        self.assertIn("| xnu | xnu-1.0 |", md)
+        self.assertNotIn("| zlib |", md)
+        self.assertNotIn("sqlite", md)
+        self.assertEqual(read(os.path.join(out, "README.txt")), md)
+        self.assertEqual(read(os.path.join(out, "own-files-0BSD", "LICENSE.txt")), read(os.path.join(DATA, "licenses", "0BSD.txt")))
+        self.assertTrue(os.path.isfile(os.path.join(out, "libdispatch", "LICENSE-Apache-2.0.txt")))
+        rows = [l.split("\t") for l in read(self.path("projects.tsv")).splitlines()]
+        self.assertIn(["llvm-project", "llvm-project-1.0", "?"], rows)
+        self.assertEqual(len(rows), len({r[0] for r in rows}))
+
+    def test_full_names_the_versions_of_sqlite_and_cf(self):
+        _, md = self.run_it("full", True)
+        self.assertIn("| sqlite | 3.43.2 (sqlite-amalgamation-3430200) |", md)
+        self.assertIn("(upstream amalgamation 3.43.2)", md)
+        self.assertIn("CoreFoundation.framework/Headers (CF-1153.18)", md)
+
+
+class SecurityHeaders(Tmp):
+    def test_follows_the_includes(self):
+        self.write("hs/Security/Security.h", "#include <Security/A.h>\n")
+        self.write("hs/Security/A.h", "#include <Security/B.h>\n#include <Security/Missing.h>\n")
+        self.write("hs/Security/B.h", "generic\n")
+        self.write("hs/macOS/Security/B.h", "macOS\n")
+        self.write("hs/Security/Unused.h", "\n")
+        os.makedirs(self.path("dest"))
+        rc, _, err = run("security_headers.py", self.path("hs"), self.path("dest"))
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(sorted(os.listdir(self.path("dest"))), ["A.h", "B.h", "Security.h"])
+        self.assertEqual(read(self.path("dest/B.h")), "macOS\n")
+
+
+class GenSymbols(Tmp):
+    def test_evidence_and_aliases(self):
+        m = load("gen_symbols")
+        self.assertTrue(m.has_evidence("_stat$INODE64", {"stat"}))
+        self.assertTrue(m.has_evidence("__exit", {"_exit"}))
+        self.assertFalse(m.has_evidence("_nothere", {"stat"}))
+        for fn in m.ALIAS_FILES:
+            self.write(os.path.join("src", fn), "# comment\n_a _b\n_c _d # x\nbad line here\n")
+        self.assertEqual(m.alias_pairs(self.path("src")), [("_a", "_b"), ("_c", "_d")] * len(m.ALIAS_FILES))
+
+    def test_header_list(self):
+        m = load("gen_symbols")
+        for h in ("stdio.h", "kern/x.h", "sys/ubc.h", "foo_private.h", "later.h"):
+            self.write("sdk/usr/include/" + h, "\n")
+        self.write("sdk/work/headers.list", "stdio.h\nkern/x.h\nsys/ubc.h\nfoo_private.h\n")
+        self.assertEqual(m.header_list(self.path("sdk")), ["stdio.h"])
+
+
+class CheckLibraries(Tmp):
+    def test_differences(self):
+        m = load("check_libraries")
+        os.makedirs(self.path("src"))
+        rc, out, _ = run("check_libraries.py", self.path("src"))
+        self.assertEqual(rc, 1)
+        self.assertIn("libz.1: missing file zlib/zlib.xcconfig", out)
+        self.write("src/zlib/zlib.xcconfig", "DYLIB_CURRENT_VERSION = 1.2.12\nDYLIB_COMPATIBILITY_VERSION = 1\n")
+        rc, out, _ = run("check_libraries.py", self.path("src"))
+        self.assertNotIn("libz.1:", out)
+        # every library of the table has a check
+        names = set(data_files.read_libraries(os.path.join(DATA, "libraries.txt")))
+        self.assertTrue(set(m.CHECKS) <= names)
+
+
+class DataFileReaders(Tmp):
+    def test_readers(self):
+        p = self.write("s.txt", "# head\n_a   # source\n\n  _b\n# _c\n")
+        self.assertEqual(data_files.read_symbols(p), ["_a", "_b"])
+        p = self.write("m.txt", "# c\nxnu xnu-1 " + "a" * 40 + " release\nsqlite https://x/s.zip " + "b" * 64 + "\n")
+        rows, sq = data_files.read_manifest(p)
+        self.assertEqual(rows, [["xnu", "xnu-1", "a" * 40, "release"]])
+        self.assertEqual(sq, ("https://x/s.zip", "b" * 64))
+        p = self.write("r.txt", "11.3 16.0.6 core -\n14.3 16.0.6 full,core 23D56 default\n")
+        self.assertEqual(data_files.read_releases(p), [("11.3", "16.0.6", ["core"], "", False),
+                                                       ("14.3", "16.0.6", ["full", "core"], "23D56", True)])
+
+
 class DataFiles(unittest.TestCase):
     def manifests(self):
         d = os.path.join(DATA, "manifests")
@@ -338,15 +450,27 @@ class DataFiles(unittest.TestCase):
         for n in ("libSystem.B", "libc++.1", "libc++abi", "libresolv.9", "CoreFoundation", "Foundation"):
             self.assertIn(n, names)
 
+    # a source: a path (Libc/gen/x.c, clang's lib/CodeGen/...) or a file name (objc-abi.h)
+    SOURCE = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]*[A-Za-z0-9_]|\b[A-Za-z0-9_-]+\.(h|c|cpp|mm|s|td|exp)\b")
+
     def test_symbol_lists_name_a_source(self):
-        for fn in ("libsystem-extra.txt", "libobjc-extra.txt"):
-            named = False   # a group of symbols has the source on its first line
+        """Every symbol of every list of data/symbols/ has a source: the comment on its
+        line or the last comment before it (a comment that continues on the next
+        lines counts as one) names a file."""
+        files = sorted(os.listdir(os.path.join(DATA, "symbols")))
+        self.assertGreaterEqual(len(files), 6)
+        for fn in files:
+            named = cont = False
             for l in read(os.path.join(DATA, "symbols", fn)).splitlines():
-                if not l.strip() or l.startswith("#"):
+                if not l.strip():
+                    cont = False
                     continue
-                if "#" in l:
-                    named = True
-                self.assertTrue(named, "%s: %s has no source" % (fn, l.strip()))
+                sym, _, comment = l.partition("#")
+                if comment:
+                    named = bool(self.SOURCE.search(comment)) or (cont and named)
+                cont = bool(comment)
+                if sym.strip():
+                    self.assertTrue(named, "%s: %s has no source" % (fn, l.strip()))
 
     def test_own_headers_have_a_license(self):
         for root, _, files in os.walk(os.path.join(DATA, "headers")):

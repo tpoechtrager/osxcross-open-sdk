@@ -36,7 +36,7 @@ conservative value and say so in `docs/SOURCES.md`.
 | `docs/` | `SOURCES.md` (the public source of every value: headers, symbols, install names, versions, `SDKSettings.json` keys), `BUILDING.md` (dependencies, options, tests), `TESTED.md`, `LIBCXX.md`, `DETAILS.md`. |
 | `data/` | The releases (`releases.txt`), own files (`own-files.txt`; the copied ones in `headers/`, by their path in the SDK, 0BSD), symbol lists with their sources (`symbols/`), install names and versions (`libraries.txt`), `libcxx-versions.txt`, `availability-extra.dsl`, `CFCompat.h.in`, license texts (`licenses/`). |
 | `extras/` | Optional tools, e.g. `build-libcxx-static.sh`. |
-| `tests/` | Unit tests (`unit/`), the header check (`sdk-check.sh`) and the test programs (`programs/`, `run.sh`). |
+| `tests/` | Unit tests (`unit/`), the lint script (`lint.sh`), the header check (`sdk-check.sh` with `sdk-check.py`; its allow list is `tests/data/header-allow.txt`) and the test programs (`programs/`, `run.sh`). |
 | `.github/workflows/` | `ci.yml` (tests, all releases, an OSXCross build) and `release.yml` (tarballs of a tag). |
 
 ## Conventions
@@ -67,8 +67,7 @@ conservative value and say so in `docs/SOURCES.md`.
 Run what the change touches, at least:
 
 ```sh
-bash -n make-open-sdk.sh lib/*.sh
-shellcheck -x -S warning make-open-sdk.sh lib/*.sh tests/run.sh tests/sdk-check.sh tests/unit/*.sh extras/*.sh
+tests/lint.sh       # bash -n, shellcheck -x -S warning, the syntax of the Python files
 tests/unit/run.sh
 ./make-open-sdk.sh --core && tests/sdk-check.sh out/MacOSX26.5-open-core-sdk-*.tar.xz
 ```

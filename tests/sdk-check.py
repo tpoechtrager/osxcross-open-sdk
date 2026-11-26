@@ -6,6 +6,7 @@ Checks an SDK that make-open-sdk.sh made, without running anything of it:
   files     the files that every SDK has, valid JSON, no broken or absolute links
   tbd       every .tbd is well formed (install name, versions, both architectures)
             and, if data/libraries.txt names the library, has its install name
+            (usr/lib/NAME.tbd, System/Library/Frameworks/NAME.framework/NAME.tbd)
   headers   every header of usr/include on its own with clang, for C and C++
             and both architectures; a header that fails and is not in
             tests/data/header-allow.txt is an error (the headers in the list
@@ -108,10 +109,18 @@ def check_files(sdk, rep, core):
 
 
 def libraries():
-    """{install name: name} of data/libraries.txt"""
+    """{name: install name} of data/libraries.txt"""
     sys.path.insert(0, os.path.join(ROOT, "helpers"))
     from data_files import read_libraries
-    return {v[0]: k for k, v in read_libraries(os.path.join(ROOT, "data", "libraries.txt")).items()}
+    return {k: v[0] for k, v in read_libraries(os.path.join(ROOT, "data", "libraries.txt")).items()}
+
+
+def library_name(rel):
+    """The name of data/libraries.txt of a .tbd of the SDK: usr/lib/NAME.tbd or
+    System/Library/Frameworks/NAME.framework/NAME.tbd (None for the others)"""
+    m = re.match(r"^usr/lib/([^/]+)\.tbd$", rel) or \
+        re.match(r"^System/Library/Frameworks/([^/]+)\.framework/\1\.tbd$", rel)
+    return m.group(1) if m else None
 
 
 def check_tbd(sdk, rep):
@@ -143,8 +152,9 @@ def check_tbd(sdk, rep):
                 rep.error(rel + ": architectures")
             if not m.group(1).startswith("/"):
                 rep.error(rel + ": install name is not absolute")
-            if m.group(1) in table and not rel.startswith(("System", "usr/lib/swift")):
-                pass
+            lib = library_name(rel)
+            if lib in table and m.group(1) != table[lib]:
+                rep.error("%s: install name %s, data/libraries.txt has %s" % (rel, m.group(1), table[lib]))
             if not re.search(r"symbols:\s*\[", t) and "re-exports" not in t and "Foundation" not in rel and "CoreServices" not in rel:
                 rep.error(rel + ": no symbols")
     rep.info("tbd: %d files checked" % n)

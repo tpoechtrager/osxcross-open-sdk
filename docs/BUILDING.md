@@ -105,7 +105,8 @@ OPEN_SDK_SWIFT_PKG=swift-<version>-RELEASE-osx.pkg ./make-open-sdk.sh -s swift
 ## Tests
 
 ```sh
-tests/unit/run.sh                                 # helpers and options
+tests/lint.sh                                     # bash -n, shellcheck, Python syntax
+tests/unit/run.sh                                 # helpers, data files, options and shell functions
 tests/sdk-check.sh out/MacOSX26.5-open-sdk-<hash>.tar.xz # every header alone
 tests/run.sh --osxcross /path/to/osxcross/target  # the test programs
 ```
