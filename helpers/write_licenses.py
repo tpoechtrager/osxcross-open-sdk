@@ -105,19 +105,24 @@ def commit_of(src, d):
 
 def tag_of(src, d):
     p = os.path.join(src, d.split("/")[0], ".open-sdk-tag")
-    return open(p).read().strip() if os.path.exists(p) else "?"
+    if not os.path.exists(p):
+        return "?"
+    with open(p) as f:
+        return f.read().strip()
 
 
 def sqlite_version(header):
     """The version that sqlite3.h defines (SQLITE_VERSION)"""
-    m = re.search(r'^#define SQLITE_VERSION\s+"([^"]+)"', open(header).read(), re.M)
+    with open(header) as f:
+        m = re.search(r'^#define SQLITE_VERSION\s+"([^"]+)"', f.read(), re.M)
     if not m:
         sys.exit("write_licenses.py: %s has no SQLITE_VERSION" % header)
     return m.group(1)
 
 
 def header_notice(path):
-    t = open(path, errors="replace").read()
+    with open(path, errors="replace") as f:
+        t = f.read()
     m = re.search(r"/\*.*?\*/", t, re.S)
     return m.group(0) if m else t[:3000]
 

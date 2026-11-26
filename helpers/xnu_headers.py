@@ -38,7 +38,8 @@ def platform_prefix(src):
     """xnu before about 10002 names the unifdef guards PLATFORM_<name>, later
     releases XNU_PLATFORM_<name>; MakeInc.def says which one is in use."""
     try:
-        t = open(os.path.join(src, "makedefs", "MakeInc.def")).read()
+        with open(os.path.join(src, "makedefs", "MakeInc.def")) as f:
+            t = f.read()
     except OSError:
         return "XNU_PLATFORM_"
     return "XNU_PLATFORM_" if "-DXNU_PLATFORM_" in t else "PLATFORM_"
@@ -58,7 +59,8 @@ def unifdef_flags(prefix="XNU_PLATFORM_"):
 def vpaths(src, d):
     out = []
     try:
-        text = open(os.path.join(src, d, "Makefile")).read()
+        with open(os.path.join(src, d, "Makefile")) as f:
+            text = f.read()
     except OSError:
         return out
     for m in re.finditer(r"^VPATH\s*:?=\s*\$\(VPATH\):\$\(SOURCE\)/(\S+)", text, re.M):
@@ -72,7 +74,8 @@ class Evaluator:
         # next to the output, not in /tmp: removed again by close()
         self.stub = tempfile.mkdtemp(prefix="xnu-stub-", dir=tmpdir)
         for n in ("cmd", "def", "rule", "dir"):
-            open(os.path.join(self.stub, "MakeInc." + n), "w").close()
+            with open(os.path.join(self.stub, "MakeInc." + n), "w"):
+                pass
 
     def close(self):
         shutil.rmtree(self.stub, ignore_errors=True)

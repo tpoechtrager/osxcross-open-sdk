@@ -45,7 +45,9 @@ def main(argv):
     a = p.parse_args(argv[1:])
     src, out = a.template, a.out
     res = []
-    for line in open(src).read().splitlines():
+    with open(src) as f:
+        template = f.read().splitlines()
+    for line in template:
         m = re.match(r"#cmakedefine01\s+(\w+)", line)
         if m:
             res.append("#define %s %d" % (m.group(1), int(VALUES.get(m.group(1), 0) or 0)))

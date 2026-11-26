@@ -35,8 +35,8 @@ def copy_headers(root, dest):
             continue
         seen.append(n)
         shutil.copyfile(p, os.path.join(dest, n))     # follows the symlink
-        for m in re.findall(r'#\s*include\s*<Security/([A-Za-z0-9_./]+)>', open(p, errors="replace").read()):
-            q.append(m)
+        with open(p, errors="replace") as f:
+            q.extend(re.findall(r'#\s*include\s*<Security/([A-Za-z0-9_./]+)>', f.read()))
     return seen
 
 

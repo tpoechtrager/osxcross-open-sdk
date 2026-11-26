@@ -84,7 +84,8 @@ def main(argv):
         for rel, rx in checks:
             path = os.path.join(src, rel)
             try:
-                text = open(path, errors="replace").read()
+                with open(path, errors="replace") as f:
+                    text = f.read()
             except OSError:
                 print("%s: missing file %s" % (name, rel))
                 bad += 1

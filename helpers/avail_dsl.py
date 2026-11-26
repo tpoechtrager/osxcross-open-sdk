@@ -33,7 +33,9 @@ def ios_version(dsl, target):
         target += ".0"
     ios = None
     seen = False
-    for line in open(dsl).read().splitlines():
+    with open(dsl) as f:
+        dsl_lines = f.read().splitlines()
+    for line in dsl_lines:
         w = words(line)
         if w[:2] == ["version", "macos"]:
             if seen:
@@ -52,7 +54,9 @@ def cut(base, extra, target, out):
         target += ".0"
     lines = []
     skip = 0
-    for line in open(base).read().splitlines():
+    with open(base) as f:
+        base_lines = f.read().splitlines()
+    for line in base_lines:
         s = line.strip()
         if s.startswith("#ifndef __OPENSOURCE__"):
             skip += 1
@@ -64,7 +68,8 @@ def cut(base, extra, target, out):
             continue
         if not skip:
             lines.append(line)
-    lines += open(extra).read().splitlines()
+    with open(extra) as f:
+        lines += f.read().splitlines()
     # AvailabilityVersions-138.7 lets API_AVAILABLE() say xros(...) for
     # visionOS; the DSL of the later tags lacks the alias, but the headers of
     # libdispatch from macOS 14.4 on use it (dispatch/queue.h).

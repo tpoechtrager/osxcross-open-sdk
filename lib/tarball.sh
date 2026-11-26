@@ -3,6 +3,10 @@
 # The tarball.
 # Sourced by make-open-sdk.sh; not meant to be run on its own.
 
+# The mtime of every file in the tarball (UTC, "YYYY-MM-DD HH:MM"); the formats
+# that the tar variants need are made from it in step_tarball.
+TARBALL_MTIME="2024-01-01 00:00"
+
 # is_open_sdk_tarball FILE: made by this script (it has OpenSDK.json)?
 is_open_sdk_tarball() {
   local list
@@ -23,12 +27,14 @@ step_tarball() {
     die "$T exists and is not a tarball of this script; --force replaces it"
   fi
   # reproducible: fixed order, owner and mtime
+  local mtime_iso="$TARBALL_MTIME:00 UTC"                          # tar --mtime
+  local mtime_touch; mtime_touch=$(echo "$TARBALL_MTIME" | tr -d ' :-').00   # touch -t
   local gtar=
   if tar --version 2>/dev/null | grep -q GNU; then gtar=tar
   elif command -v gtar >/dev/null 2>&1; then gtar=gtar; fi
   if [ -n "$gtar" ] && [ -z "${OPEN_SDK_BSDTAR:-}" ]; then
     # GNU tar
-    "$gtar" -C "$PKG" --sort=name --owner=0 --group=0 --numeric-owner --mtime='2024-01-01 00:00Z' \
+    "$gtar" -C "$PKG" --sort=name --owner=0 --group=0 --numeric-owner --mtime="$mtime_iso" \
       -cf - "MacOSX$V.sdk" | xz -T0 -6 > "$T.tmp"
   else
     # bsdtar (macOS, BSD): no --sort and --mtime; take a sorted file list and
@@ -37,12 +43,12 @@ step_tarball() {
     command -v bsdtar >/dev/null 2>&1 || die "need GNU tar (gtar) or bsdtar for the tarball"
     local mt=()
     if bsdtar --help 2>&1 | grep -q -e --clamp-mtime; then
-      mt=(--mtime "2024-01-01 00:00:00 UTC" --clamp-mtime)
+      mt=(--mtime "$mtime_iso" --clamp-mtime)
     else
       # old bsdtar: the mtime comes from the files (touch -h is missing on OpenBSD)
       (cd "$PKG" &&
-        find "MacOSX$V.sdk" ! -type l -exec env TZ=UTC touch -t 202401010000.00 {} + &&
-        { find "MacOSX$V.sdk" -type l -exec env TZ=UTC touch -h -t 202401010000.00 {} + 2>/dev/null || true; })
+        find "MacOSX$V.sdk" ! -type l -exec env TZ=UTC touch -t "$mtime_touch" {} + &&
+        { find "MacOSX$V.sdk" -type l -exec env TZ=UTC touch -h -t "$mtime_touch" {} + 2>/dev/null || true; })
     fi
     (cd "$PKG" && find "MacOSX$V.sdk" | sort > "$WORK/tarlist-$VARIANT" &&
       if command -v xz >/dev/null 2>&1; then

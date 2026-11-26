@@ -50,9 +50,10 @@ def main(argv):
         p.error("the values are KEY=VALUE")
     kv = dict(v.split("=", 1) for v in a.values)
     projects = []
-    for line in open(projects_file):
-        name, tag, commit = line.rstrip("\n").split("\t")
-        projects.append({"name": name, "tag": tag, "commit": commit})
+    with open(projects_file) as f:
+        for line in f:
+            name, tag, commit = line.rstrip("\n").split("\t")
+            projects.append({"name": name, "tag": tag, "commit": commit})
     if kv.get("sqlite_url"):
         projects.append({"name": "sqlite", "url": kv["sqlite_url"], "sha256": kv["sqlite_sha256"]})
     projects.sort(key=lambda p: p["name"].lower())

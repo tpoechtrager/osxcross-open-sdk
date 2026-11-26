@@ -49,10 +49,11 @@ def main(argv):
         if fn.endswith(".s") and fn != "custom.s":
             names.add(fn[:-2])
     # globals of custom.s (the i386 ones are not for macOS on x86_64 or arm64)
-    for line in open(os.path.join(ls, "custom", "custom.s"), errors="replace"):
-        m = re.match(r"\s*\.globl\s+(\S+)", line)
-        if m and not m.group(1).startswith("_i386_"):
-            names.add(m.group(1))
+    with open(os.path.join(ls, "custom", "custom.s"), errors="replace") as f:
+        for line in f:
+            m = re.match(r"\s*\.globl\s+(\S+)", line)
+            if m and not m.group(1).startswith("_i386_"):
+                names.add(m.group(1))
     if len(names) < 300:
         sys.stderr.write("syscall_syms.py: only %d stubs, something went wrong\n" % len(names))
         return 1

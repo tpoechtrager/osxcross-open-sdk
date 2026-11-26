@@ -73,7 +73,10 @@ def header_list(sdk):
     again."""
     inc = os.path.join(sdk, "usr/include")
     listfile = os.path.join(sdk, "work", "headers.list")
-    only = set(open(listfile).read().split("\n")) if os.path.exists(listfile) else None
+    only = None
+    if os.path.exists(listfile):
+        with open(listfile) as f:
+            only = set(f.read().split("\n"))
     hdrs = []
     for root, dirs, files in os.walk(inc):
         rel = os.path.relpath(root, inc)
@@ -156,7 +159,8 @@ def corpus_of(srcdir):
                         paths.append(os.path.join(root, fn))
         for pth in paths:
             try:
-                txt = open(pth, errors="replace").read()
+                with open(pth, errors="replace") as f:
+                    txt = f.read()
                 corpus.update(TOKEN.findall(txt))
                 if not pth.endswith(".h"):
                     defs0.update(COL0.findall(txt))
@@ -174,10 +178,11 @@ def alias_pairs(srcdir):
     """alias files: '<symbol> <alias>' per line"""
     res = []
     for fn in ALIAS_FILES:
-        for l in open(os.path.join(srcdir, fn)):
-            l = l.split("#")[0].split()
-            if len(l) == 2:
-                res.append((l[0], l[1]))
+        with open(os.path.join(srcdir, fn)) as f:
+            for l in f:
+                l = l.split("#")[0].split()
+                if len(l) == 2:
+                    res.append((l[0], l[1]))
     return res
 
 
@@ -192,20 +197,22 @@ def kept_symbols(arch, syms, inl, corpus, defs0, srcdir, syscalls, extra, exclud
     sysmap = [os.path.join(srcdir, "xnu/libsyscall/Platforms/syscall.map")]
     sysmap.append(os.path.join(srcdir, "xnu/libsyscall/Platforms/MacOSX/%s/syscall.map" % ("x86_64" if arch == "x86_64" else "arm64")))
     for m in sysmap:
-        for l in open(m):
-            p = l.split("#")[0].split()
-            if len(p) == 2:
-                kept.add(p[0])
-                kept.add(p[1])
+        with open(m) as f:
+            for l in f:
+                p = l.split("#")[0].split()
+                if len(p) == 2:
+                    kept.add(p[0])
+                    kept.add(p[1])
     # raw system call stubs of libsystem_kernel (___open, ___ulock_wait, ...):
     # the stubs that xnu's create-syscalls.pl makes (helpers/syscall_syms.py)
     kept |= syscalls
     if arch == "x86_64":
         # Libm's own export list for Intel (libsystem_m)
-        for l in open(os.path.join(srcdir, "Libm/Exports/libm_Intel.a.exp")):
-            l = l.split("#")[0].strip()
-            if l and "*" not in l:
-                kept.add(l)
+        with open(os.path.join(srcdir, "Libm/Exports/libm_Intel.a.exp")) as f:
+            for l in f:
+                l = l.split("#")[0].strip()
+                if l and "*" not in l:
+                    kept.add(l)
     kept |= extra
     kept -= excluded
     return kept
@@ -223,21 +230,23 @@ def main(argv):
     p.add_argument("--syscalls", help="the system call stubs (syscall_syms.py)")
     a = p.parse_args(argv[1:])
     errfile = open(a.errors, "w") if a.errors else sys.stderr
-    errfile.write("# The headers are read in several modes, strict POSIX and XOPEN among them, and clang\n"
-                  "# reports errors for headers that are not meant for such a mode. That is expected\n"
-                  "# and does not affect the SDK.\n")
-    hdrs = header_list(a.sdk)
-    corpus, defs0 = corpus_of(a.srcdir)
-    syscalls = set(read_symbols(a.syscalls)) if a.syscalls else set()
-    extra = set(read_symbols(a.extra))
-    excluded = set(read_symbols(a.exclude))
-    with open(a.out, "w") as f:
-        for arch in ARCHS:
-            syms, inl = symbols(a.sdk, a.clang, hdrs, arch, errfile)
-            for s in sorted(kept_symbols(arch, syms, inl, corpus, defs0, a.srcdir, syscalls, extra, excluded)):
-                f.write("%s %s\n" % (arch, s))
-    if a.errors:
-        errfile.close()
+    try:
+        errfile.write("# The headers are read in several modes, strict POSIX and XOPEN among them, and clang\n"
+                      "# reports errors for headers that are not meant for such a mode. That is expected\n"
+                      "# and does not affect the SDK.\n")
+        hdrs = header_list(a.sdk)
+        corpus, defs0 = corpus_of(a.srcdir)
+        syscalls = set(read_symbols(a.syscalls)) if a.syscalls else set()
+        extra = set(read_symbols(a.extra))
+        excluded = set(read_symbols(a.exclude))
+        with open(a.out, "w") as f:
+            for arch in ARCHS:
+                syms, inl = symbols(a.sdk, a.clang, hdrs, arch, errfile)
+                for s in sorted(kept_symbols(arch, syms, inl, corpus, defs0, a.srcdir, syscalls, extra, excluded)):
+                    f.write("%s %s\n" % (arch, s))
+    finally:
+        if a.errors:
+            errfile.close()
     return 0
 
 

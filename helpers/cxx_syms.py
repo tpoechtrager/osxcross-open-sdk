@@ -21,23 +21,25 @@ def abilist(root, arch):
     """The defined symbols of the ABI list of ARCH"""
     syms = set()
     path = os.path.join(root, "libcxx/lib/abi", ABI_TARGET[arch] + ".libcxxabi.v1.stable.exceptions.nonew.abilist")
-    for line in open(path):
-        line = line.strip()
-        if not line:
-            continue
-        d = ast.literal_eval(line)
-        if d.get("is_defined"):
-            syms.add(d["name"])
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            d = ast.literal_eval(line)
+            if d.get("is_defined"):
+                syms.add(d["name"])
     return syms
 
 
 def exp(root, fn):
     """The names of an export list (no patterns)"""
     s = set()
-    for line in open(os.path.join(root, fn)):
-        line = line.split("#")[0].strip()
-        if line and "*" not in line:
-            s.add(line)
+    with open(os.path.join(root, fn)) as f:
+        for line in f:
+            line = line.split("#")[0].strip()
+            if line and "*" not in line:
+                s.add(line)
     return s
 
 
