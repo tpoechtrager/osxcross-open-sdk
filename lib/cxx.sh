@@ -41,7 +41,8 @@ step_cxx() {
   mk_lib_tbd libc++abi "$STAGE_LIB/libc++abi.tbd" "$STAGE_WORK/libcxxabi.syms"
   # libc++.1.dylib re-exports libc++abi (libcxx/CMakeLists.txt, LIBCXX_CXX_ABI
   # system-libcxxabi on Apple platforms); the stub lists its symbols so that
-  # programs only record libc++.1
-  mk_lib_tbd libc++.1 "$STAGE_LIB/libc++.1.tbd" "$STAGE_WORK/libcxx.syms" --reexport-symbols "$STAGE_WORK/libcxxabi.syms"
+  # programs only record libc++.1; not those of symbols-not-reexported.exp, which
+  # only libc++abi exports
+  mk_lib_tbd libc++.1 "$STAGE_LIB/libc++.1.tbd" "$STAGE_WORK/libcxx.syms" --reexport-symbols "$STAGE_WORK/libcxxabi-reexported.syms"
   ln -sf libc++.1.tbd "$STAGE_LIB/libc++.tbd"
 }

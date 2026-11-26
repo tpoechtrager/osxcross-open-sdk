@@ -420,6 +420,24 @@ class GenSymbols(Tmp):
         self.assertEqual(m.header_list(self.path("sdk")), ["stdio.h"])
 
 
+class CxxSymbols(Tmp):
+    def test_not_reexported_by_libcxx(self):
+        for arch in ("x86_64", "arm64"):
+            self.write("llvm/libcxx/lib/abi/%s-apple-darwin.libcxxabi.v1.stable.exceptions.nonew.abilist" % arch,
+                       "{'is_defined': True, 'name': '__Zcxx'}\n{'is_defined': True, 'name': '__Zabi'}\n"
+                       "{'is_defined': False, 'name': '__Zundef'}\n")
+        for n in ("cxxabiv1", "fundamental-types", "itanium-base", "std-misc", "new-delete",
+                  "std-exceptions", "itanium-exceptions", "personality-v0"):
+            self.write("llvm/libcxxabi/lib/%s.exp" % n, "__Zabi\n" if n == "cxxabiv1" else "")
+        self.write("llvm/libcxxabi/lib/symbols-not-reexported.exp", "# comment\n__Znre\n")
+        os.makedirs(self.path("out"))
+        rc, _, err = run("cxx_syms.py", self.path("llvm"), self.path("out"))
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(read(self.path("out/libcxx.syms")), "x86_64 __Zcxx\narm64 __Zcxx\n")
+        self.assertEqual(read(self.path("out/libcxxabi.syms")), "x86_64 __Zabi\nx86_64 __Znre\narm64 __Zabi\narm64 __Znre\n")
+        self.assertEqual(read(self.path("out/libcxxabi-reexported.syms")), "x86_64 __Zabi\narm64 __Zabi\n")
+
+
 class SpiSymbols(Tmp):
     def test_declared_defined_missing(self):
         m = load("spi_syms")

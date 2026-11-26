@@ -3,7 +3,8 @@
 """Symbol lists for libc++.1 and libc++abi from LLVM's ABI lists.
 
 usage: cxx_syms.py LLVM_PROJECT OUTDIR
-writes OUTDIR/libcxx.syms and OUTDIR/libcxxabi.syms ("<arch> <symbol>")
+writes OUTDIR/libcxx.syms, OUTDIR/libcxxabi.syms and OUTDIR/libcxxabi-reexported.syms
+(the symbols of libc++abi that libc++ re-exports), lines "<arch> <symbol>"
 """
 import argparse
 import ast
@@ -79,6 +80,12 @@ def main(argv):
     with open(os.path.join(out, "libcxxabi.syms"), "w") as f:
         for arch in ARCHS:
             for s in sorted(abiexp | extra_abi):
+                f.write("%s %s\n" % (arch, s))
+    # libc++ re-exports the export lists of libc++abi, not the names of
+    # symbols-not-reexported.exp (libcxxabi/src/CMakeLists.txt: reexport_symbols, export_symbols)
+    with open(os.path.join(out, "libcxxabi-reexported.syms"), "w") as f:
+        for arch in ARCHS:
+            for s in sorted(abiexp):
                 f.write("%s %s\n" % (arch, s))
     print("libc++ %d/%d symbols, libc++abi %d" % (len(cxx["x86_64"] - abiexp), len(cxx["arm64"] - abiexp), len(abiexp)))
     return 0

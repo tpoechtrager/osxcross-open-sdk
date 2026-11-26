@@ -177,6 +177,8 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 **Files:** `helpers/cxx_syms.py`, `data/symbols/libcxx-extra.txt`
 
 - `libcxx/lib/abi/*.abilist` and `libcxxabi/lib/*.exp` of the LLVM release.
+- libc++ re-exports the names of the `.exp` files of libc++abi, but not those of `libcxxabi/lib/symbols-not-reexported.exp`
+  (LLVM 19 and later; `libcxxabi/src/CMakeLists.txt`: `export_symbols`, `reexport_symbols`): they are only in `libc++abi.tbd`.
 - The extra list says which header needs which symbol.
 
 ---
