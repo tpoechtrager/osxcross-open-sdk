@@ -17,6 +17,7 @@ is_open_sdk_tarball() {
 
 step_tarball() {
   local V=$SDK_VERSION
+  stage_mark_check min-deployment-target="$MIN_DEPLOYMENT_TARGET"
   rm -rf "$SDK"; mkdir -p "$SDK"
   cp -RPp "$STAGE/usr" "$STAGE/System" "$STAGE/SDKSettings.plist" "$STAGE/SDKSettings.json" \
     "$STAGE/README.LICENSE.txt" "$STAGE/OpenSDK.json" "$SDK/"

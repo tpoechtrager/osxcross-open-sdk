@@ -548,3 +548,40 @@ class DataFiles(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SdkCheckVersionTest(unittest.TestCase):
+    """tests/sdk-check.py: the version in the directory name must match the files"""
+
+    def make_sdk(self, tmp, dirver, ver):
+        sdk = os.path.join(tmp, "MacOSX%s.sdk" % dirver)
+        os.makedirs(os.path.join(sdk, "System/Library/CoreServices"))
+        with open(os.path.join(sdk, "SDKSettings.json"), "w") as f:
+            json.dump({"Version": ver, "CanonicalName": "macosx" + ver}, f)
+        with open(os.path.join(sdk, "OpenSDK.json"), "w") as f:
+            json.dump({"macos": {"version": ver}}, f)
+        with open(os.path.join(sdk, "SDKSettings.plist"), "w") as f:
+            f.write("<dict><key>Version</key>\n<string>%s</string></dict>" % ver)
+        with open(os.path.join(sdk, "System/Library/CoreServices/SystemVersion.plist"), "w") as f:
+            f.write("<dict><key>ProductVersion</key><string>%s</string></dict>" % ver)
+        return sdk
+
+    def errors(self, dirver, ver):
+        spec = importlib.util.spec_from_file_location("sdk_check", os.path.join(ROOT, "tests", "sdk-check.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        with tempfile.TemporaryDirectory() as tmp:
+            rep = mod.Report()
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                mod.check_versions(self.make_sdk(tmp, dirver, ver), rep)
+            return rep.errors, out.getvalue()
+
+    def test_matching(self):
+        self.assertEqual(self.errors("26.5", "26.5")[0], 0)
+
+    def test_other_version_in_the_files(self):
+        n, out = self.errors("14.3", "26.5")
+        self.assertEqual(n, 5)
+        self.assertIn("MacOSX14.3.sdk", out)
+        self.assertIn("SystemVersion.plist ProductVersion is 26.5", out)

@@ -40,7 +40,7 @@
 #                        repository); relative paths are taken from the
 #                        current directory
 #   -o, --output-dir DIR where the tarball goes (default: out/)
-#   -s, --steps "STEPS"  run only these steps (see below)
+#   -s, --steps "STEPS"  run only these steps (see below); the staging of an earlier run must match
 #   --clang PATH         the clang that builds the host tools and parses the
 #                        headers (default: clang in the PATH)
 #   --force              replace an existing tarball of the same name even if
@@ -299,6 +299,7 @@ set +e
   set -e
   if [ "$VERBOSE" = 1 ]; then set -x; fi   # every command of the steps, as "+ command"
   for s in $STEPS; do
+    case $s in fetch|host|headers) ;; *) stage_mark_check release="$SDK_VERSION" variant="$VARIANT" libcxx="$LIBCXX_VERSION";; esac
     LOG_GAP=1   # log() puts an empty line before the first line of a step that prints something
     "step_$s"
   done

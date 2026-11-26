@@ -41,6 +41,39 @@ class Report:
         print(msg)
 
 
+def check_versions(sdk, rep):
+    """The version in the name MacOSX<V>.sdk is the one of the files that name it."""
+    m = re.fullmatch(r"MacOSX(\d+(?:\.\d+)+)\.sdk", os.path.basename(os.path.realpath(sdk)))
+    if not m:
+        rep.error("the directory name is not MacOSX<version>.sdk")
+        return
+    want = m.group(1)
+    found = {}
+
+    def read(rel):
+        with open(os.path.join(sdk, rel)) as f:
+            return f.read()
+
+    def plist_string(rel, key):
+        r = re.search(r"<key>%s</key>\s*<string>([^<]*)</string>" % key, read(rel))
+        return r.group(1) if r else None
+    for name, get in (
+            ("SDKSettings.json Version", lambda: json.loads(read("SDKSettings.json"))["Version"]),
+            ("SDKSettings.json CanonicalName",
+             lambda: json.loads(read("SDKSettings.json"))["CanonicalName"].replace("macosx", "", 1)),
+            ("SDKSettings.plist Version", lambda: plist_string("SDKSettings.plist", "Version")),
+            ("SystemVersion.plist ProductVersion",
+             lambda: plist_string("System/Library/CoreServices/SystemVersion.plist", "ProductVersion")),
+            ("OpenSDK.json macos.version", lambda: json.loads(read("OpenSDK.json"))["macos"]["version"])):
+        try:
+            found[name] = get()
+        except (OSError, ValueError, KeyError, TypeError) as e:
+            rep.error("version of the SDK: %s: %s" % (name, e))
+    for name, v in found.items():
+        if v != want:
+            rep.error("the directory is MacOSX%s.sdk, but %s is %s" % (want, name, v))
+
+
 def check_files(sdk, rep, core):
     for rel in ("OpenSDK.json", "SDKSettings.json", "SDKSettings.plist", "README.LICENSE.txt",
                 "System/Library/CoreServices/SystemVersion.plist", "usr/include/stdio.h", "usr/include/mach/mach.h",
@@ -91,6 +124,7 @@ def check_files(sdk, rep, core):
                       % (c_open, c_json, c_plist))
     except (OSError, ValueError, KeyError) as e:
         rep.error("generator commit: %s" % e)
+    check_versions(sdk, rep)
     real = os.path.realpath(sdk)
     n = 0
     for d, dirs, files in os.walk(sdk):

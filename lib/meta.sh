@@ -116,4 +116,5 @@ which files come from which project, are in usr/share/licenses/open-sdk/
 (start with LICENSES.md). The files that were written for this SDK are under
 the BSD Zero Clause License (usr/share/licenses/open-sdk/own-files-0BSD/).
 EOF
+  stage_mark_set min-deployment-target "$MIN_DEPLOYMENT_TARGET"
 }

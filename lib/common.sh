@@ -53,6 +53,31 @@ export MAKE
 
 die() { echo "make-open-sdk.sh: $*" >&2; exit 1; }
 
+# The mark of the stage ($STAGE/.open-sdk-stage, not copied into the SDK):
+# lines "KEY VALUE" that say what the stage was made for.  A partial build
+# (-s) that uses an existing stage checks them, so that it does not pack
+# the stage of another release, variant or libc++ under the name of this one.
+stage_mark_file() { echo "$STAGE/.open-sdk-stage"; }
+
+# stage_mark_set KEY VALUE: set one line of the mark (the other lines stay)
+stage_mark_set() {
+  local f t; f=$(stage_mark_file); t=$f.new
+  { [ ! -f "$f" ] || grep -v "^$1 " "$f" || true; echo "$1 $2"; } > "$t"   # (|| true: no other line is no error)
+  mv "$t" "$f"
+}
+
+# stage_mark_check KEY=VALUE...: die if the mark of the stage is missing or
+# differs in one of the keys
+stage_mark_check() {
+  local f kv k v have; f=$(stage_mark_file)
+  [ -f "$f" ] || die "the staging $STAGE has no mark: it was not made by this version of the script; run the steps from headers on (e.g. without -s) to make it again"
+  for kv in "$@"; do
+    k=${kv%%=*}; v=${kv#*=}
+    have=$(sed -n "s/^$k //p" "$f")
+    [ "$have" = "$v" ] || die "the staging $STAGE was made for $k ${have:-(unset)}, not for $k $v; run the steps from headers on (e.g. without -s) to make it again, or use the work directory of that build"
+  done
+}
+
 # version_lt A B: is the version A (MAJOR.MINOR[.PATCH]) lower than B?
 version_lt() {
   awk -v a="$1" -v b="$2" 'BEGIN {

@@ -17,6 +17,7 @@ copy_headers() {
 step_headers() {
   local a h
   rm -rf "$STAGE"; mkdir -p "$STAGE_INC" "$STAGE_WORK"
+  stage_mark_set release "$SDK_VERSION"; stage_mark_set variant "$VARIANT"; stage_mark_set libcxx "$LIBCXX_VERSION"
   fix_shebangs
 
   log "Headers"

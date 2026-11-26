@@ -73,7 +73,7 @@ and OpenBSD 8.0.
 | `--clang PATH` | the clang that builds the host tools and parses the headers |
 | `-w`, `--work-dir DIR` | sources and build files (default `build/`) |
 | `-o`, `--output-dir DIR` | where the tarball goes (default `out/`) |
-| `-s`, `--steps "STEPS"` | run only these steps |
+| `-s`, `--steps "STEPS"` | run only these steps; they use the staging of an earlier run and stop if it was made for another release, variant, libc++ or deployment target |
 | `--tree-hash` | print a SHA-256 over the file tree (types, names, link targets, executable bits and contents) after the tarball |
 | `--force` | replace an output file that this script did not make |
 | `-v`, `--verbose` | also show the output that otherwise goes only to logs, and every command that the steps run (lines that start with `+`); it is in `build.log` too |

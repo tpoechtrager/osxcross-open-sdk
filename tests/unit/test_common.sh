@@ -89,5 +89,17 @@ mkdir -p "$T/src/old" "$T/src/new"; echo tag-1 > "$T/src/old/.oc-tag"; echo tag-
 check "migrate_tag_marks renames the mark .oc-tag" "$(is "$(cat "$T/src/old/.open-sdk-tag" 2>/dev/null)" tag-1)"
 check "  and keeps the new marks" "$([ ! -e "$T/src/old/.oc-tag" ] && [ "$(cat "$T/src/new/.open-sdk-tag")" = tag-2 ] && echo ok || echo no)"
 
+# the mark of the stage
+mkdir -p "$T/stage"
+check "stage_mark_check without a mark fails" "$(lib stage_mark_check release=26.5 >/dev/null 2>&1 && echo no || echo ok)"
+lib stage_mark_set release 26.5; lib stage_mark_set variant core; lib stage_mark_set libcxx 21.1.8
+check "stage_mark_check of the same values passes" "$(lib stage_mark_check release=26.5 variant=core libcxx=21.1.8 && echo ok || echo no)"
+check "stage_mark_check of another release fails" "$(lib stage_mark_check release=14.3 >/dev/null 2>&1 && echo no || echo ok)"
+check "  and names both releases" "$(lib stage_mark_check release=14.3 2>&1 | grep -q 'release 26.5, not for release 14.3' && echo ok || echo no)"
+check "stage_mark_check of another variant fails" "$(lib stage_mark_check variant=full >/dev/null 2>&1 && echo no || echo ok)"
+check "stage_mark_check of another libc++ fails" "$(lib stage_mark_check libcxx=20.1.0 >/dev/null 2>&1 && echo no || echo ok)"
+lib stage_mark_set release 14.3
+check "stage_mark_set replaces a key and keeps the others" "$(is "$(sort "$T/stage/.open-sdk-stage" | tr '\n' ' ')" 'libcxx 21.1.8 release 14.3 variant core ')"
+
 echo "1..$n"
 exit $fail
