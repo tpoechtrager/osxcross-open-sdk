@@ -609,6 +609,23 @@ class DataFiles(unittest.TestCase):
             self.assertEqual(len(r), 3, r)
             self.assertEqual(r[2], "webkit" if r[1] == "-" else "doc", r)
 
+    def test_fsevents_list_fits_the_header(self):
+        """data/symbols/CoreServices-fsevents.txt: the functions that CoreServices/FSEvents.h
+        declares, each with the first release of its API_AVAILABLE or API_DEPRECATED"""
+        hdr = read(os.path.join(DATA, "headers", "System", "Library", "Frameworks", "CoreServices.framework",
+                                "Headers", "FSEvents.h"))
+        hdr = re.sub(r"^#.*$", "", re.sub(r"/\*.*?\*/", "", hdr, flags=re.S), flags=re.M)
+        avail = {}
+        for decl in hdr.split(";"):
+            m = re.search(r"\b(FSEvents?[A-Za-z]+)\s*\(", decl)
+            if m and not re.search(r"\btypedef\b|\benum\b|\bstruct\b", decl):
+                v = re.search(r"API_(?:AVAILABLE|DEPRECATED)\((?:\"[^\"]*\", )?macos\(([0-9.]+)", decl)
+                avail["_" + m.group(1)] = v.group(1) if v else "-"
+        rows = data_files.lines(os.path.join(DATA, "symbols", "CoreServices-fsevents.txt"))
+        self.assertEqual({r[0]: r[1] for r in rows}, avail)
+        for r in rows:
+            self.assertEqual(r[2:], ["doc"], r)
+
     def test_own_headers_have_a_license(self):
         for root, _, files in os.walk(os.path.join(DATA, "headers")):
             for fn in files:

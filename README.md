@@ -41,15 +41,16 @@ install name and version. A real SDK was used only to test a result, never as a 
 - The frameworks `CoreFoundation`, `DiskArbitration`, `SystemConfiguration`, `Security` (including `SecureTransport`)  
   and `IOKit` (`IOKitLib`, power sources and power management; no device families).
 - XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
+- File System Events (`<CoreServices/CoreServices.h>`, only this part of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `tsan`, `rtsan`, `tysan`.
 
 ### What does not work
 
 - **`Foundation`, `AppKit`** and all other frameworks: there is no public source for them.  
-  `Foundation` and `CoreServices` are empty placeholders, so that `-framework Foundation`  
+  `Foundation` is an empty placeholder, so that `-framework Foundation`  
   links; `#import <Foundation/Foundation.h>` fails.
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
-- `libbsm`, the `IOKit` device families (`IOKit/storage`, `usb`, `hid`, ...), `FSEvents` and `LaunchServices`.
+- `libbsm`, the `IOKit` device families (`IOKit/storage`, `usb`, `hid`, ...) and `CoreServices` except File System Events.
 - XPC sessions and listeners (`xpc_session`, `xpc_listener`) and the parts of XPC that have no public value  
   (see [docs/SOURCES.md](docs/SOURCES.md#xpcxpch-and-its-symbols)).
 

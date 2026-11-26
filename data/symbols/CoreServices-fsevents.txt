@@ -1,0 +1,36 @@
+# The symbols of CoreServices that CoreServices/FSEvents.h of the full SDK
+# declares: the functions of File System Events.  CoreServices has no open
+# source release; every name has a public source:
+#
+# <symbol> <macOS> <source>
+#   macOS   the release that brought it, as the documentation gives it
+#   source  doc: Apple's documentation of File System Events, the page of
+#           the name (developer.apple.com/documentation/coreservices/
+#           file_system_events), which shows its C declaration and
+#           availability
+#
+# The constants of the header are enumerators and macros, not symbols.
+# The step frameworks takes these names for CoreServices.tbd and stops if
+# the declarations of CoreServices/FSEvents.h differ from this list.
+_FSEventStreamCopyDescription                       10.5   doc
+_FSEventStreamCopyPathsBeingWatched                 10.5   doc
+_FSEventStreamCreate                                10.5   doc
+_FSEventStreamCreateRelativeToDevice                10.5   doc
+_FSEventStreamFlushAsync                            10.5   doc
+_FSEventStreamFlushSync                             10.5   doc
+_FSEventStreamGetDeviceBeingWatched                 10.5   doc
+_FSEventStreamGetLatestEventId                      10.5   doc
+_FSEventStreamInvalidate                            10.5   doc
+_FSEventStreamRelease                               10.5   doc
+_FSEventStreamRetain                                10.5   doc
+_FSEventStreamScheduleWithRunLoop                   10.5   doc
+_FSEventStreamSetDispatchQueue                      10.6   doc
+_FSEventStreamSetExclusionPaths                     10.9   doc
+_FSEventStreamShow                                  10.5   doc
+_FSEventStreamStart                                 10.5   doc
+_FSEventStreamStop                                  10.5   doc
+_FSEventStreamUnscheduleFromRunLoop                 10.5   doc
+_FSEventsCopyUUIDForDevice                          10.5   doc
+_FSEventsGetCurrentEventId                          10.5   doc
+_FSEventsGetLastEventIdForDeviceBeforeTime          10.5   doc
+_FSEventsPurgeEventsForDeviceUpToEventId            10.5   doc

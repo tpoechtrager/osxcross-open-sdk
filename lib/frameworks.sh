@@ -6,8 +6,9 @@
 # ---------------------------------------------------------------------------
 # Frameworks (not with --core): CoreFoundation, IOKit, DiskArbitration,
 # Security, SystemConfiguration: headers from the open source releases and a
-# <Name>.tbd in the framework directory (Name.framework/Name.tbd); Foundation
-# and CoreServices: only the .tbd (fw_placeholder).
+# <Name>.tbd in the framework directory (Name.framework/Name.tbd); CoreServices:
+# own headers (File System Events only); Foundation: only the .tbd
+# (fw_placeholder).
 # ---------------------------------------------------------------------------
 # fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/)
 fw_tbd() {
@@ -86,8 +87,8 @@ step_frameworks() {
   # Security's oids.h includes libDER/DERItem.h, which includes libDER_config.h; xnu
   # has both in EXTERNAL_HEADERS/libDER (APSL 2.0), unchanged here.  The rest of libDER is not
   # installed.  SecCode.h includes xpc/xpc.h, which the step stubs installs (stubs_xpc).
-  # The own files of the full SDK (data/own-files.txt): xpc/xpc.h and the
-  # module map of CoreFoundation.
+  # The own files of the full SDK (data/own-files.txt): xpc/xpc.h, the
+  # module map of CoreFoundation and the headers of CoreServices.
   install_own_files full
   # The xnu of macOS 26.5 has them; earlier releases do not, and get the small
   # own DERItem.h (the same types and struct).
@@ -127,11 +128,17 @@ step_frameworks() {
   echo "Foundation"
   fw_placeholder Foundation
 
-  # The same for CoreServices: autoconf and CMake builds of curl link
-  # `-framework CoreServices` on every macOS target, and no program of the
-  # projects of this SDK needs a symbol of it.  Install name: the layout that
-  # the CF and Security sources use for the frameworks inside it
-  # (data/libraries.txt).
+  # CoreServices: only File System Events, with the own headers installed
+  # above (CoreServices.h includes only FSEvents.h); CoreServices has no open
+  # source.
+  # data/symbols/CoreServices-fsevents.txt gives the source of every symbol,
+  # and the declarations of FSEvents.h must be exactly the names of the list.
+  # Install name: the layout that the CF and Security sources use for the
+  # frameworks inside it (data/libraries.txt).
   echo "CoreServices"
-  fw_placeholder CoreServices
+  header_syms "$STAGE_WORK/fw-CoreServices.all" "-F$STAGE_FW" CoreServices/CoreServices.h CoreServices/FSEvents.h
+  syms_for_archs "$DATA/symbols/CoreServices-fsevents.txt" | sort > "$STAGE_WORK/fw-CoreServices.syms"
+  sort "$STAGE_WORK/fw-CoreServices.all" | cmp -s - "$STAGE_WORK/fw-CoreServices.syms" ||
+    die "the declarations of CoreServices/FSEvents.h and data/symbols/CoreServices-fsevents.txt differ (see $STAGE_WORK/fw-CoreServices.all)"
+  mk_lib_tbd CoreServices "$STAGE_FW/CoreServices.framework/CoreServices.tbd" "$STAGE_WORK/fw-CoreServices.syms"
 }

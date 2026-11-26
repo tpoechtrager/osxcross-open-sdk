@@ -17,14 +17,14 @@ projects were also built with the stable flavor (cctools/ld64).
 - **GNU and other tools:** `coreutils`, `grep`, `sed`, `gawk`, `findutils`, `file`, `gettext`, `libiconv`,  
   `gmp`, `mpfr`, `libffi`, `xxhash`, `lmdb`, `redis`
 - **Version control:** `git`, `libgit2` (also with SecureTransport)
+- **File system events:** the `git` fsmonitor daemon, `fswatch`
 - **Compilers and tools:** `LLVM/Clang` (the compiler works on macOS), `cctools-port` (builds, and its tools work on macOS),  
   `compiler-rt` (builds, and its runtimes work on macOS)
 
 **Not covered**
 
 - `htop` needs the headers of `IOKit/storage`; they are not open source.
-- The `git` fsmonitor daemon and the Xcode generator of `cmake` are switched off: they need `CoreServices`  
-  and `ApplicationServices`.
+- The Xcode generator of `cmake` is switched off: it needs `ApplicationServices`.
 - `asan`, `lsan` and `tsan` of compiler-rt need the full SDK (`CoreFoundation/CFBase.h`).
 - Projects that need `Foundation`, `AppKit` or `Metal` were not tried.
 

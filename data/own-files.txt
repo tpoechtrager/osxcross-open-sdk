@@ -27,4 +27,6 @@ usr/lib/*.tbd                                                                all
 System/Library/Frameworks/*.framework/*.tbd                                  full  written
 System/Library/Frameworks/CoreFoundation.framework/Modules/module.modulemap  full  copied
 usr/include/xpc/xpc.h                                                        full  copied     part of XPC, written from Apple's documentation and WebKit's XPCSPI.h
+System/Library/Frameworks/CoreServices.framework/Headers/CoreServices.h      full  copied     includes only FSEvents.h: a part of CoreServices
+System/Library/Frameworks/CoreServices.framework/Headers/FSEvents.h          full  copied     File System Events, written from Apple's documentation, fsevent-sys and dotnet/macios
 usr/include/libDER/DERItem.h                                                 full  fallback   only where xnu has no EXTERNAL_HEADERS/libDER (releases before macOS 26.5)

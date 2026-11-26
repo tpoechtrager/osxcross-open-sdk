@@ -32,7 +32,8 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `SDKSettings.json`, `SDKSettings.plist` | The keys that Clang and OSXCross read ([details](#sdksettingsjson-sdksettingsplist)) |
 | `SystemVersion.plist`, the releases | AppleDB for the build number of each release ([details](#systemversionplist-the-releases)) |
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
-| Foundation and CoreServices placeholders | dyld, CF and Security sources ([details](#foundation-and-coreservices-placeholders)) |
+| `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
+| Foundation placeholder, CoreServices | dyld, CF and Security sources ([details](#foundation-placeholder-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
 
@@ -334,6 +335,30 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ---
 
+### `CoreServices/FSEvents.h` and its symbols
+
+**Files:** `data/headers/System/Library/Frameworks/CoreServices.framework/Headers/`, `data/symbols/CoreServices-fsevents.txt`,  
+`lib/frameworks.sh`
+
+- Own text (0BSD), full SDK only. CoreServices has no open source release. `CoreServices.h` includes only `FSEvents.h`.
+- The functions, types, the fields of `FSEventStreamContext`, the constants and the release that brought each one:  
+  Apple's documentation of File System Events (developer.apple.com/documentation/coreservices/file_system_events),  
+  the C declaration on the page of each name. It shows the flags and `kFSEventStreamEventIdSinceNow` as enumerators  
+  and the keys of the extended data as macros, so the 22 functions are the only symbols.
+- The values of the flags and of `kFSEventStreamEventIdSinceNow`, the order of the fields of `FSEventStreamContext`,  
+  and `kFSEventStreamCreateFlagUseExtendedData`, `kFSEventStreamCreateFlagFullHistory` and `kFSEventStreamEventFlagItemCloned`,  
+  which the documentation does not list:  
+  fsevent-sys of github.com/octplane/fsevent-rust, `fsevent-sys/src/fsevent.rs` (MIT).
+- The same values, and the strings of `kFSEventStreamEventExtendedDataPathKey` (`"path"`) and `kFSEventStreamEventExtendedFileIDKey` (`"fileID"`):  
+  dotnet/macios, `src/CoreServices/FSEvents.cs` (MIT; facts only, the C names of the flags are not there).
+- Part of the values also in libuv, `src/unix/darwin-stub.h` (MIT); `kFSEventStreamEventFlagItemCloned` also in `git`,  
+  `compat/fsmonitor/fsm-listen-darwin.c`.
+- `data/symbols/CoreServices-fsevents.txt` names the source and release of every symbol; the step frameworks stops  
+  if the declarations of the header differ from the list.
+- **Left out, no C name in these sources:** the flags of dotnet/macios `WithDocId`, `DeviceState` and the key `docID`.
+
+---
+
 ### `CoreFoundation.modulemap`, `CFCompat.h.in`
 
 **Files:** `data/headers/System/Library/Frameworks/CoreFoundation.framework/Modules/module.modulemap`, `data/CFCompat.h.in`
@@ -382,9 +407,9 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ---
 
-### Foundation and CoreServices placeholders
+### Foundation placeholder, CoreServices
 
-**Files:** `lib/frameworks.sh`
+**Files:** `lib/frameworks.sh`, `data/libraries.txt`
 
 - The install name of Foundation is the one that dyld's source names.
 - That of CoreServices follows the layout of the frameworks inside it,  
