@@ -48,7 +48,8 @@
 #                        CoreVideo, QuartzCore, Metal, CoreAudio,
 #                        AudioToolbox, ApplicationServices, Carbon,
 #                        WebKit, UniformTypeIdentifiers,
-#                        OpenDirectory, AVFoundation and CoreMedia
+#                        OpenDirectory, AVFoundation, CoreMedia, ImageIO,
+#                        Vision and MetalKit
 #   -w, --work-dir DIR   sources and build files (default: build/ of this
 #                        repository); relative paths are taken from the
 #                        current directory
@@ -100,8 +101,8 @@
 #             without headers); link stubs of Foundation, CoreGraphics,
 #             AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio,
 #             AudioToolbox, ApplicationServices, Carbon, WebKit,
-#             UniformTypeIdentifiers, OpenDirectory, AVFoundation and CoreMedia
-#             (not with --core)
+#             UniformTypeIdentifiers, OpenDirectory, AVFoundation, CoreMedia,
+#             ImageIO, Vision and MetalKit (not with --core)
 #   meta      SDKSettings.plist/.json, SystemVersion.plist, license files
 #   tarball   the tarball
 #   swift     (not a default step) stubs for the Swift runtime, needs

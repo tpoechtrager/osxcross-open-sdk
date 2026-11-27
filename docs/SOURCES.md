@@ -36,7 +36,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `Security` names of macOS 27.0 | Apple's documentation, Security 61901.120.67 ([details](#security-names-of-macos-270)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon, WebKit, UniformTypeIdentifiers, OpenDirectory, AVFoundation, CoreMedia | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
+| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon, WebKit, UniformTypeIdentifiers, OpenDirectory, AVFoundation, CoreMedia, ImageIO, Vision, MetalKit | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | `OpenGL.framework` (headers, link stub) | Khronos OpenGL Registry (`gl.xml`), open projects that declare CGL ([details](#openglframework)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Layout of the frameworks, `Cocoa.framework` | Apple's documentation of framework bundles and of Cocoa, python-build-standalone ([details](#framework-layout-and-cocoaframework)) |
@@ -655,6 +655,18 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   that names `/System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia`). Its symbols are those of the documentation module  
   "Core Media". The stub also has functions that the headers define inline; whether a release exports them is not known  
   from an open source (as for the other stubs).
+- ImageIO's install name: ctxrs/ctx 0b117cb, `scripts/check-release-binary-compat.sh` (Apache-2.0; a list of the  
+  system libraries that a program may link, with `/System/Library/Frameworks/ImageIO.framework/Versions/A/ImageIO`).  
+  Its symbols are those of the documentation module "Image I/O" (`kCGImageProperty...`, `kCGImageSource...`, `CGImageSource...`, ...).
+- Vision's install name: Ynewtime/markitai c5d13fd, `crates/markitai-core/src/system_frameworks.rs` (MIT; the path  
+  `/System/Library/Frameworks/Vision.framework/Versions/A/Vision` that the program loads). The documentation names few C symbols of Vision:  
+  the constants (`VNImageOption...`, the joint names of the pose observations, `VNNormalizedIdentityRect`) and a few functions;  
+  nearly all of Vision is Objective-C classes, which the stub does not have.
+- MetalKit's install name has two sources (nothing else was found): Generous-Corp/pulp f9a7b39,  
+  `test/fixtures/no_editor_link_floor/test_no_editor_runtime_deps.cmake` (MIT; a recorded list of the libraries a program links,  
+  with `/System/Library/Frameworks/MetalKit.framework/Versions/A/MetalKit`) and bogdanr/fono c4d7c36, `.github/workflows/ci.yml`  
+  (GPL-3.0; the same path in a list of allowed system libraries). The letter `A` is the one of both paths. Its symbols are those of  
+  the documentation module "MetalKit" (`MTKTextureLoaderOption...`, `MTKModelError...` and the `MTK...FromModelIO` functions).
 - ApplicationServices' install name (`Versions/A`): the same two lists (python-build-standalone 139273f, `src/validation.rs`;  
   maiko f984528, `crates/patcher/src/macos.rs`).  
   Its symbols are those of the documentation modules "Application Services" and "ColorSync", in one list:  

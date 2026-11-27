@@ -154,6 +154,7 @@ fw_cf_new   fw_cf_new.c   c    -                          -framework,CoreFoundat
 fw_cf_typed fw_cf_typed.c c    -                          -framework,CoreFoundation             full
 fw_cf_typedxx fw_cf_typed.c c++ -xc++                      -framework,CoreFoundation             full
 fw_doc_new  fw_doc_new.c  c    -                          -framework,CoreFoundation,-framework,CoreGraphics,-framework,CoreServices,-framework,AudioToolbox full
+fw_media    fw_media.c    c    -                          -framework,CoreFoundation,-framework,AVFoundation,-framework,CoreMedia,-framework,ImageIO,-framework,Vision,-framework,MetalKit full
 fw_misc     fw_misc.c     c    -                          -framework,CoreFoundation,-framework,DiskArbitration,-framework,SystemConfiguration,-framework,IOKit full
 fw_sec      fw_sec.c      c    -                          -framework,CoreFoundation,-framework,Security full
 fw_objc     fw_objc.m     objc -                          -framework,CoreFoundation,-lobjc      full

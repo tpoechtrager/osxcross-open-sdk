@@ -1,0 +1,34 @@
+# The C functions and global data of MetalKit that Apple's documentation lists
+# for macOS: the symbols of MetalKit.tbd of the full SDK (a link stub without headers; MetalKit has no open source release).
+# Made by tools/doc_symbols.py (do not edit) from the pages of
+# developer.apple.com/documentation, fetched 2026-11-27.
+#
+# <symbol> <kind> <macOS> <page>
+#   kind    func (a function) or data (a variable or constant)
+#   macOS   the release that brought it, as the page gives it; - if it gives none
+#   page    the page of the symbol, developer.apple.com/documentation/<page>
+# The documentation does not say which symbols exist only on one architecture:
+# every symbol is for x86_64 and arm64.
+_MTKMetalVertexDescriptorFromModelIO          func 10.11 metalkit/mtkmetalvertexdescriptorfrommodelio(_:)
+_MTKMetalVertexDescriptorFromModelIOWithError func 10.12 metalkit/mtkmetalvertexdescriptorfrommodeliowitherror
+_MTKMetalVertexFormatFromModelIO              func 10.11 metalkit/mtkmetalvertexformatfrommodelio(_:)
+_MTKModelErrorDomain                          data 10.11 metalkit/mtkmodelerror/domain
+_MTKModelErrorKey                             data 10.11 metalkit/mtkmodelerror/key
+_MTKModelIOVertexDescriptorFromMetal          func 10.11 metalkit/mtkmodeliovertexdescriptorfrommetal(_:)
+_MTKModelIOVertexDescriptorFromMetalWithError func 10.12 metalkit/mtkmodeliovertexdescriptorfrommetalwitherror
+_MTKModelIOVertexFormatFromMetal              func 10.11 metalkit/mtkmodeliovertexformatfrommetal(_:)
+_MTKTextureLoaderCubeLayoutVertical           data 10.12 metalkit/mtktextureloader/cubelayout/vertical
+_MTKTextureLoaderErrorDomain                  data 10.11 metalkit/mtktextureloader/error/domain
+_MTKTextureLoaderErrorKey                     data 10.11 metalkit/mtktextureloader/error/key
+_MTKTextureLoaderOptionAllocateMipmaps        data 10.11 metalkit/mtktextureloader/option/allocatemipmaps
+_MTKTextureLoaderOptionCubeLayout             data 10.12 metalkit/mtktextureloader/option/cubelayout
+_MTKTextureLoaderOptionGenerateMipmaps        data 10.12 metalkit/mtktextureloader/option/generatemipmaps
+_MTKTextureLoaderOptionLoadAsArray            data 14.0  metalkit/mtktextureloader/option/loadasarray
+_MTKTextureLoaderOptionOrigin                 data 10.12 metalkit/mtktextureloader/option/origin
+_MTKTextureLoaderOptionSRGB                   data 10.11 metalkit/mtktextureloader/option/srgb
+_MTKTextureLoaderOptionTextureCPUCacheMode    data 10.11 metalkit/mtktextureloader/option/texturecpucachemode
+_MTKTextureLoaderOptionTextureStorageMode     data 10.12 metalkit/mtktextureloader/option/texturestoragemode
+_MTKTextureLoaderOptionTextureUsage           data 10.11 metalkit/mtktextureloader/option/textureusage
+_MTKTextureLoaderOriginBottomLeft             data 10.12 metalkit/mtktextureloader/origin/bottomleft
+_MTKTextureLoaderOriginFlippedVertically      data 10.12 metalkit/mtktextureloader/origin/flippedvertically
+_MTKTextureLoaderOriginTopLeft                data 10.12 metalkit/mtktextureloader/origin/topleft

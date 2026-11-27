@@ -32,7 +32,7 @@ At run time macOS loads its own libraries.
 - **`Foundation.tbd`, `CoreGraphics.tbd`, `AppKit.tbd`, `CoreText.tbd`, `CoreVideo.tbd`, `QuartzCore.tbd`, `Metal.tbd`,  
   `CoreAudio.tbd`, `AudioToolbox.tbd`, `ApplicationServices.tbd`, `Carbon.tbd`,  
   `WebKit.tbd`, `UniformTypeIdentifiers.tbd`, `OpenDirectory.tbd`, `AVFoundation.tbd`,  
-  `CoreMedia.tbd`** (no headers): the C functions and global data that  
+  `CoreMedia.tbd`, `ImageIO.tbd`, `Vision.tbd`, `MetalKit.tbd`** (no headers): the C functions and global data that  
   Apple's documentation lists for macOS up to the release of the SDK (`data/symbols/doc/`, made by  
   `tools/doc_symbols.py`; `ApplicationServices` has those of the modules Application Services and ColorSync),  
   two private functions that winit declares itself (`data/symbols/CoreGraphics-extra.txt`) and the keyboard layout,  
