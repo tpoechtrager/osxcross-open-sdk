@@ -1,0 +1,14 @@
+# Symbols of Carbon that Apple's documentation does not list as C symbols of this framework:
+# the keyboard layout functions (HIToolbox, a framework inside Carbon) that open projects
+# declare themselves and link from Carbon, so they rely on them.  Each entry names the
+# project (commit) and file.
+_TISCopyCurrentKeyboardLayoutInputSource # winit b1a0534, winit-appkit/src/ffi.rs (link Carbon);
+                                         # also GLFW 92dcf4c, src/cocoa_init.m (from HIToolbox)
+_TISGetInputSourceProperty               # winit b1a0534, winit-appkit/src/ffi.rs (link Carbon);
+                                         # also GLFW 92dcf4c, src/cocoa_init.m (from HIToolbox)
+_kTISPropertyUnicodeKeyLayoutData        # winit b1a0534, winit-appkit/src/ffi.rs (link Carbon);
+                                         # also GLFW 92dcf4c, src/cocoa_init.m (from HIToolbox)
+_LMGetKbdType                            # winit b1a0534, winit-appkit/src/ffi.rs (link Carbon);
+                                         # also GLFW 92dcf4c, src/cocoa_init.m (from HIToolbox)
+_UCKeyTranslate                          # winit b1a0534, winit-appkit/src/ffi.rs (link Carbon); the page of
+                                         # Apple's documentation puts it in Core Services (CoreServices.tbd)

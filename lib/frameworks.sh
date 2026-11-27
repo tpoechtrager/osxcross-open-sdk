@@ -8,8 +8,8 @@
 # Security, SystemConfiguration: headers from the open source releases and a
 # <Name>.tbd in the framework directory (Name.framework/Name.tbd); CoreServices:
 # own headers (File System Events only); Foundation, CoreGraphics, AppKit, CoreText,
-# CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices: only the
-# .tbd, with the symbols of Apple's documentation (fw_doc).
+# CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon:
+# only the .tbd, with the symbols of Apple's documentation (fw_doc).
 # ---------------------------------------------------------------------------
 # fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/):
 # the symbols that HEADERs declare, without those of data/symbols/NAME-exclude.txt, and
@@ -34,13 +34,16 @@ fw_tbd() {
 # fw_doc NAME [MK_TBD-OPTION...]: a framework without open source and without headers,
 # only the .tbd (a framework of data/libraries.txt), a link stub for programs that
 # declare what they use themselves: the symbols of data/symbols/doc/NAME.txt (made
-# by tools/doc_symbols.py from Apple's documentation) that came with macOS
-# SDK_VERSION or earlier, and those of data/symbols/NAME-extra.txt
+# by tools/doc_symbols.py from Apple's documentation; none for Carbon) that came with
+# macOS SDK_VERSION or earlier, and those of data/symbols/NAME-extra.txt
 fw_doc() {
   local name=$1; shift
   rm -rf "$STAGE_FW/$name.framework"; mkdir -p "$STAGE_FW/$name.framework"
-  doc_symbols "$DATA/symbols/doc/$name.txt" > "$STAGE_WORK/fw-$name.list" ||
-    die "data/symbols/doc/$name.txt has bad lines"
+  : > "$STAGE_WORK/fw-$name.list"
+  if [ -f "$DATA/symbols/doc/$name.txt" ]; then
+    doc_symbols "$DATA/symbols/doc/$name.txt" > "$STAGE_WORK/fw-$name.list" ||
+      die "data/symbols/doc/$name.txt has bad lines"
+  fi
   if [ -f "$DATA/symbols/$name-extra.txt" ]; then
     symbol_list "$DATA/symbols/$name-extra.txt" >> "$STAGE_WORK/fw-$name.list"
   fi
@@ -198,11 +201,12 @@ step_frameworks() {
   fw_tbd SystemConfiguration $(cd "$H" && ls *.h | tr '\n' ' ')
 
   # Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio,
-  # AudioToolbox, ApplicationServices: link stubs without headers (fw_doc).  Foundation also
-  # lets `-framework Foundation` link (Clang adds it for -fobjc-arc, and build systems pass
-  # it without using Foundation).  A program loads the system's frameworks at run time.
+  # AudioToolbox, ApplicationServices, Carbon: link stubs without headers (fw_doc).  Foundation
+  # also lets `-framework Foundation` link (Clang adds it for -fobjc-arc, and build systems
+  # pass it without using Foundation).  A program loads the system's frameworks at run time.
   local fw
-  for fw in Foundation CoreGraphics AppKit CoreText CoreVideo QuartzCore Metal CoreAudio AudioToolbox ApplicationServices; do
+  for fw in Foundation CoreGraphics AppKit CoreText CoreVideo QuartzCore Metal CoreAudio AudioToolbox ApplicationServices \
+    Carbon; do
     echo "$fw"
     fw_doc "$fw"
   done

@@ -34,7 +34,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
+| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
@@ -543,6 +543,15 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   (winit b1a0534, `winit-appkit/src/ffi.rs`: `CGDisplayCreateUUIDFromDisplayID`, `CGDisplayGetDisplayIDFromUUID`,  
   with a comment that ColorSync is part of ApplicationServices).  
   There is no ColorSync stub and no re-export: no open source names the re-exports of ApplicationServices.
+- Carbon has no list from the documentation (it has no pages of C symbols of its own): only `Carbon-extra.txt`,  
+  the functions and the constant that winit b1a0534 (`winit-appkit/src/ffi.rs`, `link(name = "Carbon")`) declares  
+  for the keyboard layout: `TISCopyCurrentKeyboardLayoutInputSource`, `TISGetInputSourceProperty`,  
+  `kTISPropertyUnicodeKeyLayoutData`, `LMGetKbdType` (GLFW 92dcf4c, `src/cocoa_init.m`, uses the same four  
+  from the HIToolbox bundle, which is a framework inside Carbon), and `UCKeyTranslate`.  
+  Apple's documentation puts `UCKeyTranslate` in Core Services; winit links it with `-framework Carbon`, so it is in the  
+  stub of Carbon, as there is no re-export of CoreServices by Carbon in an open source.  
+  Carbon's install name (`Versions/A`): the same two lists as for CoreGraphics (python-build-standalone 139273f,  
+  `src/validation.rs`; maiko f984528, `crates/patcher/src/macos.rs`).
 - Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
 
 ---
