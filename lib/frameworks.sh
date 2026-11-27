@@ -107,9 +107,9 @@ iokit_families() {
   cp "$SRC"/IOGraphics/IONDRVSupport/IOKit/ndrvsupport/{IOMacOSTypes,IOMacOSVideo}.h "$H/ndrvsupport/"
   # IOUSBFamily: the phase "CopyFiles" of the target that has the destination IOKit.framework/Versions/A/Headers/usb
   cp "$SRC"/IOUSBFamily/IOUSBFamily/Headers/{USB,USBSpec,IOUSBLib}.h "$SRC/IOUSBFamily/IOUSBUserClient/Headers/IOUSBUserClient.h" "$H/usb/"
-  # constants of the speeds and the re-enumerate options that the open headers lack (libusb uses them)
+  # constants of the speeds, the re-enumerate options, the hubs and the notifications that the open headers lack (libusb uses some)
   cat "$DATA/USBCompat.h.in" >> "$H/usb/USB.h"
-  add_notice "$H/usb/USB.h" "constants of the device speeds and of USBReEnumerateOptions added at the end"
+  add_notice "$H/usb/USB.h" "constants of the device speeds, of USBReEnumerateOptions and of the hubs and notifications added at the end"
   IOKIT_FAMILY_SCAN=$(cd "$H" && ls storage/*.h hid/*.h hidsystem/*.h graphics/*.h i2c/*.h ndrvsupport/*.h usb/*.h | tr '\n' ' ')
 }
 

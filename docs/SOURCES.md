@@ -576,14 +576,17 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - IOUSBFamily 560.4.2 and not the last tag, 630.4.5: `USB.h` of 630.4.5 is an empty file (as are many other headers of that tag),  
   and `IOUSBLib.h` needs its types; 560.4.2 is the newest tag that has it. The two tags differ in the userspace headers  
   in one comment of `IOUSBLib.h` and four constants of `USBSpec.h` (`kUSBFunctionRemoteWakeCapableBit` and three more).
-- Appended to `usb/USB.h` (`data/USBCompat.h.in`, with the notice of `helpers/notice.py`): the enumerators `kUSBDeviceSpeedSuperPlus = 4`,  
-  `kUSBDeviceSpeedSuperPlusBy2 = 5`, `kUSBReEnumerateCaptureDeviceBit = 30` and  
-  `kUSBReEnumerateCaptureDeviceMask = (1 << kUSBReEnumerateCaptureDeviceBit)`:  
-  - neither open tag (560.4.2, 630.4.5) has them; libusb 1.0.30 (`os/darwin_usb.c`) uses them;  
-  - source: Apple's public documentation of the kernel, the declarations of these four enumerators:  
-    the enumeration of `kUSBDeviceSpeedLow` (`developer.apple.com/documentation/kernel/1646359-anonymous`) and  
-    `USBReEnumerateOptions` (`developer.apple.com/documentation/kernel/usbreenumerateoptions`);  
-  - the other enumerators of `USBReEnumerateOptions` are left out.
+- Appended to `usb/USB.h` (`data/USBCompat.h.in`, with the notice of `helpers/notice.py`): the enumerators of Apple's public documentation  
+  of the kernel (`developer.apple.com/documentation/kernel`, pages downloaded 2026-11-26/27) that `USB.h` lacks:  
+  - `kUSBDeviceSpeedSuperPlus`, `kUSBDeviceSpeedSuperPlusBy2` and `kUSBReEnumerate*`: libusb 1.0.30 (`os/darwin_usb.c`) uses them;  
+    the pages are `1646359-anonymous` (the enumeration of `kUSBDeviceSpeedLow`) and `usbreenumerateoptions`;  
+  - the other `kUSB*` constants of the enumerations that the same documentation numbers `1643xxx` and `1646xxx` (the  
+    enumerations of the old `USB.h`: hub, billboard, notification and root hub constants), name and value as the pages declare them;  
+  - 38 of them are also in IOUSBFamily 630.4.5 (`Headers/USBHub.h`, `Classes/AppleUSBOHCI_RootHub.cpp`, `Classes/AppleUSBUHCI_RootHub.cpp`,  
+    `Classes/AppleUSBEHCIHubInfo.cpp`, `PortStatusGatherer.m`) with the same value;  
+  - left out: the four `kUSBFunctionRemoteWake*`/`kUSBLowPowerSuspendStateBit` names, whose value 630.4.5 gives as 0 and 1 but the pages  
+    as `IOUSBBit(0)` and `IOUSBBit(1)`; and the constants of the `IOUSBHostFamily` of the kernel (`kIOUSB*`, `kUSBHost*`, the `tIOUSB*`  
+    and `tUSBHost*` enumerations): that project is not open, and its headers go to `Kernel.framework`.
 - `IOKit.tbd` gets nothing from `usb/`: `IOUSBLib.h` is the interface of a CFPlugIn (UUID macros and structures of function pointers,  
   no function), `IOUSBUserClient.h` only constants.
 - Licenses: APSL 2.0; the headers of IOGraphics carry the APSL 1.1 notice, its text is the `APPLE_LICENSE` of Libinfo.  

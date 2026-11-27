@@ -2,12 +2,12 @@
 /* The text of this block is appended to USB.h of IOUSBFamily (APSL 2.0, see the notice at its top
  * and the license directory of the SDK); it is not under the 0BSD license of the other files
  * written for the SDK.
- * Source of the names and values: Apple's public documentation of the kernel, the enumeration of
- * kUSBDeviceSpeedLow (developer.apple.com/documentation/kernel/1646359-anonymous) and
- * USBReEnumerateOptions (developer.apple.com/documentation/kernel/usbreenumerateoptions),
- * see docs/SOURCES.md. */
+ * Source of the names and values: Apple's public documentation of the kernel
+ * (developer.apple.com/documentation/kernel, pages downloaded 2026-11-26/27), see docs/SOURCES.md:
+ * the enumeration of kUSBDeviceSpeedLow (1646359-anonymous), USBReEnumerateOptions and the
+ * enumerations that the documentation numbers 1643xxx and 1646xxx. */
 /* ---- added by the open SDK: constants that the open IOUSBFamily headers do not have, but
- * programs (libusb) use ---- */
+ * programs (libusb) use, and the other kUSB constants of USB.h that the documentation lists ---- */
 #ifndef _OPEN_SDK_USB_COMPAT_H
 #define _OPEN_SDK_USB_COMPAT_H
 enum {
@@ -17,5 +17,110 @@ enum {
 enum {
     kUSBReEnumerateCaptureDeviceBit  = 30,
     kUSBReEnumerateCaptureDeviceMask = (1 << kUSBReEnumerateCaptureDeviceBit)
+};
+enum {
+    kUSBBillboardVConn1P5Watt = 1,
+    kUSBBillboardVConn1Watt = 0,
+    kUSBBillboardVConn2Watt = 2,
+    kUSBBillboardVConn3Watt = 3,
+    kUSBBillboardVConn4Watt = 4,
+    kUSBBillboardVConn5Watt = 5,
+    kUSBBillboardVConn6Watt = 6,
+    kUSBBillboardVConnReserved = 7
+};
+enum {
+    kUSBDeviceCapabilityBillboard = 13,
+    kUSBDeviceCapabilityBillboardAltMode = 15
+};
+enum {
+    kUSBBillBoardClass = 17
+};
+enum {
+    kUSBBillboardAltModeConfigSuccess = 3,
+    kUSBBillboardConfigNotAttempted = 1,
+    kUSBBillboardConfigUnsuccessful = 2,
+    kUSBBillboardUnspecifiedError = 0
+};
+enum {
+    kUSBHSHubCommandAddHub = 1,
+    kUSBHSHubCommandRemoveHub = 2,
+    kUSBHSHubFlagsMoreInfoMask = 0x02,
+    kUSBHSHubFlagsMultiTTMask = 0x01,
+    kUSBHSHubFlagsNumPortsMask = 0xF0,
+    kUSBHSHubFlagsNumPortsShift = 4,
+    kUSBHSHubFlagsTTThinkTimeMask = 0x0C,
+    kUSBHSHubFlagsTTThinkTimeShift = 2
+};
+enum {
+    kUSBHubLocalPowerChangeFeature = 0,
+    kUSBHubOverCurrentChangeFeature = 1,
+    kUSBHubPortBHPortResetFeature = 28,
+    kUSBHubPortBHResetChangeFeature = 29,
+    kUSBHubPortConfigErrorChangeFeature = 26,
+    kUSBHubPortConnectionChangeFeature = 16,
+    kUSBHubPortConnectionFeature = 0,
+    kUSBHubPortEnableChangeFeature = 17,
+    kUSBHubPortEnableFeature = 1,
+    kUSBHubPortForceLinkPMAcceptFeature = 30,
+    kUSBHubPortIndicatorFeature = 22,
+    kUSBHubPortLinkStateChangeFeature = 25,
+    kUSBHubPortLinkStateFeature = 5,
+    kUSBHubPortLowSpeedFeature = 9,
+    kUSBHubPortOverCurrentChangeFeature = 19,
+    kUSBHubPortOverCurrentFeature = 3,
+    kUSBHubPortPowerFeature = 8,
+    kUSBHubPortRemoteWakeMaskFeature = 27,
+    kUSBHubPortResetChangeFeature = 20,
+    kUSBHubPortResetFeature = 4,
+    kUSBHubPortSuspendChangeFeature = 18,
+    kUSBHubPortSuspendFeature = 2,
+    kUSBHubPortTestFeature = 21,
+    kUSBHubPortU1TimeoutFeature = 23,
+    kUSBHubPortU2TimeoutFeature = 24
+};
+enum {
+    kUSBHubOvercurrentMask = 0x18,
+    kUSBHubOvercurrentShift = 3
+};
+enum {
+    kUSB3HubDescriptorType = 0x2A,
+    kUSBHubDescriptorType = 0x29
+};
+enum {
+    kUSBHubRqGetPortErrorCount = 13,
+    kUSBHubRqSetHubDepth = 12
+};
+enum {
+    kUSBRootHubPollingRate = 32
+};
+enum {
+    kUSBCTBNotEnoughPowerNotificationType = 11,
+    kUSBCTBUnsupportedNotificationType = 12,
+    kUSBCUnsupportedTBCableNotificationType = 14,
+    kUSBCUnsupportedTBPortNotificationType = 13,
+    kUSBDeviceCountExceededNotificationType = 6,
+    kUSBEndpointCountExceededNotificationType = 7,
+    kUSBHubCountExceededNotificationType = 9,
+    kUSBiOSDeviceNotEnoughPowerNotificationType = 4,
+    kUSBNotEnoughPowerNoACNotificationType = 5,
+    kUSBTDMLowBatteryType = 10,
+    kUSBUnsupportedNotificationType = 8
+};
+enum {
+    kUSBEndpointTransferTypeUCMask = (1 << 7),
+    kUSBStreamIDAllStreamsMask = (1 << 31),
+    kUSBStreamIDMask = 0xffff,
+    kUSBTooManyDevicesAddress = 0xfffe,
+    kUSBUCRequestWithoutUSBNotificationMask = (1 << 30)
+};
+enum {
+    kUSBNotificationPostForcedResumeBit = 3,
+    kUSBNotificationPostForcedSuspendBit = 1,
+    kUSBNotificationPreForcedResumeBit = 2,
+    kUSBNotificationPreForcedSuspendBit = 0
+};
+enum {
+    kUSBReEnumerateReleaseDeviceBit = 29,
+    kUSBReEnumerateReleaseDeviceMask = ( 1 << kUSBReEnumerateReleaseDeviceBit)
 };
 #endif
