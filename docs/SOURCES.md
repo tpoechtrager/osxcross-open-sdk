@@ -36,7 +36,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `Security` names of macOS 27.0 | Apple's documentation, Security 61901.120.67 ([details](#security-names-of-macos-270)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
+| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon, WebKit, UniformTypeIdentifiers, OpenDirectory | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | `OpenGL.framework` (headers, link stub) | Khronos OpenGL Registry (`gl.xml`), open projects that declare CGL ([details](#openglframework)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Layout of the frameworks, `Cocoa.framework` | Apple's documentation of framework bundles and of Cocoa, python-build-standalone ([details](#framework-layout-and-cocoaframework)) |
@@ -664,6 +664,21 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   as there is no re-export of CoreServices by Carbon in an open source.  
   Carbon's install name (`Versions/A`): the same two lists as for CoreGraphics (python-build-standalone 139273f,  
   `src/validation.rs`; maiko f984528, `crates/patcher/src/macos.rs`).
+- WebKit, UniformTypeIdentifiers and OpenDirectory have no headers either; their symbols are those of the  
+  documentation modules "WebKit", "Uniform Type Identifiers" and "Open Directory" (the Objective-C pages of the  
+  constants that the Swift pages name were fetched on 2026-11-27 from `developer.apple.com/documentation/<framework>/<name>`).  
+  The lists have the global constants (`WKWebsiteDataType...`, `UTType...`, `kOD...`) and the  
+  functions of Open Directory's C interface (`ODNodeCreateWithName`, ...); the stub of `OpenDirectory` carries them directly:  
+  Open Directory's project builds them in a sub-umbrella, `CFOpenDirectory`, that `OpenDirectory` re-exports (`OTHER_LDFLAGS`  
+  `-sub_umbrella CFOpenDirectory`), and no `CFOpenDirectory` stub is made. No Objective-C classes, as for the other stubs.
+- Install names (all `Versions/A`, `/System/Library/Frameworks`):
+  - WebKit: sunoru/Webviews.jl b28fb63, `src/platforms/apple/Impl.jl` (MIT; `const libWebKit` is the full path), and  
+    odvcencio/gosx 08c6d78, `desktop/bind_darwin.go` (MIT; the full path in its `cgo_import_dynamic` line of `WKStringCreateWithUTF8CString`).
+  - UniformTypeIdentifiers: the list of astral-sh/python-build-standalone 139273f, `src/validation.rs` (MPL-2.0).
+  - OpenDirectory: apple-oss-distributions/OpenDirectory tag OpenDirectory-146, `OpenDirectory.xcodeproj/project.pbxproj`  
+    (`INSTALL_PATH = /System/Library/Frameworks`, `PRODUCT_NAME = OpenDirectory`, `FRAMEWORK_VERSION = A`,  
+    `DYLIB_COMPATIBILITY_VERSION = DYLIB_CURRENT_VERSION = 1`).
+  - The symbols come from Apple's documentation only; no source of WebKit or Open Directory is used for them.
 - Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
 
 ---

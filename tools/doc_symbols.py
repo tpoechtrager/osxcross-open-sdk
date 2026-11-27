@@ -3,7 +3,7 @@
 """doc_symbols.py [--docs DIR]... [--gnustep-base DIR] [--gnustep-gui DIR] [--headers DIR] [--out DIR] FRAMEWORK...
 
 Writes data/symbols/doc/FRAMEWORK.txt: the C functions and global data of a
-framework without open source that Apple's documentation lists for macOS.
+framework that the SDK has no headers of, as Apple's documentation lists them for macOS.
 The generator makes a link stub (FRAMEWORK.tbd, no headers) of the list.
 
 --docs (one or more) is a directory with JSON pages of
@@ -72,7 +72,10 @@ FRAMEWORKS = {
     "CoreVideo": ["Core Video"],
     "Foundation": ["Foundation"],
     "Metal": ["Metal"],
+    "OpenDirectory": ["Open Directory"],
     "QuartzCore": ["Core Animation"],
+    "UniformTypeIdentifiers": ["Uniform Type Identifiers"],
+    "WebKit": ["WebKit"],
 }
 NS_FRAMEWORKS = ("Foundation", "AppKit")
 
@@ -250,6 +253,9 @@ HEADER = """\
 # every symbol is for x86_64 and arm64.
 """
 WHAT = "a link stub without headers; {fw} has no open source release"
+# WebKit and OpenDirectory have one, but their lists, too, are made from the documentation only.
+WHAT_OPEN = "a link stub without headers; made from the documentation only, not from the open source release of {fw}"
+OPEN_SOURCE = {"WebKit", "OpenDirectory"}
 WHAT_CF = "those that no header names; the headers give the rest"
 NOTE_DOC = """
 #   gnustep-gui  the page lists it under Foundation, the headers of GNUstep
@@ -312,7 +318,7 @@ def main(argv):
         w = max(len(r[0]) for r in rows)
         with open(os.path.join(out_dir, fw + ".txt"), "w") as f:
             ns = fw in NS_FRAMEWORKS
-            f.write(HEADER.format(fw=fw, what=(WHAT_CF if fw == "CoreFoundation" else WHAT).format(fw=fw), days=days_s, gs=gs_line if ns else "",
+            f.write(HEADER.format(fw=fw, what=(WHAT_CF if fw == "CoreFoundation" else WHAT_OPEN if fw in OPEN_SOURCE else WHAT).format(fw=fw), days=days_s, gs=gs_line if ns else "",
                                   note=" [gnustep-gui]" if fw == "AppKit" else "",
                                   note_doc=NOTE_DOC if fw == "AppKit" else ""))
             for r in rows:

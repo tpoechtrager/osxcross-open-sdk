@@ -1,0 +1,96 @@
+# The C functions and global data of WebKit that Apple's documentation lists
+# for macOS: the symbols of WebKit.tbd of the full SDK (a link stub without headers; made from the documentation only, not from the open source release of WebKit).
+# Made by tools/doc_symbols.py (do not edit) from the pages of
+# developer.apple.com/documentation, fetched 2026-11-27.
+#
+# <symbol> <kind> <macOS> <page>
+#   kind    func (a function) or data (a variable or constant)
+#   macOS   the release that brought it, as the page gives it; - if it gives none
+#   page    the page of the symbol, developer.apple.com/documentation/<page>
+# The documentation does not say which symbols exist only on one architecture:
+# every symbol is for x86_64 and arm64.
+_DOMEventException                                           data 10.4  webkit/domeventexception
+_DOMException                                                data 10.4  webkit/domexception
+_DOMRangeException                                           data 10.4  webkit/domrangeexception
+_DOMXPathException                                           data 10.4  webkit/domxpathexception
+_NSReadAccessURLDocumentOption                               data 10.15 webkit/nsreadaccessurldocumentoption
+_WKErrorDomain                                               data 10.10 webkit/wkerrordomain
+_WKWebExtensionContextNotificationUserInfoKeyMatchPatterns   data 15.4  webkit/wkwebextensioncontext/notificationuserinfokey/matchpatterns
+_WKWebExtensionContextNotificationUserInfoKeyPermissions     data 15.4  webkit/wkwebextensioncontext/notificationuserinfokey/permissions
+_WKWebExtensionDataTypeLocal                                 data 15.4  webkit/wkwebextension/datatype/local
+_WKWebExtensionDataTypeSession                               data 15.4  webkit/wkwebextension/datatype/session
+_WKWebExtensionDataTypeSynchronized                          data 15.4  webkit/wkwebextension/datatype/synchronized
+_WKWebExtensionMatchPatternErrorDomain                       data 15.4  webkit/wkwebextension/matchpattern/errordomain
+_WKWebExtensionPermissionActiveTab                           data 15.4  webkit/wkwebextension/permission/activetab
+_WKWebExtensionPermissionAlarms                              data 15.4  webkit/wkwebextension/permission/alarms
+_WKWebExtensionPermissionClipboardWrite                      data 15.4  webkit/wkwebextension/permission/clipboardwrite
+_WKWebExtensionPermissionContextMenus                        data 15.4  webkit/wkwebextension/permission/contextmenus
+_WKWebExtensionPermissionCookies                             data 15.4  webkit/wkwebextension/permission/cookies
+_WKWebExtensionPermissionDeclarativeNetRequest               data 15.4  webkit/wkwebextension/permission/declarativenetrequest
+_WKWebExtensionPermissionDeclarativeNetRequestFeedback       data 15.4  webkit/wkwebextension/permission/declarativenetrequestfeedback
+_WKWebExtensionPermissionDeclarativeNetRequestWithHostAccess data 15.4  webkit/wkwebextension/permission/declarativenetrequestwithhostaccess
+_WKWebExtensionPermissionMenus                               data 15.4  webkit/wkwebextension/permission/menus
+_WKWebExtensionPermissionNativeMessaging                     data 15.4  webkit/wkwebextension/permission/nativemessaging
+_WKWebExtensionPermissionScripting                           data 15.4  webkit/wkwebextension/permission/scripting
+_WKWebExtensionPermissionStorage                             data 15.4  webkit/wkwebextension/permission/storage
+_WKWebExtensionPermissionTabs                                data 15.4  webkit/wkwebextension/permission/tabs
+_WKWebExtensionPermissionUnlimitedStorage                    data 15.4  webkit/wkwebextension/permission/unlimitedstorage
+_WKWebExtensionPermissionWebNavigation                       data 15.4  webkit/wkwebextension/permission/webnavigation
+_WKWebExtensionPermissionWebRequest                          data 15.4  webkit/wkwebextension/permission/webrequest
+_WKWebsiteDataTypeCookies                                    data 10.11 webkit/wkwebsitedatatypecookies
+_WKWebsiteDataTypeDiskCache                                  data 10.11 webkit/wkwebsitedatatypediskcache
+_WKWebsiteDataTypeFetchCache                                 data 10.13.4 webkit/wkwebsitedatatypefetchcache
+_WKWebsiteDataTypeFileSystem                                 data 13.0  webkit/wkwebsitedatatypefilesystem
+_WKWebsiteDataTypeHashSalt                                   data 14.0  webkit/wkwebsitedatatypehashsalt
+_WKWebsiteDataTypeIndexedDBDatabases                         data 10.11 webkit/wkwebsitedatatypeindexeddbdatabases
+_WKWebsiteDataTypeLocalStorage                               data 10.11 webkit/wkwebsitedatatypelocalstorage
+_WKWebsiteDataTypeMediaKeys                                  data 14.0  webkit/wkwebsitedatatypemediakeys
+_WKWebsiteDataTypeMemoryCache                                data 10.11 webkit/wkwebsitedatatypememorycache
+_WKWebsiteDataTypeOfflineWebApplicationCache                 data 10.11 webkit/wkwebsitedatatypeofflinewebapplicationcache
+_WKWebsiteDataTypeScreenTime                                 data 26.0  webkit/wkwebsitedatatypescreentime
+_WKWebsiteDataTypeSearchFieldRecentSearches                  data 14.0  webkit/wkwebsitedatatypesearchfieldrecentsearches
+_WKWebsiteDataTypeServiceWorkerRegistrations                 data 10.13.4 webkit/wkwebsitedatatypeserviceworkerregistrations
+_WKWebsiteDataTypeSessionStorage                             data 10.11 webkit/wkwebsitedatatypesessionstorage
+_WKWebsiteDataTypeWebSQLDatabases                            data 10.11 webkit/wkwebsitedatatypewebsqldatabases
+_WebActionButtonKey                                          data 10.3  webkit/webactionbuttonkey
+_WebActionElementKey                                         data 10.3  webkit/webactionelementkey
+_WebActionModifierFlagsKey                                   data 10.3  webkit/webactionmodifierflagskey
+_WebActionNavigationTypeKey                                  data 10.3  webkit/webactionnavigationtypekey
+_WebActionOriginalURLKey                                     data 10.3  webkit/webactionoriginalurlkey
+_WebArchivePboardType                                        data 10.3  webkit/webarchivepboardtype
+_WebElementDOMNodeKey                                        data 10.3  webkit/webelementdomnodekey
+_WebElementFrameKey                                          data 10.3  webkit/webelementframekey
+_WebElementImageAltStringKey                                 data 10.3  webkit/webelementimagealtstringkey
+_WebElementImageKey                                          data 10.3  webkit/webelementimagekey
+_WebElementImageRectKey                                      data 10.3  webkit/webelementimagerectkey
+_WebElementImageURLKey                                       data 10.3  webkit/webelementimageurlkey
+_WebElementIsSelectedKey                                     data 10.3  webkit/webelementisselectedkey
+_WebElementLinkLabelKey                                      data 10.3  webkit/webelementlinklabelkey
+_WebElementLinkTargetFrameKey                                data 10.3  webkit/webelementlinktargetframekey
+_WebElementLinkTitleKey                                      data 10.3  webkit/webelementlinktitlekey
+_WebElementLinkURLKey                                        data 10.3  webkit/webelementlinkurlkey
+_WebHistoryAllItemsRemovedNotification                       data 10.3  webkit/webhistoryallitemsremovednotification
+_WebHistoryItemChangedNotification                           data 10.3  webkit/webhistoryitemchangednotification
+_WebHistoryItemsAddedNotification                            data 10.3  webkit/webhistoryitemsaddednotification
+_WebHistoryItemsKey                                          data 10.3  webkit/webhistoryitemskey
+_WebHistoryItemsRemovedNotification                          data 10.3  webkit/webhistoryitemsremovednotification
+_WebHistoryLoadedNotification                                data 10.3  webkit/webhistoryloadednotification
+_WebHistorySavedNotification                                 data 10.3  webkit/webhistorysavednotification
+_WebKitErrorDomain                                           data 10.3  webkit/webkiterrordomain
+_WebKitErrorMIMETypeKey                                      data 10.3  webkit/webkiterrormimetypekey
+_WebKitErrorPlugInNameKey                                    data 10.3  webkit/webkiterrorpluginnamekey
+_WebKitErrorPlugInPageURLStringKey                           data 10.3  webkit/webkiterrorpluginpageurlstringkey
+_WebPlugInAttributesKey                                      data 10.3  webkit/webpluginattributeskey
+_WebPlugInBaseURLKey                                         data 10.3  webkit/webpluginbaseurlkey
+_WebPlugInContainerKey                                       data 10.3  webkit/webplugincontainerkey
+_WebPlugInContainingElementKey                               data 10.3  webkit/webplugincontainingelementkey
+_WebPlugInShouldLoadMainResourceKey                          data 10.6  webkit/webpluginshouldloadmainresourcekey
+_WebPreferencesChangedNotification                           data 10.3  webkit/webpreferenceschangednotification
+_WebViewDidBeginEditingNotification                          data 10.3  webkit/webviewdidbegineditingnotification
+_WebViewDidChangeNotification                                data 10.3  webkit/webviewdidchangenotification
+_WebViewDidChangeSelectionNotification                       data 10.3  webkit/webviewdidchangeselectionnotification
+_WebViewDidChangeTypingStyleNotification                     data 10.3  webkit/webviewdidchangetypingstylenotification
+_WebViewDidEndEditingNotification                            data 10.3  webkit/webviewdidendeditingnotification
+_WebViewProgressEstimateChangedNotification                  data 10.3  webkit/webviewprogressestimatechangednotification
+_WebViewProgressFinishedNotification                         data 10.3  webkit/webviewprogressfinishednotification
+_WebViewProgressStartedNotification                          data 10.3  webkit/webviewprogressstartednotification

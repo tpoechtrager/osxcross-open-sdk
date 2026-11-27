@@ -30,7 +30,8 @@ At run time macOS loads its own libraries.
 - **`CoreFoundation.tbd`**: the declarations in its headers, and the symbols of newer APIs that Apple's documentation lists for macOS  
   and no header names (`data/symbols/doc/CoreFoundation.txt`), without their headers (`CFStringTokenizer`, `CFURLEnumerator`, ...).
 - **`Foundation.tbd`, `CoreGraphics.tbd`, `AppKit.tbd`, `CoreText.tbd`, `CoreVideo.tbd`, `QuartzCore.tbd`, `Metal.tbd`,  
-  `CoreAudio.tbd`, `AudioToolbox.tbd`, `ApplicationServices.tbd`, `Carbon.tbd`** (no headers): the C functions and global data that  
+  `CoreAudio.tbd`, `AudioToolbox.tbd`, `ApplicationServices.tbd`, `Carbon.tbd`,  
+  `WebKit.tbd`, `UniformTypeIdentifiers.tbd`, `OpenDirectory.tbd`** (no headers): the C functions and global data that  
   Apple's documentation lists for macOS up to the release of the SDK (`data/symbols/doc/`, made by  
   `tools/doc_symbols.py`; `ApplicationServices` has those of the modules Application Services and ColorSync),  
   two private functions that winit declares itself (`data/symbols/CoreGraphics-extra.txt`) and the keyboard layout,  
