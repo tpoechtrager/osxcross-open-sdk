@@ -156,6 +156,7 @@ fw_misc     fw_misc.c     c    -                          -framework,CoreFoundat
 fw_sec      fw_sec.c      c    -                          -framework,CoreFoundation,-framework,Security full
 fw_objc     fw_objc.m     objc -                          -framework,CoreFoundation,-lobjc      full
 fw_carbon   fw_carbon.c   c    -                          -framework,CoreFoundation,-framework,Carbon full
+fw_doc_more fw_doc_more.c c    -                          -framework,CoreFoundation,-framework,WebKit,-framework,UniformTypeIdentifiers,-framework,OpenDirectory full
 libcalls    libcalls.c    c    -                          -                                     core
 compiler_rt compiler_rt.c c    -nodefaultlibs             -lSystem                              core
 libunwind_ext libunwind_ext.c c -                         -                                     core
