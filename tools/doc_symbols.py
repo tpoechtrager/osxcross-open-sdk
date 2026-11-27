@@ -54,6 +54,7 @@ FRAMEWORKS = {
     "AudioToolbox": ["Audio Toolbox"],
     "CoreAudio": ["Core Audio", "Core Audio Types"],
     "CoreGraphics": ["Core Graphics"],
+    "CoreServices": ["Core Services"],
     "CoreText": ["Core Text"],
     "CoreVideo": ["Core Video"],
     "Foundation": ["Foundation"],

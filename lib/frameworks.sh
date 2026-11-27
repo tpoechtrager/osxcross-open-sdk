@@ -7,9 +7,10 @@
 # Frameworks (not with --core): CoreFoundation, IOKit, DiskArbitration,
 # Security, SystemConfiguration: headers from the open source releases and a
 # <Name>.tbd in the framework directory (Name.framework/Name.tbd); CoreServices:
-# own headers (File System Events only); Foundation, CoreGraphics, AppKit, CoreText,
-# CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon:
-# only the .tbd, with the symbols of Apple's documentation (fw_doc).
+# own headers (File System Events only) and the symbols of Apple's documentation;
+# Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio,
+# AudioToolbox, ApplicationServices, Carbon: only the .tbd, with the symbols of Apple's
+# documentation (fw_doc).
 # ---------------------------------------------------------------------------
 # fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/):
 # the symbols that HEADERs declare, without those of data/symbols/NAME-exclude.txt, and
@@ -213,7 +214,7 @@ step_frameworks() {
 
   # CoreServices: only File System Events, with the own headers installed
   # above (CoreServices.h includes only FSEvents.h); CoreServices has no open
-  # source.
+  # source.  The stub also has the symbols of Apple's documentation.
   # data/symbols/CoreServices-fsevents.txt gives the source of every symbol,
   # and the declarations of FSEvents.h must be exactly the names of the list.
   # Install name: the layout that the CF and Security sources use for the
@@ -225,6 +226,13 @@ step_frameworks() {
   syms_for_archs "$DATA/symbols/CoreServices-fsevents.txt" | sort > "$STAGE_WORK/fw-CoreServices.syms"
   sort "$STAGE_WORK/fw-CoreServices.all" | cmp -s - "$STAGE_WORK/fw-CoreServices.syms" ||
     die "the declarations of CoreServices/FSEvents.h and data/symbols/CoreServices-fsevents.txt differ (see $STAGE_WORK/fw-CoreServices.all)"
+  # The stub also has the symbols of Apple's documentation (data/symbols/doc/CoreServices.txt,
+  # like fw_doc), without headers; those of FSEvents are in both lists.
+  doc_symbols "$DATA/symbols/doc/CoreServices.txt" > "$STAGE_WORK/fw-CoreServices.doc" ||
+    die "data/symbols/doc/CoreServices.txt has bad lines"
+  syms_for_archs "$STAGE_WORK/fw-CoreServices.doc" >> "$STAGE_WORK/fw-CoreServices.syms"
+  sort -u "$STAGE_WORK/fw-CoreServices.syms" > "$STAGE_WORK/fw-CoreServices.syms.new"
+  mv "$STAGE_WORK/fw-CoreServices.syms.new" "$STAGE_WORK/fw-CoreServices.syms"
   mk_lib_tbd CoreServices "$STAGE_FW/CoreServices.framework/CoreServices.tbd" "$STAGE_WORK/fw-CoreServices.syms" \
     --reexport-library "$(lib_field CoreFoundation 2)"
   # The linker (ld64, ld64.lld) finds a re-exported library by its install name below the SDK's

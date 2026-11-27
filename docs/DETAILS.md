@@ -21,7 +21,9 @@ At run time macOS loads its own libraries.
 - **`Foundation.tbd`, `CoreGraphics.tbd`, `AppKit.tbd`, `CoreText.tbd`, `CoreVideo.tbd`, `QuartzCore.tbd`, `Metal.tbd`,  
   `CoreAudio.tbd`, `AudioToolbox.tbd`, `ApplicationServices.tbd`, `Carbon.tbd`** (no headers): the C functions and global data that  
   Apple's documentation lists for macOS up to the release of the SDK (`data/symbols/doc/`, made by  
-  `tools/doc_symbols.py`), and two private functions that winit declares itself (`data/symbols/CoreGraphics-extra.txt`).  
+  `tools/doc_symbols.py`; `ApplicationServices` has those of the modules Application Services and ColorSync),  
+  two private functions that winit declares itself (`data/symbols/CoreGraphics-extra.txt`) and the keyboard layout  
+  functions that winit links from Carbon (`data/symbols/Carbon-extra.txt`; `Carbon` has nothing else).  
   No Objective-C classes (`_OBJC_CLASS_$_...`): the crates that were tested look them up at run time.
 - **Install names and versions** are in `data/libraries.txt`, with the project file that states each value;  
   `tools/check_libraries.py` checks them. A value without a public source is the lowest possible one.
@@ -51,6 +53,7 @@ the generator wrote, and `data/headers/` has these headers by their path in the 
 - `CoreServices/FSEvents.h` (full SDK): File System Events, the documented C interface; `CoreServices/CoreServices.h`  
   includes only it. The stub of `CoreServices` re-exports `CoreFoundation` (`reexported-libraries`):  
   a program that links only `-framework CoreServices` (`git`, `fswatch`) finds the CF functions too.  
+  Besides the File System Events functions the stub has the C symbols of Apple's documentation (`data/symbols/doc/CoreServices.txt`), without headers.  
   A program that watches a directory ran on macOS 26.0 (x86_64), see [SOURCES.md](SOURCES.md#coreservicesfseventsh-and-its-symbols).
 
 ## Changes to the sources

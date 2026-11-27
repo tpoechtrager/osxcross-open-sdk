@@ -373,6 +373,10 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   `compat/fsmonitor/fsm-listen-darwin.c`.
 - `data/symbols/CoreServices-fsevents.txt` names the source and release of every symbol; the step frameworks stops  
   if the declarations of the header differ from the list.
+- The other symbols of the stub: the C functions and global data of the module Core Services of Apple's  
+  documentation (`data/symbols/doc/CoreServices.txt`, the page of each symbol in its line, made by  
+  `tools/doc_symbols.py` like the lists of the other stubs, see [Link stubs](#link-stubs-from-apples-documentation)),  
+  without headers; they are added to the symbols above, whose check against the header does not change.
 - **Left out, no C name in these sources:** the flags of dotnet/macios `WithDocId`, `DeviceState` and the key `docID`.
 - The stub re-exports `CoreFoundation` (`reexported-libraries`, install name from `data/libraries.txt`);  
   `CoreFoundation.framework/Versions/A/CoreFoundation.tbd` is a link to `CoreFoundation.tbd`:  
@@ -548,8 +552,9 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   for the keyboard layout: `TISCopyCurrentKeyboardLayoutInputSource`, `TISGetInputSourceProperty`,  
   `kTISPropertyUnicodeKeyLayoutData`, `LMGetKbdType` (GLFW 92dcf4c, `src/cocoa_init.m`, uses the same four  
   from the HIToolbox bundle, which is a framework inside Carbon), and `UCKeyTranslate`.  
-  Apple's documentation puts `UCKeyTranslate` in Core Services; winit links it with `-framework Carbon`, so it is in the  
-  stub of Carbon, as there is no re-export of CoreServices by Carbon in an open source.  
+  Apple's documentation puts `UCKeyTranslate` in Core Services (the stub of CoreServices has it too);  
+  winit links it with `-framework Carbon`, so it is in the stub of Carbon,  
+  as there is no re-export of CoreServices by Carbon in an open source.  
   Carbon's install name (`Versions/A`): the same two lists as for CoreGraphics (python-build-standalone 139273f,  
   `src/validation.rs`; maiko f984528, `crates/patcher/src/macos.rs`).
 - Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.

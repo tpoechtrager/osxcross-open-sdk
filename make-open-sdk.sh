@@ -93,7 +93,8 @@
 #             liblzma
 #             (not with --core)
 #   frameworks  CoreFoundation, DiskArbitration, SystemConfiguration, IOKit,
-#             Security, CoreServices; link stubs of Foundation, CoreGraphics,
+#             Security, CoreServices (with a link stub of its symbols
+#             without headers); link stubs of Foundation, CoreGraphics,
 #             AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio,
 #             AudioToolbox, ApplicationServices and Carbon (not with --core)
 #   meta      SDKSettings.plist/.json, SystemVersion.plist, license files

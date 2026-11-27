@@ -42,7 +42,7 @@ install name and version. A real SDK was used only to test a result, never as a 
   and `IOKit` (`IOKitLib`, power sources, power management and the device families `storage`, `hid`,  
   `hidsystem`, `graphics`, `i2c`, `ndrvsupport` and `usb`).
 - XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
-- File System Events (`<CoreServices/CoreServices.h>`, only this part of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
+- File System Events (`<CoreServices/CoreServices.h>`, the only headers of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - Link stubs without headers of `Foundation`, `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`,  
   `CoreAudio`, `AudioToolbox`, `ApplicationServices` (with `ColorSync`) and `Carbon`: the C functions and constants  
   of Apple's documentation, for languages and crates that declare what they use themselves (Rust),  
@@ -54,7 +54,7 @@ install name and version. A real SDK was used only to test a result, never as a 
 - **`Foundation`, `AppKit`** and all other frameworks: there is no public source for their headers;  
   `#import <Foundation/Foundation.h>` fails. Objective-C classes are not in the stubs.
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
-- `libbsm`, the other `IOKit` device families (`storage/ata`, `network`, ...) and `CoreServices` except File System Events.
+- `libbsm`, the other `IOKit` device families (`storage/ata`, `network`, ...) and the headers of `CoreServices` except File System Events.
 - `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h`: no open source defines their functions  
   (see [docs/SOURCES.md](docs/SOURCES.md#iokit-device-families)).
 - XPC sessions and listeners (`xpc_session`, `xpc_listener`) and the parts of XPC that have no public value  
