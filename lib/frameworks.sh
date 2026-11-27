@@ -126,10 +126,25 @@ step_frameworks() {
       if [ ! -f "$H/$n" ] && [ -f "$SRC/CF/$n" ]; then cp "$SRC/CF/$n" "$H/"; more=1; fi
     done
   done
-  perl -pi -e 's|^(#include <CoreFoundation/CFBase.h>)|$1\n#include <CoreFoundation/CFMachPort.h>|' "$H/CoreFoundation.h"
+  # declarations that CF-1153.18 lacks, from swift-corelibs-foundation (data/CF/): two headers
+  # and an additions.patch to others (the notices name what each file got)
+  cp "$DATA/CF/CFNotificationCenter.h" "$DATA/CF/CFAttributedString.h" "$H/"
+  python3 -I "$HELPERS/apply_diff.py" "$H" "$DATA/CF/additions.patch" || die "data/CF/additions.patch does not apply"
+  perl -pi -e 's|^(#include <CoreFoundation/CFBase.h>)|$1\n#include <CoreFoundation/CFMachPort.h>\n#include <CoreFoundation/CFAttributedString.h>\n#include <CoreFoundation/CFNotificationCenter.h>|' "$H/CoreFoundation.h"
   cat "$DATA/CFCompat.h.in" >> "$H/CFAvailability.h"
   add_notice "$H/CFAvailability.h" "annotation macros for the headers of other frameworks added at the end"
-  add_notice "$H/CoreFoundation.h" "include of CFMachPort.h added"
+  add_notice "$H/CoreFoundation.h" "includes of CFMachPort.h, CFAttributedString.h and CFNotificationCenter.h added"
+  # swift-corelibs-foundation swift-6.4.3-RELEASE (8ddfb630bbb581f71fba5960a821dbbd9215a70e), Sources/CoreFoundation/include
+  local cfn="from swift-corelibs-foundation swift-6.4.3-RELEASE, Apache 2.0 with Runtime Library Exception"
+  add_notice "$H/CFNotificationCenter.h" "$cfn; includes as in a framework, the distributed center for macOS only"
+  add_notice "$H/CFAttributedString.h" "$cfn; includes as in a framework"
+  add_notice "$H/CFBase.h" "version numbers of 10.10 and 10.11 added ($cfn)"
+  add_notice "$H/CFBundle.h" "CFBundleIsExecutableLoadable, CFBundleIsExecutableLoadableForURL, CFBundleIsArchitectureLoadable and kCFBundleExecutableArchitectureARM64 added ($cfn)"
+  add_notice "$H/CFDateFormatter.h" "CFISO8601DateFormatOptions and CFDateFormatterCreateISO8601Formatter added ($cfn)"
+  add_notice "$H/CFError.h" "kCFErrorLocalizedFailureKey added ($cfn)"
+  add_notice "$H/CFNumberFormatter.h" "the styles of 10.11 added ($cfn)"
+  add_notice "$H/CFURL.h" "the resource keys and bookmark options of 10.7 to 11.3 added ($cfn)"
+  add_notice "$H/CFUserNotification.h" "kCFUserNotificationAlertTopMostKey and kCFUserNotificationKeyboardTypesKey declared for macOS ($cfn)"
   cp "$SRC/CarbonHeaders/MacTypes.h" "$SRC/CarbonHeaders/ConditionalMacros.h" "$STAGE_INC/"
   local hl; hl=$(cd "$H" && ls *.h | tr '\n' ' ')
   # shellcheck disable=SC2086

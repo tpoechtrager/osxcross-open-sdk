@@ -170,7 +170,9 @@ A project without a license file gets the notice block of its headers, or the pu
   `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`, `CoreAudio`, `AudioToolbox`,  
   `ApplicationServices`, `Carbon`, `OpenGL`)  
   have the lowest compatibility version.
-- **`CoreFoundation`** is CF-1153.18 (2018), the last one Apple published: newer CF APIs are missing.
+- **`CoreFoundation`** is CF-1153.18 (2018), the last one Apple published, with the newer public declarations  
+  that swift-corelibs-foundation has (`CFNotificationCenter`, `CFAttributedString`, ISO 8601 date formatters,  
+  newer URL resource keys, ...). Newer APIs that it does not have are missing.
 - **arm64e and x86_64h.** The stubs give arm64e the symbols of arm64. x86_64h is not listed:  
   the linker uses the x86_64 symbols for it.
 

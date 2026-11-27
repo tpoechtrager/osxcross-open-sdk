@@ -43,6 +43,9 @@
 #ifndef CF_STRING_ENUM
 #define CF_STRING_ENUM
 #endif
+#ifndef CF_EXTENSIBLE_STRING_ENUM
+#define CF_EXTENSIBLE_STRING_ENUM
+#endif
 
 #if __has_include(<os/availability.h>)
 #include <os/availability.h>   /* API_AVAILABLE, SPI_AVAILABLE, ... as in newer CFBase.h */

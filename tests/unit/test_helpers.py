@@ -347,6 +347,7 @@ class MakeLicenses(Tmp):
         out = self.path("out")
         args = [src, out, variant, os.path.join(DATA, "licenses", "0BSD.txt"),
                 "--apache-license", os.path.join(DATA, "licenses", "Apache-2.0.txt"),
+                "--scl-license", os.path.join(DATA, "licenses", "swift-corelibs-foundation-LICENSE.txt"),
                 "--own-files", os.path.join(DATA, "own-files.txt"), "--own-headers", os.path.join(DATA, "headers"),
                 "--sdk", self.path("sdk"), "--projects-out", self.path("projects.tsv")]
         if with_sqlite:
@@ -404,6 +405,10 @@ class MakeLicenses(Tmp):
         self.assertIn("| sqlite | 3.43.2 (sqlite-amalgamation-3430200) |", md)
         self.assertIn("(upstream amalgamation 3.43.2)", md)
         self.assertIn("CoreFoundation.framework/Headers (CF-1153.18)", md)
+        self.assertIn("| swift-corelibs-foundation | swift-6.4.3-RELEASE | Apache 2.0 with Runtime Library Exception |", md)
+        self.assertIn("Runtime Library Exception", read(self.path("out/swift-corelibs-foundation/LICENSE.txt")))
+        _, md = self.run_it("core", False)
+        self.assertNotIn("swift-corelibs-foundation", md)
 
 
 class SecurityHeaders(Tmp):
@@ -574,6 +579,11 @@ class ApplyDiff(Tmp):
         self.assertEqual(rc, 1)
         self.assertIn("does not match", err)
         self.assertEqual(read(self.path("d/x.h")), "a\nb\nz\nq\nd\ne\nf\n")
+
+    def test_the_patch_of_data_CF_applies_to_headers_that_it_changes(self):
+        files = re.findall(r"^\+\+\+ b/(\S+)", read(os.path.join(DATA, "CF", "additions.patch")), re.M)
+        self.assertEqual(files, sorted(files))
+        self.assertGreaterEqual(len(files), 7)
 
 
 class DataFileReaders(Tmp):

@@ -29,6 +29,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `os/signpost.h`, `os/activity.h`, `os/trace.h` | Swift 5.2.5, Security, xnu; some own values ([details](#ossignposth-osactivityh-ostraceh)) |
 | `xpc/xpc.h` and its symbols | Apple's XPC documentation, WebKit `XPCSPI.h` ([details](#xpcxpch-and-its-symbols)) |
 | `CoreFoundation.modulemap`, `CFCompat.h.in` | swift-corelibs-foundation, AvailabilityVersions, Clang's documentation ([details](#corefoundationmodulemap-cfcompathin)) |
+| Newer `CoreFoundation` declarations | swift-corelibs-foundation, Apple's documentation for the names and releases ([details](#newer-corefoundation-declarations)) |
 | `SDKSettings.json`, `SDKSettings.plist` | The keys that Clang and OSXCross read ([details](#sdksettingsjson-sdksettingsplist)) |
 | `SystemVersion.plist`, the releases | AppleDB for the build number of each release ([details](#systemversionplist-the-releases)) |
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
@@ -407,6 +408,45 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   - `CF_AVAILABLE` and the like through `__OSX_AVAILABLE_STARTING`: `Availability.h` of AvailabilityVersions.
 - `module.modulemap`: own text (0BSD), a framework module as Clang's documentation of modules describes it  
   ("Module Map Language").
+
+---
+
+### Newer CoreFoundation declarations
+
+**Files:** `data/CF/`, `helpers/apply_diff.py`, `data/licenses/swift-corelibs-foundation-LICENSE.txt`, `lib/frameworks.sh`
+
+- The base is CF-1153.18 (apple-oss-distributions/CF, `data/manifests/`), which has none of the APIs that came after 2018.
+- The declarations: github.com/swiftlang/swift-corelibs-foundation, tag swift-6.4.3-RELEASE (8ddfb630bbb5),  
+  `Sources/CoreFoundation/include` (Apache 2.0 with Runtime Library Exception). Each file that has such text  
+  carries a `Modified by osxcross-open-sdk` line that names the source.
+  - `data/CF/CFNotificationCenter.h` and `data/CF/CFAttributedString.h`: the headers of that project, with the  
+    includes written as in a framework (`<CoreFoundation/...>`); `CFNotificationCenterGetDistributedCenter` is  
+    declared for `TARGET_OS_OSX` only (the project's `TARGET_OS_OSX || TARGET_OS_WIN32` is for its Windows port).  
+    `CoreFoundation.h` includes both.
+  - `data/CF/additions.patch` (a unified diff of the CF-1153.18 headers, applied by `helpers/apply_diff.py`):  
+    in `CFBase.h` the version numbers of 10.10 and 10.11, in `CFBundle.h` `CFBundleIsExecutableLoadable`,  
+    `CFBundleIsExecutableLoadableForURL`, `CFBundleIsArchitectureLoadable` and `kCFBundleExecutableArchitectureARM64`,  
+    in `CFDateFormatter.h` `CFISO8601DateFormatOptions` and `CFDateFormatterCreateISO8601Formatter`, in `CFError.h`  
+    `kCFErrorLocalizedFailureKey`, in `CFNumberFormatter.h` the four styles of 10.11, in `CFURL.h` the resource keys  
+    of 10.11 to 11.3 and two bookmark options, in `CFUserNotification.h` the two keys that CF-1153.18 declares only  
+    for iOS.
+- What was taken over: a declaration of the project's header that Apple's documentation lists for macOS  
+  (the page of each name is in the documentation's JSON; the page names the module "Core Foundation" and macOS).  
+  The release in each `API_AVAILABLE(macos(...))` is the `introducedAt` of that page (the project writes  
+  `10.16` for `11.0`). Nothing else of the project's headers: the enumerations of types, nullability and other  
+  annotations, and everything that the documentation does not list (`CFDateComponents`, `CFDateInterval`,  
+  `CFRunArray`, `CFLogUtilities.h`, `kCFLocaleTemperatureUnitKey`, the private headers, `CFStream.h`'s SOCKS names).
+- Left out as written for the Swift runtime or other systems: `Boolean` as `bool`, `kCFNotFound` as a `static const`  
+  (CF-1153.18 and Apple's have an enumerator), `TARGET_OS_WASI`, `TARGET_OS_BSD`, `TARGET_OS_WIN32`,  
+  `DEPLOYMENT_RUNTIME_SWIFT`, `CF_SWIFT_*`, `_CF*` functions of `ForSwiftFoundationOnly.h`, `CF_PRIVATE`.
+- Values: every enumerator and constant that both CF-1153.18 and the project's headers have is the same  
+  (compared with Clang's AST of both header sets: no difference). The documentation's pages give names, kinds and  
+  releases but no values, so the values of the added enumerators have the project as their only source;  
+  one of them can be checked in open code: `kCFBundleExecutableArchitectureARM64` is `CPU_TYPE_ARM64`  
+  (xnu `osfmk/mach/machine.h`).
+- The symbols of `CoreFoundation.tbd` come from the headers, so the added declarations are exported  
+  (the newest of them is from 11.3, so every full SDK has them all).
+- `CoreFoundation.tbd`'s `current-version` stays 1153.18 (the version of the source of the library, not of the headers).
 
 ---
 

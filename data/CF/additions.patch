@@ -1,0 +1,292 @@
+--- a/CFBase.h
++++ b/CFBase.h
+@@ -356,6 +356,19 @@
+ #define kCFCoreFoundationVersionNumber10_9      855.11
+ #define kCFCoreFoundationVersionNumber10_9_1    855.11
+ #define kCFCoreFoundationVersionNumber10_9_2    855.14
++#define kCFCoreFoundationVersionNumber10_10     1151.16
++#define kCFCoreFoundationVersionNumber10_10_1   1151.16
++#define kCFCoreFoundationVersionNumber10_10_2   1152
++#define kCFCoreFoundationVersionNumber10_10_3   1153.18
++#define kCFCoreFoundationVersionNumber10_10_4   1153.18
++#define kCFCoreFoundationVersionNumber10_10_5   1153.18
++#define kCFCoreFoundationVersionNumber10_10_Max 1199
++#define kCFCoreFoundationVersionNumber10_11     1253
++#define kCFCoreFoundationVersionNumber10_11_1   1255.1
++#define kCFCoreFoundationVersionNumber10_11_2   1256.14
++#define kCFCoreFoundationVersionNumber10_11_3   1256.14
++#define kCFCoreFoundationVersionNumber10_11_4   1258.1
++#define kCFCoreFoundationVersionNumber10_11_Max 1299
+ #endif
+ 
+ #if TARGET_OS_IPHONE
+--- a/CFBundle.h
++++ b/CFBundle.h
+@@ -34,6 +34,7 @@
+ #include <CoreFoundation/CFError.h>
+ #include <CoreFoundation/CFString.h>
+ #include <CoreFoundation/CFURL.h>
++#include <mach/machine.h>
+ 
+ CF_IMPLICIT_BRIDGING_ENABLED
+ CF_EXTERN_C_BEGIN
+@@ -266,7 +267,8 @@
+     kCFBundleExecutableArchitectureI386     = 0x00000007,
+     kCFBundleExecutableArchitecturePPC      = 0x00000012,
+     kCFBundleExecutableArchitectureX86_64   = 0x01000007,
+-    kCFBundleExecutableArchitecturePPC64    = 0x01000012
++    kCFBundleExecutableArchitecturePPC64    = 0x01000012,
++    kCFBundleExecutableArchitectureARM64 API_AVAILABLE(macos(11.0)) = 0x0100000c
+ } CF_ENUM_AVAILABLE(10_5, 2_0);
+ 
+ CF_EXPORT
+@@ -322,6 +324,15 @@
+     /* app to ship versions of the tool for each platform as it does for the */
+     /* main app executable. */
+ 
++CF_EXPORT
++Boolean CFBundleIsExecutableLoadable(CFBundleRef bundle) API_AVAILABLE(macos(11.0));
++
++CF_EXPORT
++Boolean CFBundleIsExecutableLoadableForURL(CFURLRef url) API_AVAILABLE(macos(11.0));
++
++CF_EXPORT
++Boolean CFBundleIsArchitectureLoadable(cpu_type_t arch) API_AVAILABLE(macos(11.0));
++
+ /* ==================== Getting a bundle's plugIn ==================== */
+ 
+ CF_EXPORT
+--- a/CFDateFormatter.h
++++ b/CFDateFormatter.h
+@@ -66,6 +66,41 @@
+ // should not rely on styles and localization, but set the format string and
+ // use nothing but numbers.
+ 
++typedef CF_OPTIONS(CFOptionFlags, CFISO8601DateFormatOptions) {
++    /* The format for year is inferred based on whether or not the week of year option is specified.
++     - if week of year is present, "YYYY" is used to display week dates.
++     - if week of year is not present, "yyyy" is used by default.
++     */
++    kCFISO8601DateFormatWithYear API_AVAILABLE(macos(10.12)) = (1UL << 0),
++    kCFISO8601DateFormatWithMonth API_AVAILABLE(macos(10.12)) = (1UL << 1),
++
++    kCFISO8601DateFormatWithWeekOfYear API_AVAILABLE(macos(10.12)) = (1UL << 2),  // This includes the "W" prefix (e.g. "W49")
++
++    /* The format for day is inferred based on provided options.
++     - if month is not present, day of year ("DDD") is used.
++     - if month is present, day of month ("dd") is used.
++     - if either weekOfMonth or weekOfYear is present, local day of week ("ee") is used.
++     */
++    kCFISO8601DateFormatWithDay API_AVAILABLE(macos(10.12)) = (1UL << 4),
++
++    kCFISO8601DateFormatWithTime API_AVAILABLE(macos(10.12)) = (1UL << 5),  // This uses the format "HHmmss"
++    kCFISO8601DateFormatWithTimeZone API_AVAILABLE(macos(10.12)) = (1UL << 6),
++
++    kCFISO8601DateFormatWithSpaceBetweenDateAndTime API_AVAILABLE(macos(10.12)) = (1UL << 7),  // Use space instead of "T"
++    kCFISO8601DateFormatWithDashSeparatorInDate API_AVAILABLE(macos(10.12)) = (1UL << 8),  // Add separator for date ("-")
++    kCFISO8601DateFormatWithColonSeparatorInTime API_AVAILABLE(macos(10.12)) = (1UL << 9),  // Add separator for time (":")
++    kCFISO8601DateFormatWithColonSeparatorInTimeZone API_AVAILABLE(macos(10.12)) = (1UL << 10),  // Add ":" separator in timezone (eg. +08:00)
++    kCFISO8601DateFormatWithFractionalSeconds API_AVAILABLE(macos(10.13)) = (1UL << 11),  // Add 3 significant digits of fractional seconds (".SSS")
++
++    kCFISO8601DateFormatWithFullDate API_AVAILABLE(macos(10.12)) = kCFISO8601DateFormatWithYear | kCFISO8601DateFormatWithMonth | kCFISO8601DateFormatWithDay | kCFISO8601DateFormatWithDashSeparatorInDate,
++    kCFISO8601DateFormatWithFullTime API_AVAILABLE(macos(10.12)) = kCFISO8601DateFormatWithTime | kCFISO8601DateFormatWithColonSeparatorInTime | kCFISO8601DateFormatWithTimeZone | kCFISO8601DateFormatWithColonSeparatorInTimeZone,
++
++    kCFISO8601DateFormatWithInternetDateTime API_AVAILABLE(macos(10.12)) = kCFISO8601DateFormatWithFullDate | kCFISO8601DateFormatWithFullTime,  // RFC3339
++};
++
++CF_EXPORT
++CFDateFormatterRef CFDateFormatterCreateISO8601Formatter(CFAllocatorRef allocator, CFISO8601DateFormatOptions formatOptions) API_AVAILABLE(macos(10.12));
++
+ CF_EXPORT
+ CFDateFormatterRef CFDateFormatterCreate(CFAllocatorRef allocator, CFLocaleRef locale, CFDateFormatterStyle dateStyle, CFDateFormatterStyle timeStyle);
+ 	// Returns a CFDateFormatter, localized to the given locale, which
+--- a/CFError.h
++++ b/CFError.h
+@@ -81,6 +81,7 @@
+ 
+ // Keys in userInfo for localizable, end-user presentable error messages. At minimum provide one of first two; ideally provide all three.
+ CF_EXPORT const CFStringRef kCFErrorLocalizedDescriptionKey         CF_AVAILABLE(10_5, 2_0);   // Key to identify the end user-presentable description in userInfo.
++CF_EXPORT const CFStringRef kCFErrorLocalizedFailureKey             API_AVAILABLE(macos(10.13)); // Key to identify the end user-presentable failing operation ("what failed") description in userInfo.  Should be one or more complete sentence(s), for instance 'The file "To Do List" couldn't be saved.'
+ CF_EXPORT const CFStringRef kCFErrorLocalizedFailureReasonKey       CF_AVAILABLE(10_5, 2_0);   // Key to identify the end user-presentable failure reason in userInfo.
+ CF_EXPORT const CFStringRef kCFErrorLocalizedRecoverySuggestionKey  CF_AVAILABLE(10_5, 2_0);   // Key to identify the end user-presentable recovery suggestion in userInfo.
+ 
+--- a/CFNumberFormatter.h
++++ b/CFNumberFormatter.h
+@@ -48,7 +48,11 @@
+ 	kCFNumberFormatterCurrencyStyle = 2,
+ 	kCFNumberFormatterPercentStyle = 3,
+ 	kCFNumberFormatterScientificStyle = 4,
+-	kCFNumberFormatterSpellOutStyle = 5
++	kCFNumberFormatterSpellOutStyle = 5,
++	kCFNumberFormatterOrdinalStyle API_AVAILABLE(macos(10.11)) = 6,
++	kCFNumberFormatterCurrencyISOCodeStyle API_AVAILABLE(macos(10.11)) = 8,
++	kCFNumberFormatterCurrencyPluralStyle API_AVAILABLE(macos(10.11)) = 9,
++	kCFNumberFormatterCurrencyAccountingStyle API_AVAILABLE(macos(10.11)) = 10,
+ };
+ 
+ 
+--- a/CFURL.h
++++ b/CFURL.h
+@@ -716,6 +716,14 @@
+     /* True for packaged directories (Read-only 10_6 and 10_7, read-write 10_8, value type CFBoolean). Note: You can only set or clear this property on directories; if you try to set this property on non-directory objects, the property is ignored. If the directory is a package for some other reason (extension type, etc), setting this property to false will have no effect. */
+ 
+ CF_EXPORT
++const CFStringRef kCFURLIsApplicationKey API_AVAILABLE(macos(10.11));
++    /* True if resource is an application (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLApplicationIsScriptableKey API_AVAILABLE(macos(10.11));
++    /* True if the resource is scriptable. Only applies to applications. (Read-only, value type CFBoolean) */
++
++CF_EXPORT
+ const CFStringRef kCFURLIsSystemImmutableKey CF_AVAILABLE(10_6, 4_0);
+     /* True for system-immutable resources (Read-write, value type CFBoolean) */
+ 
+@@ -748,6 +756,26 @@
+     /* The time the resource's attributes were last modified (Read-write, value type CFDate) */
+ 
+ CF_EXPORT
++const CFStringRef kCFURLFileContentIdentifierKey API_AVAILABLE(macos(11.0));
++    /* A 64-bit value assigned by APFS that identifies a file's content data stream. Only cloned files and their originals can have the same identifier. (CFNumber) */
++
++CF_EXPORT
++const CFStringRef kCFURLMayShareFileContentKey API_AVAILABLE(macos(11.0));
++    /* True for cloned files and their originals that may share all, some, or no data blocks. (CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLMayHaveExtendedAttributesKey API_AVAILABLE(macos(11.0));
++    /* True if the file has extended attributes. False guarantees there are none. (CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLIsPurgeableKey API_AVAILABLE(macos(11.0));
++    /* True if the file can be deleted by the file system when asked to free space. (CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLIsSparseKey API_AVAILABLE(macos(11.0));
++    /* True if the file has sparse regions. (CFBoolean) */
++
++CF_EXPORT
+ const CFStringRef kCFURLLinkCountKey CF_AVAILABLE(10_6, 4_0);
+     /* Number of hard links to the resource (Read-only, value type CFNumber) */
+ 
+@@ -828,6 +856,10 @@
+     /* the URL's path as a file system path (Read-only, value type CFString) */
+ 
+ CF_EXPORT
++const CFStringRef kCFURLCanonicalPathKey API_AVAILABLE(macos(10.12));
++    /* the URL's path as a canonical absolute file system path (Read-only, value type CFString) */
++
++CF_EXPORT
+ const CFStringRef kCFURLIsMountTriggerKey CF_AVAILABLE(10_7, 4_0);
+     /* true if this URL is a file system trigger directory. Traversing or opening a file system trigger will cause an attempt to mount a file system on the trigger directory. (Read-only, value type CFBoolean) */
+ 
+@@ -909,6 +941,20 @@
+     /* Total free space in bytes (Read-only, value type CFNumber) */
+ 
+ CF_EXPORT
++const CFStringRef kCFURLVolumeAvailableCapacityForImportantUsageKey API_AVAILABLE(macos(10.13));
++    /* Total available capacity in bytes for "Important" resources, including space expected to be cleared by purging non-essential and cached resources. "Important" means something that the user or application clearly expects to be present on the local system, but is ultimately replaceable. This would include items that the user has explicitly requested via the UI, and resources that an application requires in order to provide functionality.
++ 
++     Examples: A video that the user has explicitly requested to watch but has not yet finished watching or an audio file that the user has requested to download.
++ 
++     This value should not be used in determining if there is room for an irreplaceable resource. In the case of irreplaceable resources, always attempt to save the resource regardless of available capacity and handle failure as gracefully as possible. (Read-only, value type CFNumber) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeAvailableCapacityForOpportunisticUsageKey API_AVAILABLE(macos(10.13));
++    /* Total available capacity in bytes for "Opportunistic" resources, including space expected to be cleared by purging non-essential and cached resources. "Opportunistic" means something that the user is likely to want but does not expect to be present on the local system, but is ultimately non-essential and replaceable. This would include items that will be created or downloaded without an explicit request from the user on the current device.
++ 
++     Examples: A background download of a newly available episode of a TV series that a user has been recently watching, a piece of content explicitly requested on another device, or a new document saved to a network server by the current user from another device. (Read-only, value type CFNumber) */
++
++CF_EXPORT
+ const CFStringRef kCFURLVolumeResourceCountKey CF_AVAILABLE(10_6, 4_0);
+     /* Total number of resources on the volume (Read-only, value type CFNumber) */
+ 
+@@ -1020,6 +1066,42 @@
+ const CFStringRef kCFURLVolumeLocalizedNameKey CF_AVAILABLE(10_7, 5_0);
+     /* The user-presentable name of the volume (Read-only, value type CFString) */
+ 
++CF_EXPORT
++const CFStringRef kCFURLVolumeIsEncryptedKey API_AVAILABLE(macos(10.12));
++    /* true if the volume is encrypted. (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeIsRootFileSystemKey API_AVAILABLE(macos(10.12));
++    /* true if the volume is the root filesystem. (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeSupportsCompressionKey API_AVAILABLE(macos(10.12));
++    /* true if the volume supports transparent decompression of compressed files using decmpfs. (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeSupportsFileCloningKey API_AVAILABLE(macos(10.12));
++    /* true if the volume supports clonefile(2) (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeSupportsSwapRenamingKey API_AVAILABLE(macos(10.12));
++    /* true if the volume supports renamex_np(2)'s RENAME_SWAP option (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeSupportsExclusiveRenamingKey API_AVAILABLE(macos(10.12));
++    /* true if the volume supports renamex_np(2)'s RENAME_EXCL option (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeSupportsImmutableFilesKey API_AVAILABLE(macos(10.13));
++    /* true if the volume supports making files immutable with the kCFURLIsUserImmutableKey or kCFURLIsSystemImmutableKey properties (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeSupportsAccessPermissionsKey API_AVAILABLE(macos(10.13));
++    /* true if the volume supports setting POSIX access permissions with the kCFURLFileSecurityKey property (Read-only, value type CFBoolean) */
++
++CF_EXPORT
++const CFStringRef kCFURLVolumeSupportsFileProtectionKey API_AVAILABLE(macos(11.0));
++    /* true if the volume supports data protection for files (see kCFURLFileProtectionKey). (Read-only, value type CFBoolean) */
++
+ /* UbiquitousItem Properties */
+ 
+ CF_EXPORT
+@@ -1066,6 +1148,10 @@
+ const CFStringRef kCFURLUbiquitousItemUploadingErrorKey CF_AVAILABLE(10_9, 7_0);
+     /* returns the error when uploading the item to iCloud failed. See the NSUbiquitousFile section in FoundationErrors.h. (Read-only, value type CFError) */
+ 
++CF_EXPORT
++const CFStringRef kCFURLUbiquitousItemIsExcludedFromSyncKey API_AVAILABLE(macos(11.3));
++    /* the item is excluded from sync, which means it is locally on disk but won't be available on the server. An excluded item is no longer ubiquitous. */
++
+ /* The values returned for kCFURLUbiquitousItemDownloadingStatusKey
+  */
+ CF_EXPORT
+@@ -1086,6 +1172,7 @@
+     kCFURLBookmarkCreationSuitableForBookmarkFile = ( 1UL << 10 ), // include the properties required by CFURLWriteBookmarkDataToFile() in the bookmark data created
+     kCFURLBookmarkCreationWithSecurityScope CF_ENUM_AVAILABLE(10_7, NA) = ( 1UL << 11 ), // Mac OS X 10.7.3 and later, include information in the bookmark data which allows the same sandboxed process to access the resource after being relaunched
+     kCFURLBookmarkCreationSecurityScopeAllowOnlyReadAccess CF_ENUM_AVAILABLE(10_7, NA) = ( 1UL << 12 ), // Mac OS X 10.7.3 and later, if used with kCFURLBookmarkCreationWithSecurityScope, at resolution time only read access to the resource will be granted
++    kCFURLBookmarkCreationWithoutImplicitSecurityScope API_AVAILABLE(macos(10.7)) = ( 1UL << 29 ), // Disable automatic embedding of an implicit security scope. The resolving process will not be able gain access to the resource by security scope, either implicitly or explicitly, through the returned URL. Not applicable to security-scoped bookmarks.
+     
+     // deprecated
+     kCFURLBookmarkCreationPreferFileIDResolutionMask CF_ENUM_DEPRECATED(10_6, 10_9, 4_0, 7_0, "kCFURLBookmarkCreationPreferFileIDResolutionMask does nothing and has no effect on bookmark resolution" ) = ( 1UL << 8 ),
+@@ -1095,6 +1182,7 @@
+     kCFURLBookmarkResolutionWithoutUIMask = ( 1UL << 8 ), // don't perform any user interaction during bookmark resolution
+     kCFURLBookmarkResolutionWithoutMountingMask = ( 1UL << 9 ), // don't mount a volume during bookmark resolution
+     kCFURLBookmarkResolutionWithSecurityScope CF_ENUM_AVAILABLE(10_7, NA) = ( 1UL << 10 ), // Mac OS X 10.7.3 and later, use the secure information included at creation time to provide the ability to access the resource in a sandboxed process.
++    kCFURLBookmarkResolutionWithoutImplicitStartAccessing API_AVAILABLE(macos(11.2)) = ( 1 << 15 ), // Disable implicitly starting access of the ephemeral security-scoped resource during resolution. Instead, call `CFURLStartAccessingSecurityScopedResource` on the returned URL when ready to use the resource. Not applicable to security-scoped bookmarks.
+     
+     kCFBookmarkResolutionWithoutUIMask = kCFURLBookmarkResolutionWithoutUIMask,
+     kCFBookmarkResolutionWithoutMountingMask = kCFURLBookmarkResolutionWithoutMountingMask,
+--- a/CFUserNotification.h
++++ b/CFUserNotification.h
+@@ -190,13 +190,11 @@
+ CF_EXPORT
+ const CFStringRef kCFUserNotificationPopUpSelectionKey	CF_AVAILABLE(10_3, NA);
+ 
+-#if (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
+ CF_EXPORT
+-const CFStringRef kCFUserNotificationAlertTopMostKey;
+-        
++const CFStringRef kCFUserNotificationAlertTopMostKey API_AVAILABLE(macos(10.0));
++
+ CF_EXPORT
+-const CFStringRef kCFUserNotificationKeyboardTypesKey;
+-#endif
++const CFStringRef kCFUserNotificationKeyboardTypesKey API_AVAILABLE(macos(10.0));
+ 
+ CF_EXTERN_C_END
+ CF_IMPLICIT_BRIDGING_DISABLED
