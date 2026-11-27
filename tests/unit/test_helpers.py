@@ -560,6 +560,22 @@ class DocSymbols(Tmp):
                                           ["_NSLangAttribute", "data", "10.13", "appkit/nslangattribute"]])
 
 
+class ApplyDiff(Tmp):
+    PATCH = "--- a/x.h\n+++ b/x.h\n@@ -3,3 +3,4 @@\n c\n d\n+new\n e\n"
+
+    def test_applies_at_another_line_and_refuses_a_mismatch(self):
+        p = self.write("p.diff", self.PATCH)
+        self.write("d/x.h", "a\nb\nz\nc\nd\ne\nf\n")   # the context is two lines further down
+        rc, out, err = run("apply_diff.py", self.path("d"), p)
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(read(self.path("d/x.h")), "a\nb\nz\nc\nd\nnew\ne\nf\n")
+        self.write("d/x.h", "a\nb\nz\nq\nd\ne\nf\n")
+        rc, out, err = run("apply_diff.py", self.path("d"), p)
+        self.assertEqual(rc, 1)
+        self.assertIn("does not match", err)
+        self.assertEqual(read(self.path("d/x.h")), "a\nb\nz\nq\nd\ne\nf\n")
+
+
 class DataFileReaders(Tmp):
     def test_readers(self):
         p = self.write("s.txt", "# head\n_a   # source\n\n  _b\n# _c\n")
