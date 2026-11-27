@@ -45,8 +45,8 @@
 #                        CoreFoundation, DiskArbitration, SystemConfiguration,
 #                        Security and IOKit, and link stubs without headers
 #                        of Foundation, CoreGraphics, AppKit, CoreText,
-#                        CoreVideo, QuartzCore, Metal, CoreAudio and
-#                        AudioToolbox
+#                        CoreVideo, QuartzCore, Metal, CoreAudio,
+#                        AudioToolbox and ApplicationServices
 #   -w, --work-dir DIR   sources and build files (default: build/ of this
 #                        repository); relative paths are taken from the
 #                        current directory
@@ -94,8 +94,8 @@
 #             (not with --core)
 #   frameworks  CoreFoundation, DiskArbitration, SystemConfiguration, IOKit,
 #             Security, CoreServices; link stubs of Foundation, CoreGraphics,
-#             AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio and
-#             AudioToolbox (not with --core)
+#             AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio,
+#             AudioToolbox and ApplicationServices (not with --core)
 #   meta      SDKSettings.plist/.json, SystemVersion.plist, license files
 #   tarball   the tarball
 #   swift     (not a default step) stubs for the Swift runtime, needs

@@ -34,7 +34,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
+| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
@@ -536,6 +536,13 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   Its symbols are those of the documentation modules "Core Audio" and "Core Audio Types".
 - AudioToolbox's install name (`Versions/A`) has one source: the list of michidk/maiko f984528, `crates/patcher/src/macos.rs` (MIT).  
   Its symbols are those of the documentation module "Audio Toolbox".
+- ApplicationServices' install name (`Versions/A`): the same two lists (python-build-standalone 139273f, `src/validation.rs`;  
+  maiko f984528, `crates/patcher/src/macos.rs`).  
+  Its symbols are those of the documentation modules "Application Services" and "ColorSync", in one list:  
+  ColorSync is a framework inside ApplicationServices, and the crates link its functions through ApplicationServices  
+  (winit b1a0534, `winit-appkit/src/ffi.rs`: `CGDisplayCreateUUIDFromDisplayID`, `CGDisplayGetDisplayIDFromUUID`,  
+  with a comment that ColorSync is part of ApplicationServices).  
+  There is no ColorSync stub and no re-export: no open source names the re-exports of ApplicationServices.
 - Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
 
 ---
