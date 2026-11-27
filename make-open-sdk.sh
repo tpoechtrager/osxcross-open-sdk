@@ -44,7 +44,7 @@
 #                        libraries of /usr/lib and the frameworks
 #                        CoreFoundation, DiskArbitration, SystemConfiguration,
 #                        Security and IOKit, and link stubs without headers
-#                        of Foundation and CoreGraphics
+#                        of Foundation, CoreGraphics and AppKit
 #   -w, --work-dir DIR   sources and build files (default: build/ of this
 #                        repository); relative paths are taken from the
 #                        current directory
@@ -91,8 +91,8 @@
 #             liblzma
 #             (not with --core)
 #   frameworks  CoreFoundation, DiskArbitration, SystemConfiguration, IOKit,
-#             Security, CoreServices; link stubs of Foundation and
-#             CoreGraphics (not with --core)
+#             Security, CoreServices; link stubs of Foundation, CoreGraphics
+#             and AppKit (not with --core)
 #   meta      SDKSettings.plist/.json, SystemVersion.plist, license files
 #   tarball   the tarball
 #   swift     (not a default step) stubs for the Swift runtime, needs
