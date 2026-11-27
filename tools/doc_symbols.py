@@ -54,6 +54,7 @@ FRAMEWORKS = {
     "CoreText": ["Core Text"],
     "CoreVideo": ["Core Video"],
     "Foundation": ["Foundation"],
+    "Metal": ["Metal"],
     "QuartzCore": ["Core Animation"],
 }
 NS_FRAMEWORKS = ("Foundation", "AppKit")

@@ -18,7 +18,8 @@ At run time macOS loads its own libraries.
 - **`libc++.1.tbd`, `libc++abi.tbd`**: LLVM's ABI lists of the release.
 - **The other libraries and frameworks**: the declarations in their headers and the export lists  
   of their projects.
-- **`Foundation.tbd`, `CoreGraphics.tbd`, `AppKit.tbd`, `CoreText.tbd`, `CoreVideo.tbd`, `QuartzCore.tbd`** (no headers): the C functions and global data that  
+- **`Foundation.tbd`, `CoreGraphics.tbd`, `AppKit.tbd`, `CoreText.tbd`, `CoreVideo.tbd`,
+  `QuartzCore.tbd`, `Metal.tbd`** (no headers): the C functions and global data that  
   Apple's documentation lists for macOS up to the release of the SDK (`data/symbols/doc/`, made by  
   `tools/doc_symbols.py`), and two private functions that winit declares itself (`data/symbols/CoreGraphics-extra.txt`).  
   No Objective-C classes (`_OBJC_CLASS_$_...`): the crates that were tested look them up at run time.

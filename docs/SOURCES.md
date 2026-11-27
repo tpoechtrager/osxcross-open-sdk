@@ -34,7 +34,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
+| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
@@ -529,6 +529,9 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   `crates/patcher/src/macos.rs` (MIT).
 - QuartzCore's install name (`Versions/A`): the same two lists (python-build-standalone 139273f, `src/validation.rs`;  
   maiko f984528, `crates/patcher/src/macos.rs`). Its symbols are those of the documentation module "Core Animation".
+- Metal's install name (`Versions/A`) has one source: the list of michidk/maiko f984528, `crates/patcher/src/macos.rs` (MIT).  
+  The pages of four `NS...` constants (`NSProcessPerformanceProfileDefault`, `NSDeviceCertificationiPhonePerformanceGaming`, ...)  
+  name Metal as their module, so they are in the stub of Metal.
 - Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
 
 ---

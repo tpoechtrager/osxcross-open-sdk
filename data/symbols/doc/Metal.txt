@@ -1,0 +1,71 @@
+# The C functions and global data of Metal that Apple's documentation lists
+# for macOS: the symbols of Metal.tbd of the full SDK (a link stub without
+# headers; Metal has no open source release).
+# Made by tools/doc_symbols.py (do not edit) from the pages of
+# developer.apple.com/documentation, fetched 2026-11-27.
+#
+# <symbol> <kind> <macOS> <page>
+#   kind    func (a function) or data (a variable or constant)
+#   macOS   the release that brought it, as the page gives it; - if it gives none
+#   page    the page of the symbol, developer.apple.com/documentation/<page>
+# The documentation does not say which symbols exist only on one architecture:
+# every symbol is for x86_64 and arm64.
+_MTL4BufferRangeMake                                  func -     metal/mtl4bufferrangemake(_:_:)
+_MTL4CommandQueueErrorDomain                          data 26.0  metal/mtl4commandqueueerrordomain
+_MTLAttributeStrideStatic                             data 14.0  metal/mtlattributestridestatic
+_MTLBinaryArchiveDomain                               data 11.0  metal/mtlbinaryarchivedomain
+_MTLBufferLayoutStrideDynamic                         data 14.0  metal/mtlbufferlayoutstridedynamic
+_MTLCaptureErrorDomain                                data 10.15 metal/mtlcaptureerrordomain
+_MTLClearColorMake                                    func -     metal/mtlclearcolormake(_:_:_:_:)
+_MTLCommandBufferEncoderInfoErrorKey                  data 11.0  metal/mtlcommandbufferencoderinfoerrorkey
+_MTLCommandBufferErrorDomain                          data 10.11 metal/mtlcommandbuffererrordomain
+_MTLCommonCounterClipperInvocations                   data 10.15 metal/mtlcommoncounter/clipperinvocations
+_MTLCommonCounterClipperPrimitivesOut                 data 10.15 metal/mtlcommoncounter/clipperprimitivesout
+_MTLCommonCounterComputeKernelInvocations             data 10.15 metal/mtlcommoncounter/computekernelinvocations
+_MTLCommonCounterFragmentCycles                       data 10.15 metal/mtlcommoncounter/fragmentcycles
+_MTLCommonCounterFragmentInvocations                  data 10.15 metal/mtlcommoncounter/fragmentinvocations
+_MTLCommonCounterFragmentsPassed                      data 10.15 metal/mtlcommoncounter/fragmentspassed
+_MTLCommonCounterPostTessellationVertexCycles         data 10.15 metal/mtlcommoncounter/posttessellationvertexcycles
+_MTLCommonCounterPostTessellationVertexInvocations    data 10.15 metal/mtlcommoncounter/posttessellationvertexinvocations
+_MTLCommonCounterRenderTargetWriteCycles              data 10.15 metal/mtlcommoncounter/rendertargetwritecycles
+_MTLCommonCounterSetStageUtilization                  data 10.15 metal/mtlcommoncounterset/stageutilization
+_MTLCommonCounterSetStatistic                         data 10.15 metal/mtlcommoncounterset/statistic
+_MTLCommonCounterSetTimestamp                         data 10.15 metal/mtlcommoncounterset/timestamp
+_MTLCommonCounterTessellationCycles                   data 10.15 metal/mtlcommoncounter/tessellationcycles
+_MTLCommonCounterTessellationInputPatches             data 10.15 metal/mtlcommoncounter/tessellationinputpatches
+_MTLCommonCounterTimestamp                            data 10.15 metal/mtlcommoncounter/timestamp
+_MTLCommonCounterTotalCycles                          data 10.15 metal/mtlcommoncounter/totalcycles
+_MTLCommonCounterVertexCycles                         data 10.15 metal/mtlcommoncounter/vertexcycles
+_MTLCommonCounterVertexInvocations                    data 10.15 metal/mtlcommoncounter/vertexinvocations
+_MTLCoordinate2DMake                                  func -     metal/mtlcoordinate2dmake(_:_:)
+_MTLCopyAllDevices                                    func 10.11 metal/mtlcopyalldevices()
+_MTLCopyAllDevicesWithObserver                        func 10.13 metal/mtlcopyalldeviceswithobserver
+_MTLCounterErrorDomain                                data 10.15 metal/mtlcountererrordomain
+_MTLCreateSystemDefaultDevice                         func 10.11 metal/mtlcreatesystemdefaultdevice()
+_MTLDeviceErrorDomain                                 data 26.4  metal/mtldeviceerrordomain
+_MTLDeviceRemovalRequestedNotification                data 10.13 metal/mtldevicenotificationname/removalrequested
+_MTLDeviceWasAddedNotification                        data 10.13 metal/mtldevicenotificationname/wasadded
+_MTLDeviceWasRemovedNotification                      data 10.13 metal/mtldevicenotificationname/wasremoved
+_MTLDynamicLibraryDomain                              data 11.0  metal/mtldynamiclibrarydomain
+_MTLIOCompressionContextAppendData                    func 13.0  metal/mtliocompressioncontextappenddata(_:_:_:)
+_MTLIOCompressionContextDefaultChunkSize              func -     metal/mtliocompressioncontextdefaultchunksize()
+_MTLIOCreateCompressionContext                        func 13.0  metal/mtliocreatecompressioncontext
+_MTLIOErrorDomain                                     data 13.0  metal/mtlioerrordomain
+_MTLIOFlushAndDestroyCompressionContext               func 13.0  metal/mtlioflushanddestroycompressioncontext(_:)
+_MTLIndirectCommandBufferExecutionRangeMake           func 10.14 metal/mtlindirectcommandbufferexecutionrangemake(_:_:)
+_MTLLibraryErrorDomain                                data 10.11 metal/mtllibraryerrordomain
+_MTLLogStateErrorDomain                               data 15.0  metal/mtllogstateerrordomain
+_MTLOriginMake                                        func -     metal/mtloriginmake(_:_:_:)
+_MTLPackedFloat3Make                                  func -     metal/mtlpackedfloat3make(_:_:_:)
+_MTLRegionMake1D                                      func -     metal/mtlregionmake1d(_:_:)
+_MTLRegionMake2D                                      func -     metal/mtlregionmake2d(_:_:_:_:)
+_MTLRegionMake3D                                      func -     metal/mtlregionmake3d(_:_:_:_:_:_:)
+_MTLRemoveDeviceObserver                              func 10.13 metal/mtlremovedeviceobserver(_:)
+_MTLSamplePositionMake                                func 10.13 metal/mtlsamplepositionmake(_:_:)
+_MTLSizeMake                                          func -     metal/mtlsizemake(_:_:_:)
+_MTLTensorDomain                                      data 26.0  metal/mtltensordomain
+_MTLTextureSwizzleChannelsMake                        func 10.15 metal/mtltextureswizzlechannelsmake
+_NSDeviceCertificationiPhonePerformanceGaming         data 15.0  metal/nsdevicecertification/iphoneperformancegaming
+_NSProcessInfoPerformanceProfileDidChangeNotification data 15.0  metal/nsprocessinfoperformanceprofiledidchangenotification
+_NSProcessPerformanceProfileDefault                   data 15.0  metal/nsprocessperformanceprofile/default
+_NSProcessPerformanceProfileSustained                 data 15.0  metal/nsprocessperformanceprofile/sustained
