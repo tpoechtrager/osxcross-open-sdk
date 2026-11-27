@@ -43,13 +43,15 @@ install name and version. A real SDK was used only to test a result, never as a 
   `hidsystem`, `graphics`, `i2c`, `ndrvsupport` and `usb`).
 - XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - File System Events (`<CoreServices/CoreServices.h>`, only this part of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
+- A link stub without headers of `Foundation`: the C functions and constants  
+  of Apple's documentation, for languages and crates that declare what they use themselves (Rust),  
+  see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd).
 - The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `tsan`, `rtsan`, `tysan`.
 
 ### What does not work
 
-- **`Foundation`, `AppKit`** and all other frameworks: there is no public source for them.  
-  `Foundation` is an empty placeholder, so that `-framework Foundation`  
-  links; `#import <Foundation/Foundation.h>` fails.
+- **`Foundation`, `AppKit`** and all other frameworks: there is no public source for their headers;  
+  `#import <Foundation/Foundation.h>` fails. Objective-C classes are not in the stubs.
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
 - `libbsm`, the other `IOKit` device families (`storage/ata`, `network`, ...) and `CoreServices` except File System Events.
 - `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h`: no open source defines their functions  

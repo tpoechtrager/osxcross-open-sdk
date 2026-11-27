@@ -43,7 +43,8 @@
 #                        14.3 and later) the SDK also has the
 #                        libraries of /usr/lib and the frameworks
 #                        CoreFoundation, DiskArbitration, SystemConfiguration,
-#                        Security and IOKit
+#                        Security and IOKit, and a link stub without headers
+#                        of Foundation
 #   -w, --work-dir DIR   sources and build files (default: build/ of this
 #                        repository); relative paths are taken from the
 #                        current directory
@@ -90,7 +91,8 @@
 #             liblzma
 #             (not with --core)
 #   frameworks  CoreFoundation, DiskArbitration, SystemConfiguration, IOKit,
-#             Security and a placeholder for Foundation (not with --core)
+#             Security, CoreServices; a link stub of Foundation (not with
+#             --core)
 #   meta      SDKSettings.plist/.json, SystemVersion.plist, license files
 #   tarball   the tarball
 #   swift     (not a default step) stubs for the Swift runtime, needs

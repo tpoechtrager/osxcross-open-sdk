@@ -151,6 +151,19 @@ data_lines() { sed 's/#.*//' "$1" | awk 'NF'; }
 # symbol_list FILE: the symbols of a symbol list or export list, one per line
 symbol_list() { data_lines "$1" | awk '{ print $1 }'; }
 
+# doc_symbols FILE: the symbols of a list of tools/doc_symbols.py (data/symbols/doc/)
+# that came with macOS SDK_VERSION or earlier (column 3; "-": no release known, always)
+doc_symbols() {
+  data_lines "$1" | awk -v v="$SDK_VERSION" -v file="$1" '
+    function lower(a, b,   x, y, i) {
+      split(a, x, "."); split(b, y, ".")
+      for (i = 1; i <= 3; i++) if (x[i] + 0 != y[i] + 0) return x[i] + 0 < y[i] + 0
+      return 0 }
+    NF < 4 || $3 !~ /^(-|[0-9]+(\.[0-9]+)*)$/ { print "make-open-sdk.sh: " file ": bad line: " $0 > "/dev/stderr"; bad = 1; next }
+    $3 == "-" || !lower(v, $3) { print $1 }
+    END { exit bad }'
+}
+
 # data/releases.txt: release_value RELEASE COLUMN (2: the default libc++,
 # 3: the variants, 4: ProductBuildVersion); releases [VARIANT]: the releases in
 # the order of the file (only those with VARIANT); default_release: the

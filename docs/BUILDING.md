@@ -143,4 +143,6 @@ and their x86_64 programs ran on macOS 26.0.
 Then add a line to `data/releases.txt` (libc++ release, variants, `ProductBuildVersion` with its source),  
 the LLVM release to `data/libcxx-versions.txt` if it is new, and the versions of the other platforms  
 to `data/availability-extra.dsl`, build, check with `tests/sdk-check.sh` and `tests/run.sh`,  
-and update the docs.
+and update the docs.  
+The lists of `data/symbols/doc/` come from Apple's documentation: `tools/doc_symbols.py --help` says  
+how to make them again from newer pages.

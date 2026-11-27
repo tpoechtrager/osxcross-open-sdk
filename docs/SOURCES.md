@@ -34,7 +34,8 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Foundation placeholder, CoreServices | dyld, CF and Security sources ([details](#foundation-placeholder-coreservices)) |
+| Link stubs of Foundation | Apple's documentation, GNUstep ([details](#link-stubs-from-apples-documentation)) |
+| Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
 | `stdbool.h`, `stdarg.h`, `float.h` of the scans | ISO C99, Clang's predefined macros ([details](#c-headers-of-the-scans)) |
@@ -488,7 +489,38 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ---
 
-### Foundation placeholder, CoreServices
+### Link stubs from Apple's documentation
+
+**Files:** `data/symbols/doc/`, `tools/doc_symbols.py`, `lib/frameworks.sh`, `data/libraries.txt`
+
+- Full SDK only. Foundation has no open source release: the SDK has only its `.tbd`, no headers  
+  (the documentation does not give the values of macros, enumerators and the fields of structs).  
+  It is for languages and packages that declare what they use themselves (Rust crates, for example).
+- The symbols: the C functions and global variables and constants that Apple's documentation lists for macOS  
+  (developer.apple.com/documentation; the page of each symbol is in its line of `data/symbols/doc/<name>.txt`,  
+  with the release that brought it). `tools/doc_symbols.py` makes the lists from the JSON form of the pages  
+  (developer.apple.com/tutorials/data/documentation/...); each list names the days they were fetched.  
+  The full SDK of a release has the symbols of that release and earlier.  
+  Left out: names with a leading underscore, which the pages of Swift initializers give  
+  (`_CTFontCreateWithName` on the page of `CTFont.init(_:size:)`, for example).
+- The pages: the Swift pages of the framework and the pages they refer to; some symbols have only an  
+  Objective-C page (`developer.apple.com/documentation/appkit/nsbeep`, for example).
+- The framework of a symbol is the module that its page names. The Swift pages list constants that other  
+  frameworks define under Foundation (members of `NSNotification.Name`, `NSAttributedString.Key`, ...);  
+  for them the Objective-C page (`developer.apple.com/documentation/appkit/<name>`) names the framework.
+- Where there is no such page: the headers of GNUstep, which follow the split of Apple's frameworks  
+  (github.com/gnustep/libs-base, `Headers/Foundation`, and github.com/gnustep/libs-gui, `Headers/AppKit`, LGPL;  
+  names only; the commits are in the lists). A constant under Foundation that only `libs-gui` declares goes to AppKit;  
+  a member of an extension that neither declares is left out.
+- The documentation does not say which symbols exist on only one architecture, or which functions are not  
+  exported (inline): every symbol is in the stub for x86_64 and arm64. A symbol that a release of macOS does  
+  not export links, but the program stops at start with "symbol not found".
+- Install name: the one that dyld's source names (below).
+- Versions: the lowest possible ones (`1.0.0`).
+
+---
+
+### Install names of Foundation, CoreServices
 
 **Files:** `lib/frameworks.sh`, `data/libraries.txt`
 

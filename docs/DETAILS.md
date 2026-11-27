@@ -18,6 +18,10 @@ At run time macOS loads its own libraries.
 - **`libc++.1.tbd`, `libc++abi.tbd`**: LLVM's ABI lists of the release.
 - **The other libraries and frameworks**: the declarations in their headers and the export lists  
   of their projects.
+- **`Foundation.tbd`** (no headers): the C functions and global data that  
+  Apple's documentation lists for macOS up to the release of the SDK (`data/symbols/doc/`, made by  
+  `tools/doc_symbols.py`).  
+  No Objective-C classes (`_OBJC_CLASS_$_...`): the crates that were tested look them up at run time.
 - **Install names and versions** are in `data/libraries.txt`, with the project file that states each value;  
   `tools/check_libraries.py` checks them. A value without a public source is the lowest possible one.
 

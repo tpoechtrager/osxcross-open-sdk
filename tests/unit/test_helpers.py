@@ -618,6 +618,31 @@ class DataFiles(unittest.TestCase):
         self.assertTrue(names0[True] and names0[False])
         self.assertEqual([x for x in names0[True] if x in names0[False]], names0[False])
 
+    def test_doc_symbol_lists(self):
+        # data/symbols/doc/: "<symbol> <kind> <macOS> <page> [gnustep-gui]", sorted, every symbol once,
+        # every list a framework of data/libraries.txt
+        d = os.path.join(DATA, "symbols", "doc")
+        libs = set(data_files.read_libraries(os.path.join(DATA, "libraries.txt")))
+        seen = {}
+        for n in sorted(os.listdir(d)):
+            self.assertTrue(n.endswith(".txt"), n)
+            self.assertIn(n[:-4], libs)
+            names = []
+            for l in read(os.path.join(d, n)).splitlines():
+                if not l or l.startswith("#"):
+                    continue
+                f = l.split()
+                self.assertIn(len(f), (4, 5), l)
+                self.assertRegex(f[0], r"^_[A-Za-z_][A-Za-z0-9_]*$", l)
+                self.assertIn(f[1], ("func", "data"), l)
+                self.assertRegex(f[2], r"^(-|\d+(\.\d+)*)$", l)
+                if len(f) == 5:
+                    self.assertEqual(f[4], "gnustep-gui", l)
+                self.assertNotIn(f[0], seen, "%s: also in %s" % (l, seen.get(f[0])))
+                seen[f[0]] = n
+                names.append(f[0])
+            self.assertEqual(names, sorted(names), n)
+
     def test_releases_and_libcxx_versions(self):
         llvm = data_files.read_libcxx_versions(os.path.join(DATA, "libcxx-versions.txt"))
         rel = data_files.read_releases(os.path.join(DATA, "releases.txt"))
@@ -661,8 +686,9 @@ class DataFiles(unittest.TestCase):
     def test_symbol_lists_name_a_source(self):
         """Every symbol of every list of data/symbols/ has a source: the comment on its
         line or the last comment before it (a comment that continues on the next
-        lines counts as one) names a file."""
-        files = sorted(os.listdir(os.path.join(DATA, "symbols")))
+        lines counts as one) names a file.  The lists of data/symbols/doc/ name a page in a
+        column (test_doc_symbol_lists)."""
+        files = sorted(f for f in os.listdir(os.path.join(DATA, "symbols")) if f.endswith(".txt"))
         self.assertGreaterEqual(len(files), 6)
         for fn in files:
             named = cont = False

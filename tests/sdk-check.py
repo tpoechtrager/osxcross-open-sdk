@@ -189,7 +189,7 @@ def check_tbd(sdk, rep):
             lib = library_name(rel)
             if lib in table and m.group(1) != table[lib]:
                 rep.error("%s: install name %s, data/libraries.txt has %s" % (rel, m.group(1), table[lib]))
-            if not re.search(r"symbols:\s*\[", t) and "re-exports" not in t and "Foundation" not in rel:
+            if not re.search(r"symbols:\s*\[", t) and "re-exports" not in t:
                 rep.error(rel + ": no symbols")
     rep.info("tbd: %d files checked" % n)
 

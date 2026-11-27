@@ -7,8 +7,8 @@
 # Frameworks (not with --core): CoreFoundation, IOKit, DiskArbitration,
 # Security, SystemConfiguration: headers from the open source releases and a
 # <Name>.tbd in the framework directory (Name.framework/Name.tbd); CoreServices:
-# own headers (File System Events only); Foundation: only the .tbd
-# (fw_placeholder).
+# own headers (File System Events only); Foundation: only the .tbd, with the
+# symbols of Apple's documentation (fw_doc).
 # ---------------------------------------------------------------------------
 # fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/):
 # the symbols that HEADERs declare, without those of data/symbols/NAME-exclude.txt, and
@@ -30,12 +30,22 @@ fw_tbd() {
   mk_lib_tbd "$name" "$STAGE_FW/$name.framework/$name.tbd" "$STAGE_WORK/fw-$name.syms"
 }
 
-# fw_placeholder NAME: a framework without headers and symbols, only the .tbd
-# (a framework of data/libraries.txt)
-fw_placeholder() {
-  rm -rf "$STAGE_FW/$1.framework"; mkdir -p "$STAGE_FW/$1.framework"
-  : > "$STAGE_WORK/fw-$1.syms"
-  mk_lib_tbd "$1" "$STAGE_FW/$1.framework/$1.tbd" "$STAGE_WORK/fw-$1.syms"
+# fw_doc NAME [MK_TBD-OPTION...]: a framework without open source and without headers,
+# only the .tbd (a framework of data/libraries.txt), a link stub for programs that
+# declare what they use themselves: the symbols of data/symbols/doc/NAME.txt (made
+# by tools/doc_symbols.py from Apple's documentation) that came with macOS
+# SDK_VERSION or earlier, and those of data/symbols/NAME-extra.txt
+fw_doc() {
+  local name=$1; shift
+  rm -rf "$STAGE_FW/$name.framework"; mkdir -p "$STAGE_FW/$name.framework"
+  doc_symbols "$DATA/symbols/doc/$name.txt" > "$STAGE_WORK/fw-$name.list" ||
+    die "data/symbols/doc/$name.txt has bad lines"
+  if [ -f "$DATA/symbols/$name-extra.txt" ]; then
+    symbol_list "$DATA/symbols/$name-extra.txt" >> "$STAGE_WORK/fw-$name.list"
+  fi
+  require_lines "$STAGE_WORK/fw-$name.list" 1 "no symbols for $name"
+  syms_for_archs "$STAGE_WORK/fw-$name.list" > "$STAGE_WORK/fw-$name.syms"
+  mk_lib_tbd "$name" "$STAGE_FW/$name.framework/$name.tbd" "$STAGE_WORK/fw-$name.syms" ${1+"$@"}
 }
 
 # iokit_families HEADERS: the headers of the IOKit device families storage, hid,
@@ -186,13 +196,11 @@ step_frameworks() {
   # shellcheck disable=SC2046
   fw_tbd SystemConfiguration $(cd "$H" && ls *.h | tr '\n' ' ')
 
-  # A placeholder without headers and symbols: it lets `-framework Foundation`
-  # link (Clang adds it for -fobjc-arc, and build systems pass it without
-  # using Foundation).  The install name is the one that dyld's sources
-  # name; the versions are the lowest possible ones (data/libraries.txt).  The
-  # program loads the system's Foundation at run time.
+  # Foundation: a link stub without headers (fw_doc).  It also lets `-framework Foundation`
+  # link (Clang adds it for -fobjc-arc, and build systems pass it without using
+  # Foundation).  A program loads the system's Foundation at run time.
   echo "Foundation"
-  fw_placeholder Foundation
+  fw_doc Foundation
 
   # CoreServices: only File System Events, with the own headers installed
   # above (CoreServices.h includes only FSEvents.h); CoreServices has no open

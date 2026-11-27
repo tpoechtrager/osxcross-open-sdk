@@ -19,7 +19,7 @@ is() { [ "$1" = "$2" ] && echo ok || { echo "   got '$1', want '$2'" >&2; echo n
 # the variables of make-open-sdk.sh that it reads
 # shellcheck disable=SC2034  # the variables are read by the functions
 lib() (
-  SELF=$ROOT HELPERS=$ROOT/helpers DATA=$ROOT/data SDK_VERSION=26.5 STAGE=$T/stage
+  SELF=$ROOT HELPERS=$ROOT/helpers DATA=$ROOT/data SDK_VERSION=${SDK_VERSION:-26.5} STAGE=$T/stage
   PROJECTS="Libsystem Libsystem-1356.100.2.0.1 0123
 libffi libffi-40 4567"
   . "$ROOT/lib/common.sh"
@@ -50,6 +50,13 @@ for bad in '_a' '_a ppc' '_a all x'; do
   printf '%s\n' "$bad" > "$T/badarch.txt"
   check "syms_by_arch refuses the line '$bad'" "$(lib syms_by_arch "$T/badarch.txt" >/dev/null 2>&1 && echo no || echo ok)"
 done
+printf '# head\n_a func 10.0 p/a\n_b data 26.0 p/b gnustep-gui\n_c func - p/c\n_d func 14.4 p/d\n_e data 14.3.1 p/e\n' > "$T/doc.txt"
+check "doc_symbols leaves out the symbols of later releases" "$(is "$(SDK_VERSION=14.3 lib doc_symbols "$T/doc.txt" | tr '\n' ' ')" "_a _c ")"
+check "doc_symbols of 26.5" "$(is "$(lib doc_symbols "$T/doc.txt" | tr '\n' ' ')" "_a _b _c _d _e ")"
+printf '_a func\n' > "$T/baddoc.txt"
+check "doc_symbols refuses a short line" "$(lib doc_symbols "$T/baddoc.txt" >/dev/null 2>&1 && echo no || echo ok)"
+printf '_a func x.1 p/a\n' > "$T/baddoc.txt"
+check "doc_symbols refuses a bad release" "$(lib doc_symbols "$T/baddoc.txt" >/dev/null 2>&1 && echo no || echo ok)"
 crt=$(lib syms_by_arch "$ROOT/data/symbols/compiler-rt.txt")
 check "compiler-rt.txt: 132 symbols for x86_64 and 119 for arm64" "$(is "$(echo "$crt" | grep -c '^x86_64 ') $(echo "$crt" | grep -c '^arm64 ')" "132 119")"
 check "  ___udivti3 for both, the x87 and arm64-less ones only for x86_64" "$(is "$(echo "$crt" | grep -E ' (___udivti3|___divxc3|___enable_execute_stack)$' | tr '\n' ',')" "x86_64 ___divxc3,x86_64 ___enable_execute_stack,x86_64 ___udivti3,arm64 ___udivti3,")"
