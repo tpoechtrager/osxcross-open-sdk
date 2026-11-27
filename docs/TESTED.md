@@ -29,6 +29,7 @@ projects were also built with the stable flavor (cctools/ld64).
   - `enigo`, `global-hotkey` (Carbon) were built, but not tested
   - `glutin` with `glow` (a window with an OpenGL context; draws and reads a pixel back)
   - `eframe` with the glow backend (OpenGL; opens its window and draws frames)
+  - `skia-safe` with the prebuilt Skia (draws into a bitmap)
   - `wgpu` was built, but not tested
 - **Compilers and tools:**
   - `LLVM/Clang` (the compiler works on macOS)

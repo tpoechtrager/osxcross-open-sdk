@@ -162,6 +162,9 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - Two public functions that the scan of the headers does not find, in `data/symbols/libsystem-extra.txt`:
   - `fileno_unlocked` (`Libc/stdio/FreeBSD/fileno.c`; the header has only a macro)
   - `_os_nospin_lock_lock` (`libplatform/src/os/lock.c`; `libkern/OSSpinLockDeprecated.h` declares it only with `OSSPINLOCK_USE_INLINED=1`)
+- `____chkstk_darwin` (four underscores), the stack probe of Darwin that Clang calls (llvm review D40856)
+  (a prebuilt Skia object references it): `libpthread/src/pthread_asm.s` defines it with `.globl` for x86_64, i386 and arm64,
+  and `src/exports_internal.h` declares the C function `___chkstk_darwin`, whose Mach-O name has the fourth underscore.
 
 ---
 

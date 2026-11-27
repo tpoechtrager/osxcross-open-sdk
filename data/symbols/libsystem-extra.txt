@@ -8,6 +8,8 @@ __tlv_bootstrap                 # dyld/libdyld/threadLocalHelpers.s
 ___stack_chk_fail               # Libc/sys/OpenBSD/stack_protector.c, dyld/dyld/glue.c
 ___stack_chk_guard              # Libc/sys/OpenBSD/stack_protector.c, dyld/dyld/glue.c
 ___chkstk_darwin                # libpthread/src/exports_internal.h, libpthread/src/pthread_asm.s (_thread_chkstk_darwin)
+____chkstk_darwin               # libpthread/src/pthread_asm.s (.globl ____chkstk_darwin for x86_64, i386 and arm64), exports_internal.h (the C name ___chkstk_darwin);
+                                # Clang's Darwin stack probing calls it (llvm review D40856)
 __availability_version_check    # called by compiler-rt (llvm-project: compiler-rt/lib/builtins/os_version_check.c, behind __builtin_available);
                                 # dyld/libdyld defines it, the published sources of dyld do not mention it
 ___cxa_atexit                   # Libc/stdlib/FreeBSD/atexit.c
