@@ -497,6 +497,69 @@ class CheckLibraries(Tmp):
         self.assertTrue(set(m.CHECKS) <= names)
 
 
+class DocSymbols(Tmp):
+    def page(self, path, eid, mods, mac="10.0", kind="func", ext=None, objc=False):
+        m = {"externalID": eid, "modules": [{"name": x} for x in mods], "symbolKind": kind,
+             "platforms": [{"name": "iOS", "introducedAt": "2.0"}] + ([{"name": "macOS", "introducedAt": mac}] if mac else [])}
+        if ext:
+            m["extendedModule"] = ext
+        page = {"metadata": m, "abstract": [{"text": "not copied"}],
+                "identifier": {"interfaceLanguage": "occ" if objc else "swift"}}
+        self.write("docs/data/" + path + ".json", json.dumps(page))
+        with open(self.path("docs/index.tsv"), "a") as f:
+            f.write("https://developer.apple.com/tutorials/data/documentation/%s.json\t200\t2026-11-2%dT01:00:00Z\n"
+                    % (path, len(path) % 2 + 6))
+
+    def test_lists(self):
+        self.page("coregraphics/cgfoo(_:)", "c:@F@CGFoo", ["Core Graphics"])
+        self.page("coregraphics/kcgbar", "c:@kCGBar", ["Core Graphics"], "26.0", "var")
+        self.page("coregraphics/cgonlyios", "c:@F@CGOnlyIOS", ["Core Graphics"], None)
+        self.page("coregraphics/cgcontext/init(data:)", "c:@F@_CGInit", ["Core Graphics"])
+        self.page("coregraphics/cgmacro", "c:@macro@CG_MACRO", ["Core Graphics"])
+        self.page("coregraphics/cgenum", "c:@E@CGE@kCGE1", ["Core Graphics"], kind="case")
+        self.page("coregraphics/cgalias", "c:@CGAlias", ["Core Graphics"], kind="typealias")
+        self.page("foundation/nskey/new", "c:@NSKeyNew", ["Foundation"], kind="property", ext="Foundation")
+        self.page("foundation/nskey/font", "c:@NSFontName", ["Foundation"], kind="property", ext="Foundation")
+        self.page("foundation/nsnotification/name/pdfx", "c:@PDFXNotification", ["Foundation"], kind="property",
+                  ext="Foundation")
+        self.page("foundation/nslog", "c:@F@NSLog", ["Foundation"])
+        self.page("appkit/nsappkitversionnumber", "c:@NSAppKitVersionNumber", ["AppKit"], kind="var")
+        self.page("appkit/nsbase", "c:@NSBaseKey", ["AppKit"], kind="var")
+        # under Foundation in Swift, the Objective-C pages name the frameworks
+        self.page("foundation/nskey/lang", "c:@NSLangAttribute", ["Foundation"], kind="property", ext="Foundation")
+        self.page("appkit/nslangattribute", "c:@NSLangAttribute", ["AppKit"], "10.13", "var", objc=True)
+        self.page("foundation/nsnotification/name/pdfy", "c:@PDFYNotification", ["Foundation"], kind="property",
+                  ext="Foundation")
+        self.page("pdfkit/pdfynotification", "c:@PDFYNotification", ["PDFKit"], kind="var", objc=True)
+        self.write("base/Headers/Foundation/NSKey.h", "GS_EXPORT NSString *const NSKeyNew;\n"
+                   "GS_EXPORT NSString *const PDFYNotification;\n"
+                   "GS_EXPORT NSString *const NSBaseKey;\nGS_EXPORT_CLASS @interface X\n")
+        self.write("gui/Headers/AppKit/NSAttr.h", "/* APPKIT_EXPORT int NSNot; */\nAPPKIT_EXPORT NSString *NSFontName;\n"
+                   "APPKIT_EXPORT void NSBeep(void);\n")
+        rc, out, err = run("tools/doc_symbols.py", "--docs", self.path("docs/data"), "--out", self.path("out"),
+                           "CoreGraphics", "Foundation", "AppKit")
+        self.assertEqual(rc, 2, out + err)  # Foundation and AppKit need GNUstep
+        rc, out, err = run("tools/doc_symbols.py", "--docs", self.path("docs/data"), "--out", self.path("out"),
+                           "--gnustep-base", self.path("base"), "--gnustep-gui", self.path("gui"),
+                           "CoreGraphics", "Foundation", "AppKit")
+        self.assertEqual(rc, 0, out + err)
+        rows = {}
+        for fw in ("CoreGraphics", "Foundation", "AppKit"):
+            t = read(self.path("out/%s.txt" % fw))
+            self.assertNotIn("not copied", t)
+            rows[fw] = [l.split() for l in t.splitlines() if l and not l.startswith("#")]
+        self.assertEqual(rows["CoreGraphics"], [["_CGFoo", "func", "10.0", "coregraphics/cgfoo(_:)"],
+                                                ["_kCGBar", "data", "26.0", "coregraphics/kcgbar"]])
+        self.assertIn("fetched 2026-11-26 to 2026-11-27", read(self.path("out/CoreGraphics.txt")))
+        # NSFontName: under Foundation, but gnustep-gui declares it; PDFXNotification: a member of an
+        # extension that neither declares; NSBaseKey: under AppKit, stays there
+        self.assertEqual([r[0] for r in rows["Foundation"]], ["_NSKeyNew", "_NSLog"])
+        self.assertEqual(rows["AppKit"], [["_NSAppKitVersionNumber", "data", "10.0", "appkit/nsappkitversionnumber"],
+                                          ["_NSBaseKey", "data", "10.0", "appkit/nsbase"],
+                                          ["_NSFontName", "data", "10.0", "foundation/nskey/font", "gnustep-gui"],
+                                          ["_NSLangAttribute", "data", "10.13", "appkit/nslangattribute"]])
+
+
 class DataFileReaders(Tmp):
     def test_readers(self):
         p = self.write("s.txt", "# head\n_a   # source\n\n  _b\n# _c\n")

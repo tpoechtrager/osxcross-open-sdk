@@ -31,7 +31,7 @@ conservative value and say so in `docs/SOURCES.md`.
 | `make-open-sdk.sh` | Options, defaults, the loop over the steps. |
 | `lib/*.sh` | The steps (`fetch`, `host`, `headers`, `stubs`, `cxx`, `libs`, `frameworks`, `meta`, `tarball`, `swift`) and common functions. |
 | `helpers/*.py` | Python helpers (Python 3.7, standard library only, run with `python3 -I`): `write_*` writes a file of the SDK, `*_syms` a symbol list, the others without prefix are tools of single steps (e.g. `scrub_platforms`, `xnu_headers`, `tree_hash`); the modules that the helpers import are `clang_scan`, `data_files` and `notice`. |
-| `tools/*.py` | Maintenance tools that the generator does not run (`manifest.py`, `check_libraries.py`). |
+| `tools/*.py` | Maintenance tools that the generator does not run (`manifest.py`, `check_libraries.py`, `doc_symbols.py`). |
 | `data/manifests/` | Tags and commits of every project per macOS release. |
 | `README.md` | Overview, download, short build instructions, licenses, known limits. |
 | `docs/` | `SOURCES.md` (the public source of every value: headers, symbols, install names, versions, `SDKSettings.json` keys), `BUILDING.md` (dependencies, options, tests), `TESTED.md`, `LIBCXX.md`, `DETAILS.md`. |
