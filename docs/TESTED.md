@@ -27,6 +27,10 @@ projects were also built with the stable flavor (cctools/ld64).
   - `core-graphics`, `core-text`
   - `cpal` (lists the audio devices)
   - `enigo`, `global-hotkey` (Carbon) were built, but not tested
+  - `rdev` (Carbon; display size)
+  - `sysinfo` (OpenDirectory; memory, CPUs, disks; x86_64 only)
+  - `wry` with `tao` (WebKit) were built, but not tested
+  - `rfd` (UniformTypeIdentifiers) was built, but not tested; it needs `-framework CoreGraphics` as well
   - `glutin` with `glow` (a window with an OpenGL context; draws and reads a pixel back)
   - `eframe` with the glow backend (OpenGL; opens its window and draws frames)
   - `skia-safe` with the prebuilt Skia (draws into a bitmap)
