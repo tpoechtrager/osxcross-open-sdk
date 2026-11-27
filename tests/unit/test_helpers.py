@@ -503,13 +503,20 @@ class CheckLibraries(Tmp):
 
 
 class DocSymbols(Tmp):
-    def page(self, path, eid, mods, mac="10.0", kind="func", ext=None, objc=False):
+    def page(self, path, eid, mods, mac="10.0", kind="func", ext=None, objc=False, decl=None, refs=()):
+        """decl: no metadata.platforms, the platforms of the declaration instead; refs: pages that it names"""
         m = {"externalID": eid, "modules": [{"name": x} for x in mods], "symbolKind": kind,
              "platforms": [{"name": "iOS", "introducedAt": "2.0"}] + ([{"name": "macOS", "introducedAt": mac}] if mac else [])}
         if ext:
             m["extendedModule"] = ext
         page = {"metadata": m, "abstract": [{"text": "not copied"}],
                 "identifier": {"interfaceLanguage": "occ" if objc else "swift"}}
+        if decl is not None:
+            del m["platforms"]
+            page["primaryContentSections"] = [{"kind": "content", "content": []},
+                                              {"kind": "declarations", "declarations": [{"platforms": decl}]}]
+        page["references"] = {"doc://x/" + r: {"kind": "symbol", "url": "/documentation/" + r,
+                                               "title": "not copied"} for r in refs}
         self.write("docs/data/" + path + ".json", json.dumps(page))
         with open(self.path("docs/index.tsv"), "a") as f:
             f.write("https://developer.apple.com/tutorials/data/documentation/%s.json\t200\t2026-11-2%dT01:00:00Z\n"
@@ -563,6 +570,39 @@ class DocSymbols(Tmp):
                                           ["_NSBaseKey", "data", "10.0", "appkit/nsbase"],
                                           ["_NSFontName", "data", "10.0", "foundation/nskey/font", "gnustep-gui"],
                                           ["_NSLangAttribute", "data", "10.13", "appkit/nslangattribute"]])
+
+    def test_a_page_without_platforms_has_those_of_its_declarations(self):
+        self.page("coregraphics/cgstream", "c:@F@CGStream", ["Core Graphics"], decl=["Mac Catalyst", "macOS"])
+        self.page("coregraphics/kcgstream", "c:@kCGStream", ["Core Graphics"], kind="var", decl=["macOS"])
+        self.page("coregraphics/cgcatalyst", "c:@F@CGCatalyst", ["Core Graphics"], decl=["iOS", "Mac Catalyst"])
+        self.page("coregraphics/cgnodecl", "c:@F@CGNoDecl", ["Core Graphics"], decl=[])
+        rc, out, err = run("tools/doc_symbols.py", "--docs", self.path("docs/data"), "--out", self.path("out"),
+                           "CoreGraphics")
+        self.assertEqual(rc, 0, out + err)
+        rows = [l.split() for l in read(self.path("out/CoreGraphics.txt")).splitlines() if l and not l.startswith("#")]
+        self.assertEqual(rows, [["_CGStream", "func", "-", "coregraphics/cgstream"],
+                                ["_kCGStream", "data", "-", "coregraphics/kcgstream"]])
+
+    def test_warns_of_pages_that_are_referred_to_and_missing(self):
+        self.page("coregraphics/cgfoo(_:)", "c:@F@CGFoo", ["Core Graphics"],
+                  refs=["CoreGraphics/CGGone", "CoreGraphics/CGKnown404", "CoreGraphics/CGFoo(_:)",
+                        "CoreGraphics/CGType/member", "Metal/MTLGone"])
+        self.write("docs/data/coregraphics/cgknown404.json.404", "")
+        args = ["tools/doc_symbols.py", "--docs", self.path("docs/data"), "--out", self.path("out"), "CoreGraphics"]
+        rc, out, err = run(*args)
+        self.assertEqual(rc, 0, out + err)
+        # a page of another directory and a page below a page are not named; one that answered 404 is known
+        self.assertIn("1 pages that the documentation refers to are not in the cache (fetch them): coregraphics/cggone",
+                      err)
+        self.write("docs/data/coregraphics/cggone.json", "{}")
+        rc, out, err = run(*args)
+        self.assertEqual((rc, err), (0, ""))
+        # the other directory of --docs has the page
+        os.remove(self.path("docs/data/coregraphics/cggone.json"))
+        self.write("more/coregraphics/cggone.json", "{}")
+        rc, out, err = run("tools/doc_symbols.py", "--docs", self.path("docs/data"), "--docs", self.path("more"),
+                           "--out", self.path("out"), "CoreGraphics")
+        self.assertEqual((rc, err), (0, ""))
 
     def test_core_foundation_leaves_out_names_that_headers_mention(self):
         self.page("corefoundation/cffoo(_:)", "c:@F@CFFoo", ["Core Foundation"], "10.5")

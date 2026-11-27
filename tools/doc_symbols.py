@@ -17,7 +17,12 @@ text of the documentation.
 A page is a symbol of the list if its metadata names it as a C function
 (externalID c:@F@<name>) or a global variable or constant (c:@<name>, not a
 type alias), names macOS as a platform, and one of the modules of FRAMEWORKS
-as its module.  Macros and enumerators are not symbols, and neither are names
+as its module.  A page without metadata.platforms has the platforms of its
+declarations (they have no releases: "-").  The tool warns about the pages
+that the symbol references of the pages of these frameworks name and that
+the directory lacks (neither <page>.json nor <page>.json.404 for a page that
+answered 404): fetch them, or the list lacks the symbols of the Objective-C
+pages that only they have.  Macros and enumerators are not symbols, and neither are names
 with a leading underscore (the pages of Swift initializers name such functions,
 e.g. _CTFontCreateWithName for CTFont.init(_:size:)).  The documentation does
 not say which symbols exist only on one architecture: every symbol is for
@@ -112,9 +117,28 @@ def git_commit(root):
         return "unknown"
 
 
-def read_pages(docs):
-    """[(name, kind, macOS, page, module, extended, objc)] of every C symbol page for macOS"""
+def mac_release(m, d):
+    """the release of macOS that a page names: the introducedAt of metadata.platforms, or "-" if that list
+    names macOS without one; a page without metadata.platforms has the platforms of its declarations
+    (primaryContentSections of the kind declarations), which have no releases.  None: not for macOS"""
+    if "platforms" in m:
+        mac = [p for p in m["platforms"] if p.get("name") == "macOS"]
+        return mac[0].get("introducedAt", "-") if mac else None
+    for sec in d.get("primaryContentSections") or []:
+        if sec.get("kind") == "declarations":
+            for decl in sec.get("declarations") or []:
+                if "macOS" in (decl.get("platforms") or []):
+                    return "-"
+    return None
+
+
+def read_pages(docs, modules):
+    """([(name, kind, macOS, page, module, extended, objc)] of every C symbol page for macOS,
+    {page: the pages that refer to it} for the symbols that pages name, the first directories of the pages
+    whose module is one of modules)"""
     out = []
+    refs = {}
+    dirs = set()
     for dp, dn, fn in os.walk(docs):
         dn.sort()
         for f in sorted(fn):
@@ -127,6 +151,15 @@ def read_pages(docs):
                 m = d.get("metadata") or {}
             except (OSError, ValueError):
                 continue
+            page = os.path.relpath(path, docs)[:-len(".json")].replace(os.sep, "/")
+            if any(x.get("name") in modules for x in m.get("modules") or []):
+                dirs.add(page.split("/")[0])
+            for r in (d.get("references") or {}).values():
+                url = r.get("url") or "" if isinstance(r, dict) and r.get("kind") == "symbol" else ""
+                if url.startswith("/documentation/"):
+                    t = url[len("/documentation/"):].split("#")[0].lower()
+                    if t.count("/") == 1:
+                        refs.setdefault(t, set()).add(page)
             eid = m.get("externalID") or ""
             if eid.startswith("c:@F@") and "@" not in eid[5:]:
                 name, kind = eid[5:], "func"
@@ -136,16 +169,22 @@ def read_pages(docs):
                 continue
             if name.startswith("_"):
                 continue
-            mac = [p for p in m.get("platforms", []) if p.get("name") == "macOS"]
-            if not mac:
+            mac = mac_release(m, d)
+            if mac is None:
                 continue
             mods = [x.get("name") for x in m.get("modules", [])]
             if len(mods) != 1:
                 continue
-            page = os.path.relpath(path, docs)[:-len(".json")].replace(os.sep, "/")
             objc = (d.get("identifier") or {}).get("interfaceLanguage") == "occ"
-            out.append((name, kind, mac[0].get("introducedAt", "-"), page, mods[0], m.get("extendedModule"), objc))
-    return out
+            out.append((name, kind, mac, page, mods[0], m.get("extendedModule"), objc))
+    return out, refs, dirs
+
+
+def missing_pages(dirs, refs, frameworks):
+    """the pages that symbol references of the pages name in a directory of a framework and that no
+    directory of dirs has, neither as a page nor as a .json.404 file (one that answered 404)"""
+    return sorted(t for t in refs if t.split("/")[0] in frameworks
+                  and not any(os.path.exists(os.path.join(d, t + x)) for d in dirs for x in (".json", ".json.404")))
 
 
 def fetch_days(dirs, pages):
@@ -235,7 +274,20 @@ def main(argv):
                    "# GS_EXPORT), github.com/gnustep/libs-gui %s (Headers/AppKit, APPKIT_EXPORT)."
                    % (git_commit(a.gnustep_base)[:12], git_commit(a.gnustep_gui)[:12]))
     out_dir = a.out or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "symbols", "doc")
-    recs = [r for d in a.docs for r in read_pages(d)]
+    modules = set(m for fw in a.frameworks for m in FRAMEWORKS[fw])
+    recs = []
+    refs = {}
+    fw_dirs = set()
+    for d in a.docs:
+        rs, rf, ds = read_pages(d, modules)
+        recs += rs
+        for t, p in rf.items():
+            refs.setdefault(t, set()).update(p)
+        fw_dirs |= ds
+    missing = missing_pages(a.docs, refs, fw_dirs)
+    if missing:
+        print("warning: %d pages that the documentation refers to are not in the cache (fetch them): %s%s"
+              % (len(missing), " ".join(missing[:20]), " ..." if len(missing) > 20 else ""), file=sys.stderr)
     lists = assign(recs, a.frameworks, gs)
     if "CoreFoundation" in a.frameworks:
         if not a.headers:
