@@ -35,6 +35,8 @@ projects were also built with the stable flavor (cctools/ld64).
   - `eframe` with the glow backend (OpenGL; opens its window and draws frames)
   - `skia-safe` with the prebuilt Skia (draws into a bitmap)
   - `wgpu` was built, but not tested
+  - `xcap` (AVFoundation, CoreMedia; lists the monitors), `nokhwa` (AVFoundation; lists the cameras)
+  - `macroquad` (ImageIO, Vision, MetalKit) was built, but not tested
 - **Compilers and tools:**
   - `LLVM/Clang` (the compiler works on macOS)
   - `cctools-port` (builds, and its tools work on macOS)

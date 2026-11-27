@@ -47,7 +47,7 @@ install name and version. A real SDK was used only to test a result, never as a 
   `CoreAudio`, `AudioToolbox`, `ApplicationServices` (with `ColorSync`), `Carbon`, `WebKit`,  
   `UniformTypeIdentifiers`, `OpenDirectory`, `AVFoundation`, `CoreMedia`, `ImageIO`, `Vision` and `MetalKit`:  
   the C functions and constants of Apple's documentation, for languages and crates that declare what they use themselves  
-  (Rust: `winit`, `wgpu`, `cpal`, `enigo`, `global-hotkey`), see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd) and [docs/TESTED.md](docs/TESTED.md).
+  (Rust: `winit`, `wgpu`, `cpal`, `enigo`, `global-hotkey`, `xcap`, `nokhwa`, `macroquad`), see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd) and [docs/TESTED.md](docs/TESTED.md).
 - `Cocoa.framework`: the umbrella, a stub that re-exports `AppKit` and `Foundation` (`-framework Cocoa`; no headers, no `CoreData`).
 - Every framework has the layout of a framework bundle: `Name.framework/Versions/<V>/Name.tbd` (the path of its install name),  
   `Versions/Current` and links `Name.tbd`, `Headers` and `Modules` at the top.
