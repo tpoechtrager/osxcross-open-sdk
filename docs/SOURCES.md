@@ -34,7 +34,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
+| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
@@ -534,6 +534,8 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   name Metal as their module, so they are in the stub of Metal.
 - CoreAudio's install name (`Versions/A`) has one source: the list of michidk/maiko f984528, `crates/patcher/src/macos.rs` (MIT).  
   Its symbols are those of the documentation modules "Core Audio" and "Core Audio Types".
+- AudioToolbox's install name (`Versions/A`) has one source: the list of michidk/maiko f984528, `crates/patcher/src/macos.rs` (MIT).  
+  Its symbols are those of the documentation module "Audio Toolbox".
 - Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
 
 ---
