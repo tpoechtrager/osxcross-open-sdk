@@ -568,6 +568,11 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
     The other headers of the project go to `Kernel.framework` and are not installed.
 - `storage/IOFireWireStorageCharacteristics.h` of the module map belongs to IOFireWireSerialBusProtocolTransport  
   and is not installed.
+- Not in `storage/`: the enumerators of Apple's documentation of the kernel that the headers declare only for the kernel  
+  (`kIOStorageAccess*`, `kIOStorageOption*`, `kIOStoragePriority*`, `kIOStorageProvisionType*`, `kIOStorageSynchronizeOption*`  
+  of `IOStorage.h`, `IOPartitionScheme.h`, ...: they are under `#ifdef KERNEL`, which `unifdef -UKERNEL` removes, as in the  
+  projects' own build), and `kCDFeatures*` and `kDVDFeatures*`, which no open release of IOCDStorageFamily or  
+  IODVDStorageFamily declares.
 - Symbols: the declarations of these headers (as for the other frameworks), defined in IOKitUser.
 - Not installed: `hidsystem/IOHIDEventSystemClient.h` and `hidsystem/IOHIDServiceClient.h`  
   (IOKitUser `hidsystem.subproj`): IOKitUser builds their functions from  
