@@ -176,7 +176,8 @@ A project without a license file gets the notice block of its headers, or the pu
   have the lowest compatibility version.
 - **`CoreFoundation`** is CF-1153.18 (2018), the last one Apple published, with the newer public declarations  
   that swift-corelibs-foundation has (`CFNotificationCenter`, `CFAttributedString`, ISO 8601 date formatters,  
-  newer URL resource keys, ...). `CoreFoundation.tbd` also has the symbols of newer APIs that Apple's documentation  
+  newer URL resource keys, ...) and its typed string aliases (`CFLocaleKey`, `CFRunLoopMode`, ...),  
+  `CFRunLoopRunResult` and nullability. `CoreFoundation.tbd` also has the symbols of newer APIs that Apple's documentation  
   lists for macOS but no open header declares (`CFStringTokenizer`, `CFURLEnumerator`, `CFFileDescriptor`, `CFFileSecurity`,  
   the typed allocator functions, ...): declare them yourself. The `.tbd` is not the 1153.18 library's; its version stays 1153.18.
 - **arm64e and x86_64h.** The stubs give arm64e the symbols of arm64. x86_64h is not listed:  

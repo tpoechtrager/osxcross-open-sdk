@@ -101,7 +101,8 @@ The changes:
 - CoreFoundation: includes of `CFMachPort.h`, `CFAttributedString.h` and `CFNotificationCenter.h`, a small block of macros in  
   `CFAvailability.h` (CF-1153.18 of 2018 lacks them), and declarations of newer public APIs from swift-corelibs-foundation  
   (`data/CF/`: two headers and a patch of `CFBase.h`, `CFBundle.h`, `CFDateFormatter.h`, `CFError.h`,  
-  `CFNumberFormatter.h`, `CFURL.h`, `CFUserNotification.h`), each file marked;
+  `CFNumberFormatter.h`, `CFURL.h`, `CFUserNotification.h`), and their typed string aliases (`CFLocaleKey`, `CFRunLoopMode`, ...),  
+  `CFRunLoopRunResult`, typed anonymous enumerations and nullability (a second patch of 13 headers), each file marked;
 - CommonCrypto: `<availability.h>` is written `<Availability.h>`;
 - the SDKs of macOS 14.3 and older (libc++ 16): `<format>` is no longer marked unavailable, so `<chrono>`  
   compiles with `-std=c++20`.

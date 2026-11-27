@@ -40,11 +40,21 @@
 #ifndef CF_CLOSED_ENUM
 #define CF_CLOSED_ENUM(_type, _name) CF_ENUM(_type, _name)
 #endif
+/* the typed string aliases (CFLocaleKey, CFRunLoopMode, ...): Swift imports them as an enum
+ * (CF_STRING_ENUM) or a struct (CF_EXTENSIBLE_STRING_ENUM); for C they stay CFStringRef */
 #ifndef CF_STRING_ENUM
+#if __has_attribute(swift_wrapper)
+#define CF_STRING_ENUM __attribute__((swift_wrapper(enum)))
+#else
 #define CF_STRING_ENUM
 #endif
+#endif
 #ifndef CF_EXTENSIBLE_STRING_ENUM
+#if __has_attribute(swift_wrapper)
+#define CF_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))
+#else
 #define CF_EXTENSIBLE_STRING_ENUM
+#endif
 #endif
 
 #if __has_include(<os/availability.h>)

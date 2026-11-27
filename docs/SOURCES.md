@@ -421,7 +421,8 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   SystemConfiguration and Security use, but the older `CFAvailability.h` does not define.
   - Which macros: the headers of these projects, which use them.
   - Their definitions (`CF_ASSUME_NONNULL_*`, `CF_BRIDGED_TYPE`, `CF_IMPLICIT_BRIDGING_*`, `CF_SWIFT_NAME`, `CF_SWIFT_UNAVAILABLE`,  
-    `CF_CLOSED_ENUM`, `CF_STRING_ENUM`, `CF_ENUM` and `CF_OPTIONS` with one argument): swift-corelibs-foundation,  
+    `CF_CLOSED_ENUM`, `CF_STRING_ENUM` and `CF_EXTENSIBLE_STRING_ENUM` (`swift_wrapper`), `CF_ENUM` and `CF_OPTIONS`  
+    with one argument): swift-corelibs-foundation,  
     tag swift-6.0-RELEASE, `Sources/CoreFoundation/include/CFBase.h` and `CFAvailability.h` (Apache 2.0).
   - `CF_AVAILABLE` and the like through `__OSX_AVAILABLE_STARTING`: `Availability.h` of AvailabilityVersions.
 - `module.modulemap`: own text (0BSD), a framework module as Clang's documentation of modules describes it  
@@ -449,11 +450,24 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
     `kCFErrorLocalizedFailureKey`, in `CFNumberFormatter.h` the four styles of 10.11, in `CFURL.h` the resource keys  
     of 10.11 to 11.3 and two bookmark options, in `CFUserNotification.h` the two keys that CF-1153.18 declares only  
     for iOS.
+  - `data/CF/typed.patch` (applied after it): the typed declarations of the project's headers that Apple's  
+    documentation shows as well (the Swift declarations of its pages give the type names and the optionality  
+    of every parameter and result; fetched 2026-11-26 and 2026-11-27):
+    - the aliases `CFLocaleIdentifier`, `CFLocaleKey`, `CFCalendarIdentifier`, `CFRunLoopMode`, `CFErrorDomain`,  
+      `CFDateFormatterKey`, `CFNumberFormatterKey` and `CFStreamPropertyKey` (`CF_STRING_ENUM` or  
+      `CF_EXTENSIBLE_STRING_ENUM`) and `CFNotificationName` (in `CFLocale.h` and `CFTimeZone.h`) in the places  
+      where the project uses them; the pages of the constants are members of the alias pages (`cflocalekey/...`);
+    - `CFRunLoopRunResult` as the result of `CFRunLoopRunInMode`;
+    - the enumerations with a type but no name (`CF_ENUM(CFOptionFlags) {`) of `CFCalendar.h`, `CFMessagePort.h`,  
+      `CFPropertyList.h`, `CFSocket.h` and `CFUserNotification.h` (the pages type their constants `CFOptionFlags`,  
+      `Int32` and `CFIndex`);
+    - `CF_ASSUME_NONNULL_BEGIN/END` and `_Nullable` in `CFPreferences.h`, `_Null_unspecified` in `CFStream.h`  
+      (the pages show `?` and `!`; the other headers have no annotation in the project).
 - What was taken over: a declaration of the project's header that Apple's documentation lists for macOS  
   (the page of each name is in the documentation's JSON; the page names the module "Core Foundation" and macOS).  
   The release in each `API_AVAILABLE(macos(...))` is the `introducedAt` of that page (the project writes  
-  `10.16` for `11.0`). Nothing else of the project's headers: the enumerations of types, nullability and other  
-  annotations, and everything that the documentation does not list (`CFDateComponents`, `CFDateInterval`,  
+  `10.16` for `11.0`). Nothing else of the project's headers: `CF_NOESCAPE`, `CF_BRIDGED_MUTABLE_TYPE`, the types of  
+  `CFLog` and `CFUniChar`, and everything that the documentation does not list (`CFDateComponents`, `CFDateInterval`,  
   `CFRunArray`, `CFLogUtilities.h`, `kCFLocaleTemperatureUnitKey`, the private headers, `CFStream.h`'s SOCKS names).
 - Left out as written for the Swift runtime or other systems: `Boolean` as `bool`, `kCFNotFound` as a `static const`  
   (CF-1153.18 and Apple's have an enumerator), `TARGET_OS_WASI`, `TARGET_OS_BSD`, `TARGET_OS_WIN32`,  

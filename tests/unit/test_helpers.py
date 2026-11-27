@@ -649,9 +649,10 @@ class ApplyDiff(Tmp):
         self.assertEqual(read(self.path("d/x.h")), "a\nb\nz\nq\nd\ne\nf\n")
 
     def test_the_patch_of_data_CF_applies_to_headers_that_it_changes(self):
-        files = re.findall(r"^\+\+\+ b/(\S+)", read(os.path.join(DATA, "CF", "additions.patch")), re.M)
-        self.assertEqual(files, sorted(files))
-        self.assertGreaterEqual(len(files), 7)
+        for name, least in (("additions.patch", 7), ("typed.patch", 13)):
+            files = re.findall(r"^\+\+\+ b/(\S+)", read(os.path.join(DATA, "CF", name)), re.M)
+            self.assertEqual(files, sorted(files), name)
+            self.assertGreaterEqual(len(files), least, name)
 
 
 class DataFileReaders(Tmp):

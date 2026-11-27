@@ -1,0 +1,975 @@
+--- a/CFCalendar.h
++++ b/CFCalendar.h
+@@ -45,12 +45,12 @@
+ CFCalendarRef CFCalendarCopyCurrent(void);
+ 
+ CF_EXPORT
+-CFCalendarRef CFCalendarCreateWithIdentifier(CFAllocatorRef allocator, CFStringRef identifier);
++CFCalendarRef CFCalendarCreateWithIdentifier(CFAllocatorRef allocator, CFCalendarIdentifier identifier);
+ 	// Create a calendar.  The identifiers are the kCF*Calendar
+ 	// constants in CFLocale.h.
+ 
+ CF_EXPORT
+-CFStringRef CFCalendarGetIdentifier(CFCalendarRef calendar);
++CFCalendarIdentifier CFCalendarGetIdentifier(CFCalendarRef calendar);
+ 	// Returns the calendar's identifier.
+ 
+ CF_EXPORT
+@@ -117,7 +117,7 @@
+ Boolean CFCalendarDecomposeAbsoluteTime(CFCalendarRef calendar, CFAbsoluteTime at, const char *componentDesc, ...);
+ 
+ 
+-enum {
++CF_ENUM(CFOptionFlags) {
+     kCFCalendarComponentsWrap = (1UL << 0)  // option for adding
+ };
+ 
+--- a/CFDateFormatter.h
++++ b/CFDateFormatter.h
+@@ -35,6 +35,8 @@
+ CF_IMPLICIT_BRIDGING_ENABLED
+ CF_EXTERN_C_BEGIN
+ 
++typedef CFStringRef CFDateFormatterKey CF_STRING_ENUM;
++
+ typedef struct __CFDateFormatter *CFDateFormatterRef;
+ 
+ // CFDateFormatters are not thread-safe.  Do not use one from multiple threads!
+@@ -155,39 +157,39 @@
+ void CFDateFormatterSetProperty(CFDateFormatterRef formatter, CFStringRef key, CFTypeRef value);
+ 
+ CF_EXPORT
+-CFTypeRef CFDateFormatterCopyProperty(CFDateFormatterRef formatter, CFStringRef key);
++CFTypeRef CFDateFormatterCopyProperty(CFDateFormatterRef formatter, CFDateFormatterKey key);
+ 	// Set and get various properties of the date formatter, the set of
+ 	// which may be expanded in the future.
+ 
+-CF_EXPORT const CFStringRef kCFDateFormatterIsLenient;	// CFBoolean
+-CF_EXPORT const CFStringRef kCFDateFormatterTimeZone;		// CFTimeZone
+-CF_EXPORT const CFStringRef kCFDateFormatterCalendarName;	// CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterDefaultFormat;	// CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterTwoDigitStartDate; // CFDate
+-CF_EXPORT const CFStringRef kCFDateFormatterDefaultDate;	// CFDate
+-CF_EXPORT const CFStringRef kCFDateFormatterCalendar;		// CFCalendar
+-CF_EXPORT const CFStringRef kCFDateFormatterEraSymbols;	// CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterMonthSymbols;	// CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterShortMonthSymbols; // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterWeekdaySymbols;	// CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterShortWeekdaySymbols; // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterAMSymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterPMSymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterLongEraSymbols CF_AVAILABLE(10_5, 2_0);   // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterVeryShortMonthSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterStandaloneMonthSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterShortStandaloneMonthSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterVeryShortStandaloneMonthSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterVeryShortWeekdaySymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterStandaloneWeekdaySymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterShortStandaloneWeekdaySymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterVeryShortStandaloneWeekdaySymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterQuarterSymbols CF_AVAILABLE(10_5, 2_0); 	// CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterShortQuarterSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterStandaloneQuarterSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterShortStandaloneQuarterSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
+-CF_EXPORT const CFStringRef kCFDateFormatterGregorianStartDate CF_AVAILABLE(10_5, 2_0); // CFDate
+-CF_EXPORT const CFStringRef kCFDateFormatterDoesRelativeDateFormattingKey CF_AVAILABLE(10_6, 4_0); // CFBoolean
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterIsLenient;	// CFBoolean
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterTimeZone;		// CFTimeZone
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterCalendarName;	// CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterDefaultFormat;	// CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterTwoDigitStartDate; // CFDate
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterDefaultDate;	// CFDate
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterCalendar;		// CFCalendar
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterEraSymbols;	// CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterMonthSymbols;	// CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterShortMonthSymbols; // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterWeekdaySymbols;	// CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterShortWeekdaySymbols; // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterAMSymbol;		// CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterPMSymbol;		// CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterLongEraSymbols CF_AVAILABLE(10_5, 2_0);   // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterVeryShortMonthSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterStandaloneMonthSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterShortStandaloneMonthSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterVeryShortStandaloneMonthSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterVeryShortWeekdaySymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterStandaloneWeekdaySymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterShortStandaloneWeekdaySymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterVeryShortStandaloneWeekdaySymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterQuarterSymbols CF_AVAILABLE(10_5, 2_0); 	// CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterShortQuarterSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterStandaloneQuarterSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterShortStandaloneQuarterSymbols CF_AVAILABLE(10_5, 2_0); // CFArray of CFString
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterGregorianStartDate CF_AVAILABLE(10_5, 2_0); // CFDate
++CF_EXPORT const CFDateFormatterKey kCFDateFormatterDoesRelativeDateFormattingKey CF_AVAILABLE(10_6, 4_0); // CFBoolean
+ 
+ // See CFLocale.h for these calendar constants:
+ //	const CFStringRef kCFGregorianCalendar;
+--- a/CFError.h
++++ b/CFError.h
+@@ -59,6 +59,8 @@
+ CF_IMPLICIT_BRIDGING_ENABLED
+ CF_EXTERN_C_BEGIN
+ 
++typedef CFStringRef CFErrorDomain CF_EXTENSIBLE_STRING_ENUM;
++
+ /*!
+ 	@typedef CFErrorRef
+ 	    This is the type of a reference to CFErrors.  CFErrorRef is toll-free bridged with NSError.
+@@ -74,10 +76,10 @@
+ 
+ 
+ // Predefined domains; value of "code" will correspond to preexisting values in these domains.
+-CF_EXPORT const CFStringRef kCFErrorDomainPOSIX		    CF_AVAILABLE(10_5, 2_0);
+-CF_EXPORT const CFStringRef kCFErrorDomainOSStatus	    CF_AVAILABLE(10_5, 2_0);
+-CF_EXPORT const CFStringRef kCFErrorDomainMach		    CF_AVAILABLE(10_5, 2_0);
+-CF_EXPORT const CFStringRef kCFErrorDomainCocoa		    CF_AVAILABLE(10_5, 2_0);
++CF_EXPORT const CFErrorDomain kCFErrorDomainPOSIX		    CF_AVAILABLE(10_5, 2_0);
++CF_EXPORT const CFErrorDomain kCFErrorDomainOSStatus	    CF_AVAILABLE(10_5, 2_0);
++CF_EXPORT const CFErrorDomain kCFErrorDomainMach		    CF_AVAILABLE(10_5, 2_0);
++CF_EXPORT const CFErrorDomain kCFErrorDomainCocoa		    CF_AVAILABLE(10_5, 2_0);
+ 
+ // Keys in userInfo for localizable, end-user presentable error messages. At minimum provide one of first two; ideally provide all three.
+ CF_EXPORT const CFStringRef kCFErrorLocalizedDescriptionKey         CF_AVAILABLE(10_5, 2_0);   // Key to identify the end user-presentable description in userInfo.
+@@ -106,7 +108,7 @@
+ 	@result A reference to the new CFError.
+ */
+ CF_EXPORT
+-CFErrorRef CFErrorCreate(CFAllocatorRef allocator, CFStringRef domain, CFIndex code, CFDictionaryRef userInfo) CF_AVAILABLE(10_5, 2_0);
++CFErrorRef CFErrorCreate(CFAllocatorRef allocator, CFErrorDomain domain, CFIndex code, CFDictionaryRef userInfo) CF_AVAILABLE(10_5, 2_0);
+ 
+ /*!
+ 	@function CFErrorCreateWithUserInfoKeysAndValues
+@@ -121,7 +123,7 @@
+ 	@result A reference to the new CFError. numUserInfoValues CF types are gathered from each of userInfoKeys and userInfoValues to create the userInfo dictionary.
+ */
+ CF_EXPORT
+-CFErrorRef CFErrorCreateWithUserInfoKeysAndValues(CFAllocatorRef allocator, CFStringRef domain, CFIndex code, const void *const *userInfoKeys, const void *const *userInfoValues, CFIndex numUserInfoValues) CF_AVAILABLE(10_5, 2_0);
++CFErrorRef CFErrorCreateWithUserInfoKeysAndValues(CFAllocatorRef allocator, CFErrorDomain domain, CFIndex code, const void *const *userInfoKeys, const void *const *userInfoValues, CFIndex numUserInfoValues) CF_AVAILABLE(10_5, 2_0);
+ 
+ /*!
+ 	@function CFErrorGetDomain
+@@ -130,7 +132,7 @@
+ 	@result The error domain of the CFError. Since this is a "Get" function, the caller shouldn't CFRelease the return value.
+ */
+ CF_EXPORT
+-CFStringRef CFErrorGetDomain(CFErrorRef err) CF_AVAILABLE(10_5, 2_0);
++CFErrorDomain CFErrorGetDomain(CFErrorRef err) CF_AVAILABLE(10_5, 2_0);
+ 
+ /*!
+ 	@function CFErrorGetCode
+--- a/CFLocale.h
++++ b/CFLocale.h
+@@ -31,10 +31,14 @@
+ #include <CoreFoundation/CFBase.h>
+ #include <CoreFoundation/CFArray.h>
+ #include <CoreFoundation/CFDictionary.h>
++#include <CoreFoundation/CFNotificationCenter.h>
+ 
+ CF_IMPLICIT_BRIDGING_ENABLED
+ CF_EXTERN_C_BEGIN
+ 
++typedef CFStringRef CFLocaleIdentifier CF_EXTENSIBLE_STRING_ENUM;
++typedef CFStringRef CFLocaleKey CF_STRING_ENUM;
++
+ typedef const struct CF_BRIDGED_TYPE(NSLocale) __CFLocale *CFLocaleRef;
+ 
+ CF_EXPORT
+@@ -88,25 +92,25 @@
+ 	// Returns the array of canonicalized CFString locale IDs that the user prefers.
+ 
+ CF_EXPORT
+-CFStringRef CFLocaleCreateCanonicalLanguageIdentifierFromString(CFAllocatorRef allocator, CFStringRef localeIdentifier);
++CFLocaleIdentifier CFLocaleCreateCanonicalLanguageIdentifierFromString(CFAllocatorRef allocator, CFStringRef localeIdentifier);
+ 	// Map an arbitrary language identification string (something close at
+ 	// least) to a canonical language identifier.
+ 
+ CF_EXPORT
+-CFStringRef CFLocaleCreateCanonicalLocaleIdentifierFromString(CFAllocatorRef allocator, CFStringRef localeIdentifier);
++CFLocaleIdentifier CFLocaleCreateCanonicalLocaleIdentifierFromString(CFAllocatorRef allocator, CFStringRef localeIdentifier);
+ 	// Map an arbitrary locale identification string (something close at
+ 	// least) to the canonical identifier.
+ 
+ CF_EXPORT
+-CFStringRef CFLocaleCreateCanonicalLocaleIdentifierFromScriptManagerCodes(CFAllocatorRef allocator, LangCode lcode, RegionCode rcode);
++CFLocaleIdentifier CFLocaleCreateCanonicalLocaleIdentifierFromScriptManagerCodes(CFAllocatorRef allocator, LangCode lcode, RegionCode rcode);
+ 	// Map a Mac OS LangCode and RegionCode to the canonical locale identifier.
+ 
+ CF_EXPORT
+-CFStringRef CFLocaleCreateLocaleIdentifierFromWindowsLocaleCode(CFAllocatorRef allocator, uint32_t lcid) CF_AVAILABLE(10_6, 4_0);
++CFLocaleIdentifier CFLocaleCreateLocaleIdentifierFromWindowsLocaleCode(CFAllocatorRef allocator, uint32_t lcid) CF_AVAILABLE(10_6, 4_0);
+ 	// Map a Windows LCID to the canonical locale identifier.
+ 
+ CF_EXPORT
+-uint32_t CFLocaleGetWindowsLocaleCodeFromLocaleIdentifier(CFStringRef localeIdentifier) CF_AVAILABLE(10_6, 4_0);
++uint32_t CFLocaleGetWindowsLocaleCodeFromLocaleIdentifier(CFLocaleIdentifier localeIdentifier) CF_AVAILABLE(10_6, 4_0);
+ 	// Map a locale identifier to a Windows LCID.
+ 
+ typedef CF_ENUM(CFIndex, CFLocaleLanguageDirection) {
+@@ -124,7 +128,7 @@
+ CFLocaleLanguageDirection CFLocaleGetLanguageLineDirection(CFStringRef isoLangCode) CF_AVAILABLE(10_6, 4_0);
+ 
+ CF_EXPORT
+-CFDictionaryRef CFLocaleCreateComponentsFromLocaleIdentifier(CFAllocatorRef allocator, CFStringRef localeID);
++CFDictionaryRef CFLocaleCreateComponentsFromLocaleIdentifier(CFAllocatorRef allocator, CFLocaleIdentifier localeID);
+ 	// Parses a locale ID consisting of language, script, country, variant,
+ 	// and keyword/value pairs into a dictionary. The keys are the constant
+ 	// CFStrings corresponding to the locale ID components, and the values
+@@ -134,7 +138,7 @@
+ 	// kCFLocaleCalendarIdentifier=kCFJapaneseCalendar.
+ 
+ CF_EXPORT
+-CFStringRef CFLocaleCreateLocaleIdentifierFromComponents(CFAllocatorRef allocator, CFDictionaryRef dictionary);
++CFLocaleIdentifier CFLocaleCreateLocaleIdentifierFromComponents(CFAllocatorRef allocator, CFDictionaryRef dictionary);
+ 	// Reverses the actions of CFLocaleCreateDictionaryFromLocaleIdentifier,
+ 	// creating a single string from the data in the dictionary. The
+ 	// dictionary {kCFLocaleLanguageCode=en, kCFLocaleCountryCode=US,
+@@ -142,7 +146,7 @@
+ 	// "en_US@calendar=japanese".
+ 
+ CF_EXPORT
+-CFLocaleRef CFLocaleCreate(CFAllocatorRef allocator, CFStringRef localeIdentifier);
++CFLocaleRef CFLocaleCreate(CFAllocatorRef allocator, CFLocaleIdentifier localeIdentifier);
+ 	// Returns a CFLocaleRef for the locale named by the "arbitrary" locale identifier.
+ 
+ CF_EXPORT
+@@ -152,62 +156,64 @@
+ 	// or hold onto it.  In the future, there may be mutable locales.
+ 
+ CF_EXPORT
+-CFStringRef CFLocaleGetIdentifier(CFLocaleRef locale);
++CFLocaleIdentifier CFLocaleGetIdentifier(CFLocaleRef locale);
+ 	// Returns the locale's identifier.  This may not be the same string
+ 	// that the locale was created with (CFLocale may canonicalize it).
+ 
+ CF_EXPORT
+-CFTypeRef CFLocaleGetValue(CFLocaleRef locale, CFStringRef key);
++CFTypeRef CFLocaleGetValue(CFLocaleRef locale, CFLocaleKey key);
+ 	// Returns the value for the given key.  This is how settings and state
+ 	// are accessed via a CFLocale.  Values might be of any CF type.
+ 
+ CF_EXPORT
+-CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFStringRef key, CFStringRef value);
++CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFLocaleKey key, CFStringRef value);
+ 	// Returns the display name for the given value.  The key tells what
+ 	// the value is, and is one of the usual locale property keys, though
+ 	// not all locale property keys have values with display name values.
+ 
+ 
+-CF_EXPORT const CFStringRef kCFLocaleCurrentLocaleDidChangeNotification CF_AVAILABLE(10_5, 2_0);
++CF_EXPORT const CFNotificationName kCFLocaleCurrentLocaleDidChangeNotification CF_AVAILABLE(10_5, 2_0);
+ 
+ 
+ // Locale Keys
+-CF_EXPORT const CFStringRef kCFLocaleIdentifier;
+-CF_EXPORT const CFStringRef kCFLocaleLanguageCode;
+-CF_EXPORT const CFStringRef kCFLocaleCountryCode;
+-CF_EXPORT const CFStringRef kCFLocaleScriptCode;
+-CF_EXPORT const CFStringRef kCFLocaleVariantCode;
+-
+-CF_EXPORT const CFStringRef kCFLocaleExemplarCharacterSet;
+-CF_EXPORT const CFStringRef kCFLocaleCalendarIdentifier;
+-CF_EXPORT const CFStringRef kCFLocaleCalendar;
+-CF_EXPORT const CFStringRef kCFLocaleCollationIdentifier;
+-CF_EXPORT const CFStringRef kCFLocaleUsesMetricSystem;
+-CF_EXPORT const CFStringRef kCFLocaleMeasurementSystem; // "Metric" or "U.S."
+-CF_EXPORT const CFStringRef kCFLocaleDecimalSeparator;
+-CF_EXPORT const CFStringRef kCFLocaleGroupingSeparator;
+-CF_EXPORT const CFStringRef kCFLocaleCurrencySymbol;
+-CF_EXPORT const CFStringRef kCFLocaleCurrencyCode; // ISO 3-letter currency code
+-CF_EXPORT const CFStringRef kCFLocaleCollatorIdentifier CF_AVAILABLE(10_6, 4_0);
+-CF_EXPORT const CFStringRef kCFLocaleQuotationBeginDelimiterKey CF_AVAILABLE(10_6, 4_0);
+-CF_EXPORT const CFStringRef kCFLocaleQuotationEndDelimiterKey CF_AVAILABLE(10_6, 4_0);
+-CF_EXPORT const CFStringRef kCFLocaleAlternateQuotationBeginDelimiterKey CF_AVAILABLE(10_6, 4_0);
+-CF_EXPORT const CFStringRef kCFLocaleAlternateQuotationEndDelimiterKey CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFLocaleKey kCFLocaleIdentifier;
++CF_EXPORT const CFLocaleKey kCFLocaleLanguageCode;
++CF_EXPORT const CFLocaleKey kCFLocaleCountryCode;
++CF_EXPORT const CFLocaleKey kCFLocaleScriptCode;
++CF_EXPORT const CFLocaleKey kCFLocaleVariantCode;
++
++CF_EXPORT const CFLocaleKey kCFLocaleExemplarCharacterSet;
++CF_EXPORT const CFLocaleKey kCFLocaleCalendarIdentifier;
++CF_EXPORT const CFLocaleKey kCFLocaleCalendar;
++CF_EXPORT const CFLocaleKey kCFLocaleCollationIdentifier;
++CF_EXPORT const CFLocaleKey kCFLocaleUsesMetricSystem;
++CF_EXPORT const CFLocaleKey kCFLocaleMeasurementSystem; // "Metric" or "U.S."
++CF_EXPORT const CFLocaleKey kCFLocaleDecimalSeparator;
++CF_EXPORT const CFLocaleKey kCFLocaleGroupingSeparator;
++CF_EXPORT const CFLocaleKey kCFLocaleCurrencySymbol;
++CF_EXPORT const CFLocaleKey kCFLocaleCurrencyCode; // ISO 3-letter currency code
++CF_EXPORT const CFLocaleKey kCFLocaleCollatorIdentifier CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFLocaleKey kCFLocaleQuotationBeginDelimiterKey CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFLocaleKey kCFLocaleQuotationEndDelimiterKey CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFLocaleKey kCFLocaleAlternateQuotationBeginDelimiterKey CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFLocaleKey kCFLocaleAlternateQuotationEndDelimiterKey CF_AVAILABLE(10_6, 4_0);
++
++typedef CFStringRef CFCalendarIdentifier CF_STRING_ENUM;
+ 
+ // Values for kCFLocaleCalendarIdentifier
+-CF_EXPORT const CFStringRef kCFGregorianCalendar;
+-CF_EXPORT const CFStringRef kCFBuddhistCalendar;
+-CF_EXPORT const CFStringRef kCFChineseCalendar;
+-CF_EXPORT const CFStringRef kCFHebrewCalendar;
+-CF_EXPORT const CFStringRef kCFIslamicCalendar;
+-CF_EXPORT const CFStringRef kCFIslamicCivilCalendar;
+-CF_EXPORT const CFStringRef kCFJapaneseCalendar;
+-CF_EXPORT const CFStringRef kCFRepublicOfChinaCalendar CF_AVAILABLE(10_6, 4_0);
+-CF_EXPORT const CFStringRef kCFPersianCalendar CF_AVAILABLE(10_6, 4_0);
+-CF_EXPORT const CFStringRef kCFIndianCalendar CF_AVAILABLE(10_6, 4_0);
+-CF_EXPORT const CFStringRef kCFISO8601Calendar CF_AVAILABLE(10_6, 4_0);
+-CF_EXPORT const CFStringRef kCFIslamicTabularCalendar CF_AVAILABLE(10_10, 8_0);
+-CF_EXPORT const CFStringRef kCFIslamicUmmAlQuraCalendar CF_AVAILABLE(10_10, 8_0);
++CF_EXPORT const CFCalendarIdentifier kCFGregorianCalendar;
++CF_EXPORT const CFCalendarIdentifier kCFBuddhistCalendar;
++CF_EXPORT const CFCalendarIdentifier kCFChineseCalendar;
++CF_EXPORT const CFCalendarIdentifier kCFHebrewCalendar;
++CF_EXPORT const CFCalendarIdentifier kCFIslamicCalendar;
++CF_EXPORT const CFCalendarIdentifier kCFIslamicCivilCalendar;
++CF_EXPORT const CFCalendarIdentifier kCFJapaneseCalendar;
++CF_EXPORT const CFCalendarIdentifier kCFRepublicOfChinaCalendar CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFCalendarIdentifier kCFPersianCalendar CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFCalendarIdentifier kCFIndianCalendar CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFCalendarIdentifier kCFISO8601Calendar CF_AVAILABLE(10_6, 4_0);
++CF_EXPORT const CFCalendarIdentifier kCFIslamicTabularCalendar CF_AVAILABLE(10_10, 8_0);
++CF_EXPORT const CFCalendarIdentifier kCFIslamicUmmAlQuraCalendar CF_AVAILABLE(10_10, 8_0);
+ 
+ CF_EXTERN_C_END
+ CF_IMPLICIT_BRIDGING_DISABLED
+--- a/CFMessagePort.h
++++ b/CFMessagePort.h
+@@ -38,7 +38,7 @@
+ 
+ typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMessagePort) __CFMessagePort * CFMessagePortRef;
+ 
+-enum {
++CF_ENUM(SInt32) {
+     kCFMessagePortSuccess = 0,
+     kCFMessagePortSendTimeout = -1,
+     kCFMessagePortReceiveTimeout = -2,
+--- a/CFNumberFormatter.h
++++ b/CFNumberFormatter.h
+@@ -35,6 +35,8 @@
+ CF_IMPLICIT_BRIDGING_ENABLED
+ CF_EXTERN_C_BEGIN
+ 
++typedef CFStringRef CFNumberFormatterKey CF_STRING_ENUM;
++
+ typedef struct __CFNumberFormatter *CFNumberFormatterRef;
+ 
+ // CFNumberFormatters are not thread-safe.  Do not use one from multiple threads!
+@@ -111,51 +113,51 @@
+ 
+ 
+ CF_EXPORT
+-void CFNumberFormatterSetProperty(CFNumberFormatterRef formatter, CFStringRef key, CFTypeRef value);
++void CFNumberFormatterSetProperty(CFNumberFormatterRef formatter, CFNumberFormatterKey key, CFTypeRef value);
+ 
+ CF_EXPORT
+-CFTypeRef CFNumberFormatterCopyProperty(CFNumberFormatterRef formatter, CFStringRef key);
++CFTypeRef CFNumberFormatterCopyProperty(CFNumberFormatterRef formatter, CFNumberFormatterKey key);
+ 	// Set and get various properties of the number formatter, the set of
+ 	// which may be expanded in the future.
+ 
+-CF_EXPORT const CFStringRef kCFNumberFormatterCurrencyCode;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterDecimalSeparator;	// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterCurrencyDecimalSeparator; // CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterAlwaysShowDecimalSeparator; // CFBoolean
+-CF_EXPORT const CFStringRef kCFNumberFormatterGroupingSeparator;	// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterUseGroupingSeparator;	// CFBoolean
+-CF_EXPORT const CFStringRef kCFNumberFormatterPercentSymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterZeroSymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterNaNSymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterInfinitySymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterMinusSign;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterPlusSign;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterCurrencySymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterExponentSymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterMinIntegerDigits;	// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterMaxIntegerDigits;	// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterMinFractionDigits;	// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterMaxFractionDigits;	// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterGroupingSize;		// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterSecondaryGroupingSize;	// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterRoundingMode;		// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterRoundingIncrement;	// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterFormatWidth;		// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterPaddingPosition;	// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterPaddingCharacter;	// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterDefaultFormat;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterMultiplier;		// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterPositivePrefix;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterPositiveSuffix;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterNegativePrefix;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterNegativeSuffix;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterPerMillSymbol;		// CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterInternationalCurrencySymbol; // CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterCurrencyGroupingSeparator CF_AVAILABLE(10_5, 2_0); // CFString
+-CF_EXPORT const CFStringRef kCFNumberFormatterIsLenient CF_AVAILABLE(10_5, 2_0);		// CFBoolean
+-CF_EXPORT const CFStringRef kCFNumberFormatterUseSignificantDigits CF_AVAILABLE(10_5, 2_0);	// CFBoolean
+-CF_EXPORT const CFStringRef kCFNumberFormatterMinSignificantDigits CF_AVAILABLE(10_5, 2_0);	// CFNumber
+-CF_EXPORT const CFStringRef kCFNumberFormatterMaxSignificantDigits CF_AVAILABLE(10_5, 2_0);	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterCurrencyCode;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterDecimalSeparator;	// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterCurrencyDecimalSeparator; // CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterAlwaysShowDecimalSeparator; // CFBoolean
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterGroupingSeparator;	// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterUseGroupingSeparator;	// CFBoolean
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterPercentSymbol;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterZeroSymbol;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterNaNSymbol;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterInfinitySymbol;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterMinusSign;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterPlusSign;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterCurrencySymbol;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterExponentSymbol;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterMinIntegerDigits;	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterMaxIntegerDigits;	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterMinFractionDigits;	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterMaxFractionDigits;	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterGroupingSize;		// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterSecondaryGroupingSize;	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterRoundingMode;		// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterRoundingIncrement;	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterFormatWidth;		// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterPaddingPosition;	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterPaddingCharacter;	// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterDefaultFormat;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterMultiplier;		// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterPositivePrefix;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterPositiveSuffix;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterNegativePrefix;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterNegativeSuffix;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterPerMillSymbol;		// CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterInternationalCurrencySymbol; // CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterCurrencyGroupingSeparator CF_AVAILABLE(10_5, 2_0); // CFString
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterIsLenient CF_AVAILABLE(10_5, 2_0);		// CFBoolean
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterUseSignificantDigits CF_AVAILABLE(10_5, 2_0);	// CFBoolean
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterMinSignificantDigits CF_AVAILABLE(10_5, 2_0);	// CFNumber
++CF_EXPORT const CFNumberFormatterKey kCFNumberFormatterMaxSignificantDigits CF_AVAILABLE(10_5, 2_0);	// CFNumber
+ 
+ typedef CF_ENUM(CFIndex, CFNumberFormatterRoundingMode) {
+     kCFNumberFormatterRoundCeiling = 0,
+--- a/CFPreferences.h
++++ b/CFPreferences.h
+@@ -33,6 +33,7 @@
+ #include <CoreFoundation/CFString.h>
+ 
+ CF_IMPLICIT_BRIDGING_ENABLED
++CF_ASSUME_NONNULL_BEGIN
+ CF_EXTERN_C_BEGIN
+ 
+ CF_EXPORT
+@@ -63,25 +64,25 @@
+ it returns it; otherwise returns NULL.  Caller must release the
+ returned value */
+ CF_EXPORT
+-CFPropertyListRef CFPreferencesCopyAppValue(CFStringRef key, CFStringRef applicationID);
++_Nullable CFPropertyListRef CFPreferencesCopyAppValue(CFStringRef key, CFStringRef applicationID);
+ 
+ /* Convenience to interpret a preferences value as a boolean directly.
+ Returns false if the key doesn't exist, or has an improper format; under
+ those conditions, keyExistsAndHasValidFormat (if non-NULL) is set to false */
+ CF_EXPORT
+-Boolean CFPreferencesGetAppBooleanValue(CFStringRef key, CFStringRef applicationID, Boolean *keyExistsAndHasValidFormat);
++Boolean CFPreferencesGetAppBooleanValue(CFStringRef key, CFStringRef applicationID, Boolean *_Nullable keyExistsAndHasValidFormat);
+ 
+ /* Convenience to interpret a preferences value as an integer directly.
+ Returns 0 if the key doesn't exist, or has an improper format; under
+ those conditions, keyExistsAndHasValidFormat (if non-NULL) is set to false */
+ CF_EXPORT
+-CFIndex CFPreferencesGetAppIntegerValue(CFStringRef key, CFStringRef applicationID, Boolean *keyExistsAndHasValidFormat);
++CFIndex CFPreferencesGetAppIntegerValue(CFStringRef key, CFStringRef applicationID, Boolean *_Nullable keyExistsAndHasValidFormat);
+ 
+ /* Sets the given value for the given key in the "normal" place for
+ application preferences.  key must not be NULL.  If value is NULL,
+ key is removed instead. */
+ CF_EXPORT
+-void CFPreferencesSetAppValue(CFStringRef key, CFPropertyListRef value, CFStringRef applicationID);
++void CFPreferencesSetAppValue(CFStringRef key, _Nullable CFPropertyListRef value, CFStringRef applicationID);
+ 
+ /* Adds the preferences for the given suite to the app preferences for
+    the specified application.  To write to the suite domain, use
+@@ -103,24 +104,24 @@
+ location specified by app-user-host is searched.  The returned
+ CFType must be released by the caller when it is finished with it. */
+ CF_EXPORT
+-CFPropertyListRef CFPreferencesCopyValue(CFStringRef key, CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
++_Nullable CFPropertyListRef CFPreferencesCopyValue(CFStringRef key, CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
+ 
+ /* Convenience to fetch multiple keys at once.  Keys in 
+ keysToFetch that are not present in the returned dictionary
+ are not present in the domain.  If keysToFetch is NULL, all
+ keys are fetched. */
+ CF_EXPORT
+-CFDictionaryRef CFPreferencesCopyMultiple(CFArrayRef keysToFetch, CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
++CFDictionaryRef CFPreferencesCopyMultiple(_Nullable CFArrayRef keysToFetch, CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
+ 
+ /* The primitive set function; all arguments except value must be
+ non-NULL.  If value is NULL, the given key is removed */
+ CF_EXPORT
+-void CFPreferencesSetValue(CFStringRef key, CFPropertyListRef value, CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
++void CFPreferencesSetValue(CFStringRef key, _Nullable CFPropertyListRef value, CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
+ 
+ /* Convenience to set multiple values at once.  Behavior is undefined
+ if a key is in both keysToSet and keysToRemove */
+ CF_EXPORT
+-void CFPreferencesSetMultiple(CFDictionaryRef keysToSet, CFArrayRef keysToRemove, CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
++void CFPreferencesSetMultiple(_Nullable CFDictionaryRef keysToSet, _Nullable CFArrayRef keysToRemove, CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
+ 
+ CF_EXPORT
+ Boolean CFPreferencesSynchronize(CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
+@@ -130,16 +131,17 @@
+ The returned value must be released by the caller; neither argument
+ may be NULL. */
+ CF_EXPORT
+-CFArrayRef CFPreferencesCopyApplicationList(CFStringRef userName, CFStringRef hostName) CF_DEPRECATED(10_0, 10_9, 2_0, 7_0);
++_Nullable CFArrayRef CFPreferencesCopyApplicationList(CFStringRef userName, CFStringRef hostName) CF_DEPRECATED(10_0, 10_9, 2_0, 7_0);
+ 
+ /* Constructs and returns the list of all keys set in the given
+ location.  The returned value must be released by the caller;
+ all arguments must be non-NULL */
+ CF_EXPORT
+-CFArrayRef CFPreferencesCopyKeyList(CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
++_Nullable CFArrayRef CFPreferencesCopyKeyList(CFStringRef applicationID, CFStringRef userName, CFStringRef hostName);
+ 
+ 
+ CF_EXTERN_C_END
++CF_ASSUME_NONNULL_END
+ CF_IMPLICIT_BRIDGING_DISABLED
+ 
+ #endif /* ! __COREFOUNDATION_CFPREFERENCES__ */
+--- a/CFPropertyList.h
++++ b/CFPropertyList.h
+@@ -136,7 +136,7 @@
+ 
+ CF_IMPLICIT_BRIDGING_DISABLED
+ 
+-enum {
++CF_ENUM(CFIndex) {
+     kCFPropertyListReadCorruptError = 3840,              // Error parsing a property list
+     kCFPropertyListReadUnknownVersionError = 3841,       // The version number in the property list is unknown
+     kCFPropertyListReadStreamError = 3842,               // Stream error reading a property list
+--- a/CFRunLoop.h
++++ b/CFRunLoop.h
+@@ -39,6 +39,8 @@
+ CF_IMPLICIT_BRIDGING_ENABLED
+ CF_EXTERN_C_BEGIN
+ 
++typedef CFStringRef CFRunLoopMode CF_EXTENSIBLE_STRING_ENUM;
++
+ typedef struct __CFRunLoop * CFRunLoopRef;
+ 
+ typedef struct __CFRunLoopSource * CFRunLoopSourceRef;
+@@ -48,7 +50,7 @@
+ typedef struct CF_BRIDGED_MUTABLE_TYPE(NSTimer) __CFRunLoopTimer * CFRunLoopTimerRef;
+ 
+ /* Reasons for CFRunLoopRunInMode() to Return */
+-enum {
++typedef CF_ENUM(SInt32, CFRunLoopRunResult) {
+     kCFRunLoopRunFinished = 1,
+     kCFRunLoopRunStopped = 2,
+     kCFRunLoopRunTimedOut = 3,
+@@ -66,24 +68,24 @@
+     kCFRunLoopAllActivities = 0x0FFFFFFFU
+ };
+ 
+-CF_EXPORT const CFStringRef kCFRunLoopDefaultMode;
+-CF_EXPORT const CFStringRef kCFRunLoopCommonModes;
++CF_EXPORT const CFRunLoopMode kCFRunLoopDefaultMode;
++CF_EXPORT const CFRunLoopMode kCFRunLoopCommonModes;
+ 
+ CF_EXPORT CFTypeID CFRunLoopGetTypeID(void);
+ 
+ CF_EXPORT CFRunLoopRef CFRunLoopGetCurrent(void);
+ CF_EXPORT CFRunLoopRef CFRunLoopGetMain(void);
+ 
+-CF_EXPORT CFStringRef CFRunLoopCopyCurrentMode(CFRunLoopRef rl);
++CF_EXPORT CFRunLoopMode CFRunLoopCopyCurrentMode(CFRunLoopRef rl);
+ 
+ CF_EXPORT CFArrayRef CFRunLoopCopyAllModes(CFRunLoopRef rl);
+ 
+-CF_EXPORT void CFRunLoopAddCommonMode(CFRunLoopRef rl, CFStringRef mode);
++CF_EXPORT void CFRunLoopAddCommonMode(CFRunLoopRef rl, CFRunLoopMode mode);
+ 
+-CF_EXPORT CFAbsoluteTime CFRunLoopGetNextTimerFireDate(CFRunLoopRef rl, CFStringRef mode);
++CF_EXPORT CFAbsoluteTime CFRunLoopGetNextTimerFireDate(CFRunLoopRef rl, CFRunLoopMode mode);
+ 
+ CF_EXPORT void CFRunLoopRun(void);
+-CF_EXPORT SInt32 CFRunLoopRunInMode(CFStringRef mode, CFTimeInterval seconds, Boolean returnAfterSourceHandled);
++CF_EXPORT CFRunLoopRunResult CFRunLoopRunInMode(CFRunLoopMode mode, CFTimeInterval seconds, Boolean returnAfterSourceHandled);
+ CF_EXPORT Boolean CFRunLoopIsWaiting(CFRunLoopRef rl);
+ CF_EXPORT void CFRunLoopWakeUp(CFRunLoopRef rl);
+ CF_EXPORT void CFRunLoopStop(CFRunLoopRef rl);
+@@ -92,17 +94,17 @@
+ CF_EXPORT void CFRunLoopPerformBlock(CFRunLoopRef rl, CFTypeRef mode, void (^block)(void)) CF_AVAILABLE(10_6, 4_0); 
+ #endif
+ 
+-CF_EXPORT Boolean CFRunLoopContainsSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
+-CF_EXPORT void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
+-CF_EXPORT void CFRunLoopRemoveSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
+-
+-CF_EXPORT Boolean CFRunLoopContainsObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
+-CF_EXPORT void CFRunLoopAddObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
+-CF_EXPORT void CFRunLoopRemoveObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
+-
+-CF_EXPORT Boolean CFRunLoopContainsTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
+-CF_EXPORT void CFRunLoopAddTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
+-CF_EXPORT void CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
++CF_EXPORT Boolean CFRunLoopContainsSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode);
++CF_EXPORT void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode);
++CF_EXPORT void CFRunLoopRemoveSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode);
++
++CF_EXPORT Boolean CFRunLoopContainsObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFRunLoopMode mode);
++CF_EXPORT void CFRunLoopAddObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFRunLoopMode mode);
++CF_EXPORT void CFRunLoopRemoveObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFRunLoopMode mode);
++
++CF_EXPORT Boolean CFRunLoopContainsTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFRunLoopMode mode);
++CF_EXPORT void CFRunLoopAddTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFRunLoopMode mode);
++CF_EXPORT void CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFRunLoopMode mode);
+ 
+ typedef struct {
+     CFIndex	version;
+@@ -112,8 +114,8 @@
+     CFStringRef	(*copyDescription)(const void *info);
+     Boolean	(*equal)(const void *info1, const void *info2);
+     CFHashCode	(*hash)(const void *info);
+-    void	(*schedule)(void *info, CFRunLoopRef rl, CFStringRef mode);
+-    void	(*cancel)(void *info, CFRunLoopRef rl, CFStringRef mode);
++    void	(*schedule)(void *info, CFRunLoopRef rl, CFRunLoopMode mode);
++    void	(*cancel)(void *info, CFRunLoopRef rl, CFRunLoopMode mode);
+     void	(*perform)(void *info);
+ } CFRunLoopSourceContext;
+ 
+--- a/CFSocket.h
++++ b/CFSocket.h
+@@ -138,7 +138,7 @@
+ };
+ 
+ /* Socket flags */
+-enum {
++CF_ENUM(CFOptionFlags) {
+     kCFSocketAutomaticallyReenableReadCallBack = 1,
+     kCFSocketAutomaticallyReenableAcceptCallBack = 2,
+     kCFSocketAutomaticallyReenableDataCallBack = 3,
+--- a/CFStream.h
++++ b/CFStream.h
+@@ -40,6 +40,8 @@
+ CF_IMPLICIT_BRIDGING_ENABLED
+ CF_EXTERN_C_BEGIN
+ 
++typedef CFStringRef CFStreamPropertyKey CF_EXTENSIBLE_STRING_ENUM;
++
+ typedef CF_ENUM(CFIndex, CFStreamStatus) {
+     kCFStreamStatusNotOpen = 0,
+     kCFStreamStatusOpening,  /* open is in-progress */
+@@ -62,17 +64,17 @@
+ 
+ typedef struct {
+     CFIndex version;
+-    void *info;
+-    void *(*retain)(void *info);
+-    void (*release)(void *info);
+-    CFStringRef (*copyDescription)(void *info);
++    void * _Null_unspecified info;
++    void *_Null_unspecified(* _Null_unspecified retain)(void * _Null_unspecified info);
++    void (* _Null_unspecified release)(void * _Null_unspecified info);
++    CFStringRef _Null_unspecified (* _Null_unspecified copyDescription)(void * _Null_unspecified info);
+ } CFStreamClientContext;
+ 
+ typedef struct CF_BRIDGED_MUTABLE_TYPE(NSInputStream) __CFReadStream * CFReadStreamRef;
+ typedef struct CF_BRIDGED_MUTABLE_TYPE(NSOutputStream) __CFWriteStream * CFWriteStreamRef;
+ 
+-typedef void (*CFReadStreamClientCallBack)(CFReadStreamRef stream, CFStreamEventType type, void *clientCallBackInfo);
+-typedef void (*CFWriteStreamClientCallBack)(CFWriteStreamRef stream, CFStreamEventType type, void *clientCallBackInfo);
++typedef void (*CFReadStreamClientCallBack)(CFReadStreamRef _Null_unspecified stream, CFStreamEventType type, void * _Null_unspecified clientCallBackInfo);
++typedef void (*CFWriteStreamClientCallBack)(CFWriteStreamRef _Null_unspecified stream, CFStreamEventType type, void * _Null_unspecified clientCallBackInfo);
+ 
+ CF_EXPORT
+ CFTypeID CFReadStreamGetTypeID(void);
+@@ -83,74 +85,74 @@
+ 
+ /* Value will be a CFData containing all bytes thusfar written; used to recover the data written to a memory write stream. */
+ CF_EXPORT
+-const CFStringRef kCFStreamPropertyDataWritten;
++const CFStreamPropertyKey _Null_unspecified kCFStreamPropertyDataWritten;
+ 
+ /* Pass kCFAllocatorNull for bytesDeallocator to prevent CFReadStream from deallocating bytes; otherwise, CFReadStream will deallocate bytes when the stream is destroyed */
+ CF_EXPORT
+-CFReadStreamRef CFReadStreamCreateWithBytesNoCopy(CFAllocatorRef alloc, const UInt8 *bytes, CFIndex length, CFAllocatorRef bytesDeallocator);
++CFReadStreamRef _Null_unspecified CFReadStreamCreateWithBytesNoCopy(CFAllocatorRef _Null_unspecified alloc, const UInt8 *_Null_unspecified bytes, CFIndex length, CFAllocatorRef _Null_unspecified bytesDeallocator);
+ 
+ /* The stream writes into the buffer given; when bufferCapacity is exhausted, the stream is exhausted (status becomes kCFStreamStatusAtEnd) */
+ CF_EXPORT
+-CFWriteStreamRef CFWriteStreamCreateWithBuffer(CFAllocatorRef alloc, UInt8 *buffer, CFIndex bufferCapacity);
++CFWriteStreamRef _Null_unspecified CFWriteStreamCreateWithBuffer(CFAllocatorRef _Null_unspecified alloc, UInt8 *_Null_unspecified buffer, CFIndex bufferCapacity);
+ 
+ /* New buffers are allocated from bufferAllocator as bytes are written to the stream.  At any point, you can recover the bytes thusfar written by asking for the property kCFStreamPropertyDataWritten, above */
+ CF_EXPORT
+-CFWriteStreamRef CFWriteStreamCreateWithAllocatedBuffers(CFAllocatorRef alloc, CFAllocatorRef bufferAllocator);
++CFWriteStreamRef _Null_unspecified CFWriteStreamCreateWithAllocatedBuffers(CFAllocatorRef _Null_unspecified alloc, CFAllocatorRef _Null_unspecified bufferAllocator);
+ 
+ /* File streams */
+ CF_EXPORT
+-CFReadStreamRef CFReadStreamCreateWithFile(CFAllocatorRef alloc, CFURLRef fileURL);
++CFReadStreamRef _Null_unspecified CFReadStreamCreateWithFile(CFAllocatorRef _Null_unspecified alloc, CFURLRef _Null_unspecified fileURL);
+ CF_EXPORT
+-CFWriteStreamRef CFWriteStreamCreateWithFile(CFAllocatorRef alloc, CFURLRef fileURL);
++CFWriteStreamRef _Null_unspecified CFWriteStreamCreateWithFile(CFAllocatorRef _Null_unspecified alloc, CFURLRef _Null_unspecified fileURL);
+ CF_IMPLICIT_BRIDGING_DISABLED
+ CF_EXPORT
+-void CFStreamCreateBoundPair(CFAllocatorRef alloc, CFReadStreamRef *readStream, CFWriteStreamRef *writeStream, CFIndex transferBufferSize);
++void CFStreamCreateBoundPair(CFAllocatorRef _Null_unspecified alloc, CFReadStreamRef _Null_unspecified *_Null_unspecified readStream, CFWriteStreamRef _Null_unspecified *_Null_unspecified writeStream, CFIndex transferBufferSize);
+ CF_IMPLICIT_BRIDGING_ENABLED
+ 
+ /* Property for file write streams; value should be a CFBoolean.  Set to TRUE to append to a file, rather than to replace its contents */
+ CF_EXPORT
+-const CFStringRef kCFStreamPropertyAppendToFile;
++const CFStreamPropertyKey _Null_unspecified kCFStreamPropertyAppendToFile;
+ 
+ CF_EXPORT
+-const CFStringRef kCFStreamPropertyFileCurrentOffset;   // Value is a CFNumber
++const CFStreamPropertyKey _Null_unspecified kCFStreamPropertyFileCurrentOffset;   // Value is a CFNumber
+ 
+ 
+ /* Socket stream properties */
+ 
+ /* Value will be a CFData containing the native handle */
+ CF_EXPORT
+-const CFStringRef kCFStreamPropertySocketNativeHandle;
++const CFStreamPropertyKey _Null_unspecified kCFStreamPropertySocketNativeHandle;
+ 
+ /* Value will be a CFString, or NULL if unknown */
+ CF_EXPORT
+-const CFStringRef kCFStreamPropertySocketRemoteHostName;
++const CFStreamPropertyKey _Null_unspecified kCFStreamPropertySocketRemoteHostName;
+ 
+ /* Value will be a CFNumber, or NULL if unknown */
+ CF_EXPORT
+-const CFStringRef kCFStreamPropertySocketRemotePortNumber;
++const CFStreamPropertyKey _Null_unspecified kCFStreamPropertySocketRemotePortNumber;
+ 
+ CF_IMPLICIT_BRIDGING_DISABLED
+ /* Socket streams; the returned streams are paired such that they use the same socket; pass NULL if you want only the read stream or the write stream */
+ CF_EXPORT
+-void CFStreamCreatePairWithSocket(CFAllocatorRef alloc, CFSocketNativeHandle sock, CFReadStreamRef *readStream, CFWriteStreamRef *writeStream);
++void CFStreamCreatePairWithSocket(CFAllocatorRef _Null_unspecified alloc, CFSocketNativeHandle sock, CFReadStreamRef _Null_unspecified *_Null_unspecified readStream, CFWriteStreamRef _Null_unspecified *_Null_unspecified writeStream);
+ CF_EXPORT
+-void CFStreamCreatePairWithSocketToHost(CFAllocatorRef alloc, CFStringRef host, UInt32 port, CFReadStreamRef *readStream, CFWriteStreamRef *writeStream);
++void CFStreamCreatePairWithSocketToHost(CFAllocatorRef _Null_unspecified alloc, CFStringRef _Null_unspecified host, UInt32 port, CFReadStreamRef _Null_unspecified *_Null_unspecified readStream, CFWriteStreamRef _Null_unspecified *_Null_unspecified writeStream);
+ CF_EXPORT
+-void CFStreamCreatePairWithPeerSocketSignature(CFAllocatorRef alloc, const CFSocketSignature *signature, CFReadStreamRef *readStream, CFWriteStreamRef *writeStream);
++void CFStreamCreatePairWithPeerSocketSignature(CFAllocatorRef _Null_unspecified alloc, const CFSocketSignature *_Null_unspecified signature, CFReadStreamRef _Null_unspecified *_Null_unspecified readStream, CFWriteStreamRef _Null_unspecified *_Null_unspecified writeStream);
+ CF_IMPLICIT_BRIDGING_ENABLED
+ 
+ 
+ /* Returns the current state of the stream */
+ CF_EXPORT
+-CFStreamStatus CFReadStreamGetStatus(CFReadStreamRef stream);
++CFStreamStatus CFReadStreamGetStatus(CFReadStreamRef _Null_unspecified stream);
+ CF_EXPORT
+-CFStreamStatus CFWriteStreamGetStatus(CFWriteStreamRef stream);
++CFStreamStatus CFWriteStreamGetStatus(CFWriteStreamRef _Null_unspecified stream);
+ 
+ /* Returns NULL if no error has occurred; otherwise returns the error. */
+ CF_EXPORT
+-CFErrorRef CFReadStreamCopyError(CFReadStreamRef stream) CF_AVAILABLE(10_5, 2_0);
++CFErrorRef _Null_unspecified CFReadStreamCopyError(CFReadStreamRef _Null_unspecified stream) CF_AVAILABLE(10_5, 2_0);
+ CF_EXPORT
+-CFErrorRef CFWriteStreamCopyError(CFWriteStreamRef stream) CF_AVAILABLE(10_5, 2_0);
++CFErrorRef _Null_unspecified CFWriteStreamCopyError(CFWriteStreamRef _Null_unspecified stream) CF_AVAILABLE(10_5, 2_0);
+ 
+ /* Returns success/failure.  Opening a stream causes it to reserve all the system
+    resources it requires.  If the stream can open non-blocking, this will always 
+@@ -158,22 +160,22 @@
+    and whether it was successful, or poll using CFRead/WriteStreamGetStatus(), waiting 
+    for a status of kCFStreamStatusOpen or kCFStreamStatusError.  */
+ CF_EXPORT
+-Boolean CFReadStreamOpen(CFReadStreamRef stream);
++Boolean CFReadStreamOpen(CFReadStreamRef _Null_unspecified stream);
+ CF_EXPORT
+-Boolean CFWriteStreamOpen(CFWriteStreamRef stream);
++Boolean CFWriteStreamOpen(CFWriteStreamRef _Null_unspecified stream);
+ 
+ /* Terminates the flow of bytes; releases any system resources required by the 
+    stream.  The stream may not fail to close.  You may call CFStreamClose() to 
+    effectively abort a stream. */
+ CF_EXPORT
+-void CFReadStreamClose(CFReadStreamRef stream);
++void CFReadStreamClose(CFReadStreamRef _Null_unspecified stream);
+ CF_EXPORT
+-void CFWriteStreamClose(CFWriteStreamRef stream);
++void CFWriteStreamClose(CFWriteStreamRef _Null_unspecified stream);
+ 
+ /* Whether there is data currently available for reading; returns TRUE if it's 
+    impossible to tell without trying */
+ CF_EXPORT
+-Boolean CFReadStreamHasBytesAvailable(CFReadStreamRef stream);
++Boolean CFReadStreamHasBytesAvailable(CFReadStreamRef _Null_unspecified stream);
+ 
+ /* Returns the number of bytes read, or -1 if an error occurs preventing any 
+    bytes from being read, or 0 if the stream's end was encountered.  
+@@ -183,7 +185,7 @@
+    CFReadStreamHasBytesAvailable() or use the run loop and listen for the 
+    kCFStreamCanRead event for notification of data available. */
+ CF_EXPORT
+-CFIndex CFReadStreamRead(CFReadStreamRef stream, UInt8 *buffer, CFIndex bufferLength);
++CFIndex CFReadStreamRead(CFReadStreamRef _Null_unspecified stream, UInt8 *_Null_unspecified buffer, CFIndex bufferLength);
+ 
+ /* Returns a pointer to an internal buffer if possible (setting *numBytesRead
+    to the length of the returned buffer), otherwise returns NULL; guaranteed
+@@ -195,12 +197,12 @@
+    change the contents of the returned buffer nor attempt to deallocate the buffer;
+    it is still owned by the stream. */
+ CF_EXPORT
+-const UInt8 *CFReadStreamGetBuffer(CFReadStreamRef stream, CFIndex maxBytesToRead, CFIndex *numBytesRead);
++const UInt8 *_Null_unspecified CFReadStreamGetBuffer(CFReadStreamRef _Null_unspecified stream, CFIndex maxBytesToRead, CFIndex *_Null_unspecified numBytesRead);
+ 
+ /* Whether the stream can currently be written to without blocking;
+    returns TRUE if it's impossible to tell without trying */
+ CF_EXPORT
+-Boolean CFWriteStreamCanAcceptBytes(CFWriteStreamRef stream);
++Boolean CFWriteStreamCanAcceptBytes(CFWriteStreamRef _Null_unspecified stream);
+ 
+ /* Returns the number of bytes successfully written, -1 if an error has
+    occurred, or 0 if the stream has been filled to capacity (for fixed-length
+@@ -208,7 +210,7 @@
+    one byte is written.  To avoid blocking, either poll via CFWriteStreamCanAcceptBytes
+    or use the run loop and listen for the kCFStreamCanWrite event. */
+ CF_EXPORT
+-CFIndex CFWriteStreamWrite(CFWriteStreamRef stream, const UInt8 *buffer, CFIndex bufferLength);
++CFIndex CFWriteStreamWrite(CFWriteStreamRef _Null_unspecified stream, const UInt8 *_Null_unspecified buffer, CFIndex bufferLength);
+ 
+ /* Particular streams can name properties and assign meanings to them; you
+    access these properties through the following calls.  A property is any interesting
+@@ -219,16 +221,16 @@
+    (like before the stream has been opened).  See the documentation for particular 
+    properties to determine their get- and set-ability. */
+ CF_EXPORT
+-CFTypeRef CFReadStreamCopyProperty(CFReadStreamRef stream, CFStringRef propertyName);
++CFTypeRef _Null_unspecified CFReadStreamCopyProperty(CFReadStreamRef _Null_unspecified stream, CFStreamPropertyKey _Null_unspecified propertyName);
+ CF_EXPORT
+-CFTypeRef CFWriteStreamCopyProperty(CFWriteStreamRef stream, CFStringRef propertyName);
++CFTypeRef _Null_unspecified CFWriteStreamCopyProperty(CFWriteStreamRef _Null_unspecified stream, CFStreamPropertyKey _Null_unspecified propertyName);
+ 
+ /* Returns TRUE if the stream recognizes and accepts the given property-value pair; 
+    FALSE otherwise. */
+ CF_EXPORT
+-Boolean CFReadStreamSetProperty(CFReadStreamRef stream, CFStringRef propertyName, CFTypeRef propertyValue);
++Boolean CFReadStreamSetProperty(CFReadStreamRef _Null_unspecified stream, CFStreamPropertyKey _Null_unspecified propertyName, CFTypeRef _Null_unspecified propertyValue);
+ CF_EXPORT
+-Boolean CFWriteStreamSetProperty(CFWriteStreamRef stream, CFStringRef propertyName, CFTypeRef propertyValue);
++Boolean CFWriteStreamSetProperty(CFWriteStreamRef _Null_unspecified stream, CFStreamPropertyKey _Null_unspecified propertyName, CFTypeRef _Null_unspecified propertyValue);
+ 
+ /* Asynchronous processing - If you wish to neither poll nor block, you may register 
+    a client to hear about interesting events that occur on a stream.  Only one client
+@@ -247,19 +249,19 @@
+ */
+ 
+ CF_EXPORT
+-Boolean CFReadStreamSetClient(CFReadStreamRef stream, CFOptionFlags streamEvents, CFReadStreamClientCallBack clientCB, CFStreamClientContext *clientContext);
++Boolean CFReadStreamSetClient(CFReadStreamRef _Null_unspecified stream, CFOptionFlags streamEvents, CFReadStreamClientCallBack _Null_unspecified clientCB, CFStreamClientContext *_Null_unspecified clientContext);
+ CF_EXPORT
+-Boolean CFWriteStreamSetClient(CFWriteStreamRef stream, CFOptionFlags streamEvents, CFWriteStreamClientCallBack clientCB, CFStreamClientContext *clientContext);
++Boolean CFWriteStreamSetClient(CFWriteStreamRef _Null_unspecified stream, CFOptionFlags streamEvents, CFWriteStreamClientCallBack _Null_unspecified clientCB, CFStreamClientContext *_Null_unspecified clientContext);
+ 
+ CF_EXPORT
+-void CFReadStreamScheduleWithRunLoop(CFReadStreamRef stream, CFRunLoopRef runLoop, CFStringRef runLoopMode);
++void CFReadStreamScheduleWithRunLoop(CFReadStreamRef _Null_unspecified stream, CFRunLoopRef _Null_unspecified runLoop, CFRunLoopMode _Null_unspecified runLoopMode);
+ CF_EXPORT
+-void CFWriteStreamScheduleWithRunLoop(CFWriteStreamRef stream, CFRunLoopRef runLoop, CFStringRef runLoopMode);
++void CFWriteStreamScheduleWithRunLoop(CFWriteStreamRef _Null_unspecified stream, CFRunLoopRef _Null_unspecified runLoop, _Null_unspecified CFRunLoopMode runLoopMode);
+ 
+ CF_EXPORT
+-void CFReadStreamUnscheduleFromRunLoop(CFReadStreamRef stream, CFRunLoopRef runLoop, CFStringRef runLoopMode);
++void CFReadStreamUnscheduleFromRunLoop(CFReadStreamRef _Null_unspecified stream, CFRunLoopRef _Null_unspecified runLoop, CFRunLoopMode _Null_unspecified runLoopMode);
+ CF_EXPORT
+-void CFWriteStreamUnscheduleFromRunLoop(CFWriteStreamRef stream, CFRunLoopRef runLoop, CFStringRef runLoopMode);
++void CFWriteStreamUnscheduleFromRunLoop(CFWriteStreamRef _Null_unspecified stream, CFRunLoopRef _Null_unspecified runLoop, CFRunLoopMode _Null_unspecified runLoopMode);
+ 
+ /*
+  * Specify the dispatch queue upon which the client callbacks will be invoked.
+@@ -269,10 +271,10 @@
+  * with a runloop will disassociate the stream from any existing dispatch queue.
+  */
+ CF_EXPORT
+-void CFReadStreamSetDispatchQueue(CFReadStreamRef stream, dispatch_queue_t q) CF_AVAILABLE(10_9, 7_0);
++void CFReadStreamSetDispatchQueue(CFReadStreamRef _Null_unspecified stream, dispatch_queue_t _Null_unspecified q) CF_AVAILABLE(10_9, 7_0);
+ 
+ CF_EXPORT
+-void CFWriteStreamSetDispatchQueue(CFWriteStreamRef stream, dispatch_queue_t q) CF_AVAILABLE(10_9, 7_0);
++void CFWriteStreamSetDispatchQueue(CFWriteStreamRef _Null_unspecified stream, dispatch_queue_t _Null_unspecified q) CF_AVAILABLE(10_9, 7_0);
+ 
+ /*
+  * Returns the previously set dispatch queue with an incremented retain count.  
+@@ -280,10 +282,10 @@
+  * scheduled on a runloop subsequent to it having had a dispatch queue set.
+  */
+ CF_EXPORT
+-dispatch_queue_t CFReadStreamCopyDispatchQueue(CFReadStreamRef stream) CF_AVAILABLE(10_9, 7_0);
++dispatch_queue_t _Null_unspecified CFReadStreamCopyDispatchQueue(CFReadStreamRef _Null_unspecified stream) CF_AVAILABLE(10_9, 7_0);
+ 
+ CF_EXPORT
+-dispatch_queue_t CFWriteStreamCopyDispatchQueue(CFWriteStreamRef stream) CF_AVAILABLE(10_9, 7_0);
++dispatch_queue_t _Null_unspecified CFWriteStreamCopyDispatchQueue(CFWriteStreamRef _Null_unspecified stream) CF_AVAILABLE(10_9, 7_0);
+ 
+ /* The following API is deprecated starting in 10.5; please use CFRead/WriteStreamCopyError(), above, instead */
+ typedef CF_ENUM(CFIndex, CFStreamErrorDomain) {
+@@ -297,9 +299,9 @@
+     SInt32 error;
+ } CFStreamError;
+ CF_EXPORT
+-CFStreamError CFReadStreamGetError(CFReadStreamRef stream);
++CFStreamError CFReadStreamGetError(CFReadStreamRef _Null_unspecified stream);
+ CF_EXPORT
+-CFStreamError CFWriteStreamGetError(CFWriteStreamRef stream);
++CFStreamError CFWriteStreamGetError(CFWriteStreamRef _Null_unspecified stream);
+ 
+ 
+ CF_EXTERN_C_END
+--- a/CFTimeZone.h
++++ b/CFTimeZone.h
+@@ -34,6 +34,7 @@
+ #include <CoreFoundation/CFDate.h>
+ #include <CoreFoundation/CFDictionary.h>
+ #include <CoreFoundation/CFString.h>
++#include <CoreFoundation/CFNotificationCenter.h>
+ 
+ CF_IMPLICIT_BRIDGING_ENABLED
+ CF_EXTERN_C_BEGIN
+@@ -105,7 +106,7 @@
+ CFStringRef CFTimeZoneCopyLocalizedName(CFTimeZoneRef tz, CFTimeZoneNameStyle style, CFLocaleRef locale) CF_AVAILABLE(10_5, 2_0);
+ 
+ CF_EXPORT
+-const CFStringRef kCFTimeZoneSystemTimeZoneDidChangeNotification CF_AVAILABLE(10_5, 2_0);
++const CFNotificationName kCFTimeZoneSystemTimeZoneDidChangeNotification CF_AVAILABLE(10_5, 2_0);
+ 
+ CF_EXTERN_C_END
+ CF_IMPLICIT_BRIDGING_DISABLED
+--- a/CFUserNotification.h
++++ b/CFUserNotification.h
+@@ -122,21 +122,21 @@
+ 
+ /* Flags */
+ 
+-enum {
++CF_ENUM(CFOptionFlags) {
+     kCFUserNotificationStopAlertLevel 		= 0,
+     kCFUserNotificationNoteAlertLevel 		= 1,
+     kCFUserNotificationCautionAlertLevel 	= 2,
+     kCFUserNotificationPlainAlertLevel		= 3
+ };
+ 
+-enum {
++CF_ENUM(CFOptionFlags) {
+     kCFUserNotificationDefaultResponse		= 0,
+     kCFUserNotificationAlternateResponse	= 1,
+     kCFUserNotificationOtherResponse		= 2,
+     kCFUserNotificationCancelResponse		= 3
+ };
+ 
+-enum {
++CF_ENUM(CFOptionFlags) {
+     kCFUserNotificationNoDefaultButtonFlag 	= (1UL << 5),
+     kCFUserNotificationUseRadioButtonsFlag 	= (1UL << 6)
+ };

@@ -136,6 +136,9 @@ step_frameworks() {
   # and an additions.patch to others (the notices name what each file got)
   cp "$DATA/CF/CFNotificationCenter.h" "$DATA/CF/CFAttributedString.h" "$H/"
   python3 -I "$HELPERS/apply_diff.py" "$H" "$DATA/CF/additions.patch" || die "data/CF/additions.patch does not apply"
+  # the typed string aliases, nullability and typed enumerations (a second patch, made against the result
+  # of the first, so that each can be updated alone)
+  python3 -I "$HELPERS/apply_diff.py" "$H" "$DATA/CF/typed.patch" || die "data/CF/typed.patch does not apply"
   perl -pi -e 's|^(#include <CoreFoundation/CFBase.h>)|$1\n#include <CoreFoundation/CFMachPort.h>\n#include <CoreFoundation/CFAttributedString.h>\n#include <CoreFoundation/CFNotificationCenter.h>|' "$H/CoreFoundation.h"
   cat "$DATA/CFCompat.h.in" >> "$H/CFAvailability.h"
   add_notice "$H/CFAvailability.h" "annotation macros for the headers of other frameworks added at the end"
@@ -151,6 +154,20 @@ step_frameworks() {
   add_notice "$H/CFNumberFormatter.h" "the styles of 10.11 added ($cfn)"
   add_notice "$H/CFURL.h" "the resource keys and bookmark options of 10.7 to 11.3 added ($cfn)"
   add_notice "$H/CFUserNotification.h" "kCFUserNotificationAlertTopMostKey and kCFUserNotificationKeyboardTypesKey declared for macOS ($cfn)"
+  local typed="typed declarations as in swift-corelibs-foundation swift-6.4.3-RELEASE (Apache 2.0 with Runtime Library Exception)"
+  add_notice "$H/CFCalendar.h" "CFCalendarIdentifier used, kCFCalendarComponentsWrap typed ($typed)"
+  add_notice "$H/CFDateFormatter.h" "CFDateFormatterKey added and used ($typed)"
+  add_notice "$H/CFError.h" "CFErrorDomain added and used ($typed)"
+  add_notice "$H/CFLocale.h" "CFLocaleIdentifier, CFLocaleKey and CFCalendarIdentifier added and used ($typed)"
+  add_notice "$H/CFMessagePort.h" "the result codes typed ($typed)"
+  add_notice "$H/CFNumberFormatter.h" "CFNumberFormatterKey added and used ($typed)"
+  add_notice "$H/CFPreferences.h" "nullability added ($typed)"
+  add_notice "$H/CFPropertyList.h" "the read error codes typed ($typed)"
+  add_notice "$H/CFRunLoop.h" "CFRunLoopMode and CFRunLoopRunResult added and used ($typed)"
+  add_notice "$H/CFSocket.h" "the socket flags typed ($typed)"
+  add_notice "$H/CFStream.h" "CFStreamPropertyKey added and used, nullability added ($typed)"
+  add_notice "$H/CFTimeZone.h" "CFNotificationName used ($typed)"
+  add_notice "$H/CFUserNotification.h" "the alert levels, responses and button flags typed ($typed)"
   cp "$SRC/CarbonHeaders/MacTypes.h" "$SRC/CarbonHeaders/ConditionalMacros.h" "$STAGE_INC/"
   local hl; hl=$(cd "$H" && ls *.h | tr '\n' ' ')
   # shellcheck disable=SC2086
