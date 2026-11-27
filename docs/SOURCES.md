@@ -574,6 +574,12 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   projects' own build), and `kCDFeatures*` and `kDVDFeatures*`, which no open release of IOCDStorageFamily or  
   IODVDStorageFamily declares.
 - Symbols: the declarations of these headers (as for the other frameworks), defined in IOKitUser.
+- `IOKit/IOUserServer.h` (with `kIOUserServerClassKey`, `kIOUserServerNameKey`, `kIOUserServerTagKey`): xnu's `iokit/IOKit/Makefile`  
+  lists it in `INSTALL_IF_MI_LIST`, the headers that go to `IOKit.framework/Headers`, as the other headers of this directory  
+  (it is copied after `unifdef`, as they are; the DriverKit parts are under `DRIVERKIT_PRIVATE`).
+- Not added: `IORPCMessageFromMach` (declared in `IORPC.h`; no open source exports it from `IOKit`: xnu defines it for the kernel,  
+  DriverKit is not part of the SDK) and `IONDRVLibrariesInitialize` (a kernel function of IOGraphics, which has only  
+  `_IONDRVLibrariesInitialize` in `IONDRVLibraries.h`, a header that is not installed).
 - Not installed: `hidsystem/IOHIDEventSystemClient.h` and `hidsystem/IOHIDServiceClient.h`  
   (IOKitUser `hidsystem.subproj`): IOKitUser builds their functions from  
   `hid.subproj/IOHIDEventSystemClient.c` and `IOHIDServiceClient.c`, which are empty in the open source releases  

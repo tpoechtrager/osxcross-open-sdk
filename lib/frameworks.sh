@@ -177,7 +177,7 @@ step_frameworks() {
   echo "IOKit"
   H=$STAGE_FW/IOKit.framework/Headers; rm -rf "$STAGE_FW/IOKit.framework"; mkdir -p "$H/ps" "$H/pwr_mgt"
   local fl; fl=$(python3 -I "$HELPERS/xnu_headers.py" "$SRC/xnu" --print-flags)
-  for h in IOBSD IODataQueueShared IOKitKeys IOKitServer IOMapTypes IOMessage IOReturn IORPC IOSharedLock IOTypes OSMessageNotification; do
+  for h in IOBSD IODataQueueShared IOKitKeys IOKitServer IOMapTypes IOMessage IOReturn IORPC IOSharedLock IOTypes IOUserServer OSMessageNotification; do
     # shellcheck disable=SC2086
     run_unifdef $fl -o "$H/$h.h" "$SRC/xnu/iokit/IOKit/$h.h"
   done
