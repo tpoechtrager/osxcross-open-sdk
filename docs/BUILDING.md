@@ -130,12 +130,32 @@ tests/lint.sh                                     # bash -n, shellcheck, Python 
 tests/unit/run.sh                                 # helpers, data files, options and shell functions
 tests/sdk-check.sh out/MacOSX26.5-open-sdk-<hash>.tar.xz # every header alone
 tests/run.sh --osxcross /path/to/osxcross/target  # the test programs
+tests/projects.sh --osxcross ~/dev/osxcross --sdk out/MacOSX26.5-open-sdk-<hash>.tar.xz # the projects of TESTED.md
 ```
 
 `tests/sdk-check.sh` compiles every header of `usr/include` on its own (C and C++, x86_64 and arm64;  
 `--gcc` also with GCC). `tests/run.sh` builds `tests/programs/` for both architectures and runs them  
 on a Mac with `--ssh HOST`. Last result: all 11 SDKs (7 core, 4 full) pass both checks,  
 and their x86_64 programs ran on macOS 26.0.
+
+**OSXCross of `tests/projects.sh`:**
+- `--osxcross DIR`: an OSXCross target, or a checkout whose `target/` is used if it is built;  
+  otherwise a target is built from `git archive` of the checkout (the checkout is never written).
+- Without `--osxcross`, OSXCross is cloned (`OSXCROSS_GIT`, `OSXCROSS_REF`; default: master of  
+  github.com/tpoechtrager/osxcross) and built.
+- A built target is kept in `build/osxcross` for the next run; `--flavor llvm|stable` builds one also  
+  if the checkout has a target.
+- The SDK of `--sdk` is selected with `SDKROOT`, so one target builds with every SDK.
+
+**`tests/projects.sh`** builds the projects of [TESTED.md](TESTED.md) for x86_64 and arm64 and, with  
+`--ssh HOST`, runs the x86_64 programs and tests of the projects on a Mac.
+- The sources (URL, SHA-256), recipes and tests are in the script; downloads are kept in `build/projects/dl`.
+- `--list` shows the projects of the groups, `--only "NAME ..."` builds some of them (and what they need).
+- Groups (`--group`): `main` (the default), `compilers` (LLVM, compiler-rt, cctools-port: very large),  
+  `games` (Cube 2: Sauerbraten with the SDL frameworks of SDL's releases; needs `7z` or `7zz`) and `all`.
+- With a core SDK the projects that need the full SDK are shown as "full only"; a project whose tool is  
+  missing as "no tool". Neither counts as a failure.
+- The test of Cube 2: Sauerbraten opens a window: the user of `--ssh` must be logged in at the Mac.
 
 ## New macOS releases
 

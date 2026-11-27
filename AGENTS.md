@@ -48,7 +48,7 @@ Pages of Apple's online documentation that were read for this project may be cac
 | `docs/` | `SOURCES.md` (the public source of every value: headers, symbols, install names, versions, `SDKSettings.json` keys), `BUILDING.md` (dependencies, options, tests), `TESTED.md`, `LIBCXX.md`, `DETAILS.md`. |
 | `data/` | The releases (`releases.txt`), own files (`own-files.txt`; the copied ones in `headers/`, by their path in the SDK, 0BSD), symbol lists with their sources (`symbols/`), install names and versions (`libraries.txt`), `libcxx-versions.txt`, `availability-extra.dsl`, `CFCompat.h.in`, license texts (`licenses/`). |
 | `extras/` | Optional tools, e.g. `build-libcxx-static.sh`. |
-| `tests/` | Unit tests (`unit/`), the lint script (`lint.sh`), the header check (`sdk-check.sh` with `sdk-check.py`; its allow list is `tests/data/header-allow.txt`) and the test programs (`programs/`, `run.sh`). |
+| `tests/` | Unit tests (`unit/`), the lint script (`lint.sh`), the header check (`sdk-check.sh` with `sdk-check.py`; its allow list is `tests/data/header-allow.txt`), the test programs (`programs/`, `run.sh`) and the open source projects of `docs/TESTED.md` (`projects.sh`). |
 | `.github/workflows/` | `ci.yml` (tests, all releases, an OSXCross build) and `release.yml` (tarballs of a tag). |
 
 ## Conventions

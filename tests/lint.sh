@@ -8,7 +8,7 @@ cd "$HERE/.." || exit 2
 rc=0
 bash -n make-open-sdk.sh lib/*.sh || rc=1
 if command -v shellcheck >/dev/null 2>&1; then
-  shellcheck -x -S warning make-open-sdk.sh lib/*.sh tests/*.sh tests/unit/*.sh extras/*.sh || rc=1
+  shellcheck -x -S warning make-open-sdk.sh lib/*.sh tests/*.sh tests/lib/*.sh tests/unit/*.sh extras/*.sh || rc=1
 else
   echo "tests/lint.sh: shellcheck is not installed" >&2
   rc=1

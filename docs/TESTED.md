@@ -3,7 +3,8 @@
 Open source projects that were built with the full Open SDK of macOS 26.5 for x86_64 and arm64 (OSXCross  
 llvm flavor, Clang 23.1.6, `ld64.lld`, deployment target 11.0). The x86_64 programs ran on macOS 26.0:  
 with the test suite of the project where it could be built, otherwise with a smoke test. 29 of the  
-projects were also built with the stable flavor (cctools/ld64).
+projects were also built with the stable flavor (cctools/ld64).  
+`tests/projects.sh` builds and tests the projects except the Rust crates, see [BUILDING.md](BUILDING.md#tests).
 
 - **Compression:** `zlib`, `bzip2`, `xz`, `zstd`, `lz4`, `brotli`, `libarchive`
 - **Data formats:** `expat`, `libxml2`, `libyaml`, `jansson`, `cJSON`, `json-c`, `jq`,  
@@ -18,7 +19,8 @@ projects were also built with the stable flavor (cctools/ld64).
   `gmp`, `mpfr`, `libffi`, `xxhash`, `lmdb`, `redis`
 - **Version control:** `git`, `libgit2` (also with SecureTransport)
 - **File system events:** the `git` fsmonitor daemon, `fswatch`
-- **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`mac/hid.c` and `hidtest`), `libusb` (`listdevs`)
+- **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`hidtest`),  
+  `libusb` (`listdevs`, `testlibusb` and its tests `set_option`, `init_context`)
 - **Rust crates** (Rust 1.100, OSXCross as the linker; the crates declare what they use of the frameworks):
   - `winit` (opens a window)
   - `core-graphics`, `core-text`
