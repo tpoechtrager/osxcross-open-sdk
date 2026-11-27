@@ -14,16 +14,17 @@ A macOS SDK for [OSXCross](https://github.com/tpoechtrager/osxcross) and other t
 
 ## What it is
 
-osxcross-open-sdk is an open macOS SDK: it contains **nothing proprietary of Apple's** and is not  
-derived from an SDK made by Apple. It is built by `make-open-sdk.sh` from public sources only,  
-so it can be shared, for example in public container images and in CI jobs.  
+osxcross-open-sdk is an open macOS SDK. It contains **nothing proprietary of Apple's**: no file, header text  
+or symbol list is taken from an SDK or a program made by Apple. `make-open-sdk.sh` builds it from public  
+sources only, so it can be shared, for example in public container images and in CI jobs.  
 Every file comes from one of these:
 
 - Apple's open source releases ([apple-oss-distributions](https://github.com/apple-oss-distributions),  
   APSL 2.0 and the licenses of the single projects), at the tags of a macOS release;
 - LLVM (`libc++` and `libc++abi`);
 - other open source projects (`sqlite3`, liblzma of `xz`; the Swift runtime of swift.org for the optional Swift add-on);
-- files written for this SDK (0BSD): a few headers and the `.tbd` stubs.
+- files written for this SDK (0BSD): a few headers and the `.tbd` stubs, with names, signatures and values from open  
+  source projects and from Apple's public documentation.
 
 [docs/SOURCES.md](docs/SOURCES.md) names the public source of every header, symbol list,  
 install name and version. A real SDK was used only to test a result, never as a source.
