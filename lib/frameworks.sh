@@ -7,8 +7,8 @@
 # Frameworks (not with --core): CoreFoundation, IOKit, DiskArbitration,
 # Security, SystemConfiguration: headers from the open source releases and a
 # <Name>.tbd in the framework directory (Name.framework/Name.tbd); CoreServices:
-# own headers (File System Events only); Foundation: only the .tbd, with the
-# symbols of Apple's documentation (fw_doc).
+# own headers (File System Events only); Foundation, CoreGraphics: only
+# the .tbd, with the symbols of Apple's documentation (fw_doc).
 # ---------------------------------------------------------------------------
 # fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/):
 # the symbols that HEADERs declare, without those of data/symbols/NAME-exclude.txt, and
@@ -196,11 +196,14 @@ step_frameworks() {
   # shellcheck disable=SC2046
   fw_tbd SystemConfiguration $(cd "$H" && ls *.h | tr '\n' ' ')
 
-  # Foundation: a link stub without headers (fw_doc).  It also lets `-framework Foundation`
-  # link (Clang adds it for -fobjc-arc, and build systems pass it without using
-  # Foundation).  A program loads the system's Foundation at run time.
-  echo "Foundation"
-  fw_doc Foundation
+  # Foundation, CoreGraphics: link stubs without headers (fw_doc).  Foundation
+  # also lets `-framework Foundation` link (Clang adds it for -fobjc-arc, and build systems
+  # pass it without using Foundation).  A program loads the system's frameworks at run time.
+  local fw
+  for fw in Foundation CoreGraphics; do
+    echo "$fw"
+    fw_doc "$fw"
+  done
 
   # CoreServices: only File System Events, with the own headers installed
   # above (CoreServices.h includes only FSEvents.h); CoreServices has no open

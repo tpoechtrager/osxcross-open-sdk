@@ -1,0 +1,7 @@
+# Symbols of CoreGraphics that Apple's documentation does not list (so they are not in
+# data/symbols/doc/CoreGraphics.txt): private functions that open projects declare
+# themselves and link from CoreGraphics, so they rely on it.  Each entry names the
+# project (commit) and file.
+_CGSMainConnectionID              # winit b1a0534, winit-appkit/src/window_delegate.rs (link CoreGraphics);
+                                  # also declared by Godot 7c97c29, platform/macos/macos_quartz_core_spi.h
+_CGSSetWindowBackgroundBlurRadius # winit b1a0534, winit-appkit/src/window_delegate.rs (link CoreGraphics)

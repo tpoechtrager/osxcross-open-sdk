@@ -34,7 +34,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Link stubs of Foundation | Apple's documentation, GNUstep ([details](#link-stubs-from-apples-documentation)) |
+| Link stubs of Foundation, CoreGraphics | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
@@ -491,11 +491,12 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### Link stubs from Apple's documentation
 
-**Files:** `data/symbols/doc/`, `tools/doc_symbols.py`, `lib/frameworks.sh`, `data/libraries.txt`
+**Files:** `data/symbols/doc/`, `data/symbols/CoreGraphics-extra.txt`,  
+`tools/doc_symbols.py`, `lib/frameworks.sh`, `data/libraries.txt`
 
-- Full SDK only. Foundation has no open source release: the SDK has only its `.tbd`, no headers  
+- Full SDK only. These frameworks have no open source release: the SDK has only their `.tbd`, no headers  
   (the documentation does not give the values of macros, enumerators and the fields of structs).  
-  It is for languages and packages that declare what they use themselves (Rust crates, for example).
+  They are for languages and packages that declare what they use themselves (Rust crates, for example).
 - The symbols: the C functions and global variables and constants that Apple's documentation lists for macOS  
   (developer.apple.com/documentation; the page of each symbol is in its line of `data/symbols/doc/<name>.txt`,  
   with the release that brought it). `tools/doc_symbols.py` makes the lists from the JSON form of the pages  
@@ -515,8 +516,14 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - The documentation does not say which symbols exist on only one architecture, or which functions are not  
   exported (inline): every symbol is in the stub for x86_64 and arm64. A symbol that a release of macOS does  
   not export links, but the program stops at start with "symbol not found".
-- Install name: the one that dyld's source names (below).
-- Versions: the lowest possible ones (`1.0.0`).
+- Symbols that the documentation does not list, which open projects declare themselves and link from  
+  these frameworks, so they rely on them (`CoreGraphics-extra.txt`, each line names the project and file):  
+  the private functions `CGSMainConnectionID` and `CGSSetWindowBackgroundBlurRadius`  
+  (winit b1a0534, `winit-appkit/src/window_delegate.rs`).
+- Install names: Foundation's is the one that dyld's source names (below). CoreGraphics (`Versions/A`):  
+  the lists of macOS system libraries of astral-sh/python-build-standalone 139273f, `src/validation.rs`  
+  (MPL-2.0), and michidk/maiko f984528, `crates/patcher/src/macos.rs` (MIT).
+- Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
 
 ---
 
