@@ -24,6 +24,27 @@ from them goes into the repository, and no value is found by trying on a
 real macOS. If there is no public source for a value, choose the
 conservative value and say so in `docs/SOURCES.md`.
 
+Not a source, because it is made from Apple's SDKs or binaries (the license of the project does not change that):
+- The `objc2-*` crates and other generated bindings (`bindgen`-made `*-sys` crates, `carbon-bindgen`, `global-hotkey`,
+  `super_native_extensions`): objc2's `LICENSE.md` says "These crates are derived from Apple SDKs shipped with Xcode".
+- Darling: its framework stubs come from its stub generator, which runs on macOS and reads Apple's frameworks
+  (darling-docs, "Generating stubs").
+- nixpkgs' Apple SDK packages: `pkgs/os-specific/darwin/apple-sdk/default.nix` downloads Apple's `DevSDK_OSX1012.pkg`
+  from swcdn.apple.com and copies its headers; lists such as `impure_deps.nix` are generated on a Mac.
+- Header dumps, crash reports, `otool` or `dyld` output, ipsw diffs: they are read from Apple's binaries.
+- A project that only includes Apple's headers, such as Godot, OBS Studio or SDL with `<Carbon/Carbon.h>`
+  (it shows that a name is used, not its declaration).
+
+A source is what Apple itself published as open source, and what a project declares itself. WebKit is Apple's own
+open source project (BSD-2-Clause) and always allowed as a source, its `spi/` headers included, without asking: that
+Apple took the names from its own SDK does not matter, because Apple published them under a free license. From it we
+take facts (names, values, signatures), no text.
+
+Other sources that Apple made from its own SDK and published under BSD or a similar license are allowed in principle,
+but an agent must ask the user before it uses one.
+
+A source counts only for what the file at the named commit says itself; read it before naming it.
+
 Pages of Apple's online documentation that were read for this project may be cached locally in
 `~/dev/apple-docs` (its `README.md` says when they were fetched):
 - The cache holds only pages downloaded directly from developer.apple.com, unchanged. A name or value may be
@@ -73,6 +94,11 @@ Pages of Apple's online documentation that were read for this project may be cac
   (`data/headers/`). A changed APSL/Apache header gets the
   `Modified by osxcross-open-sdk` line (`helpers/notice.py`).
 - Never push, never tag, never create a release without being asked.
+- Before a push, the commits since the last audit are audited: every name, value, list and
+  install name has a named public source that contains it at the named commit, nothing is
+  taken from an SDK or binary of Apple's (a real SDK only as a check, e.g. that no comment
+  text is copied), no source is one that AGENTS.md excludes, and docs/SOURCES.md says the same.
+  The audit names the range it covers; a finding is fixed or decided before the push.
 
 ## Tests before a commit
 
@@ -121,9 +147,37 @@ Mac with `--ssh HOST` where possible.
   (`` `git` ``, `` `--core` ``).
 - Describe what the SDK is and does; do not argue about Apple's SDK or
   its license.
-- `docs/SOURCES.md`: each item says first what it proves (a value, a name, a behaviour),
-  then the source: project, tag or commit, file, and the fact found there. Where a value
-  follows from how open projects use it, say so ("they rely on it"), not as a result of the SDK.
+- `docs/SOURCES.md` is read by people who do not know the generator: say what a list or value is and why it is needed,
+  with an example (`printf` from `stdio.h`), before naming the source; no shorthand that only the code explains.
+- `docs/SOURCES.md`: where a value follows from how open projects use it, say so ("they rely on it"),
+  not as a result of the SDK.
+- `docs/SOURCES.md` is ordered like its overview tables (libraries, headers, frameworks, SDK metadata):
+  a new section goes into the table of its area and in the same place below. A section has, in this order:
+  - `**Files:**`: the files of this repository (not the files of the projects: they belong to Sources), one file or
+    directory per list item.
+  - `**Source:**` (one item) or `**Sources:**` (more): only the sources, short and at once visible; one project
+    (or document) per list item, its files (tag or commit, file) separated by commas. No explanation here. A value
+    of the generator itself says `**Source:**` with the item `none, ...`. Every source that the text names (project,
+    tag or commit, file) is also in this list; a claim whose source cannot be named does not belong here.
+  - `**Details:**`: what the list or value is and why it is needed, with an example, then what comes from which
+    source (named by its short name; tag and commit are already above).
+  - `**Files:**`, `**Source(s):**` and `**Details:**` each stand alone on their line, followed by a blank line.
+    Files and Sources are always lists, also with a single item.
+  - optional, in this order: `**Not in the Open SDK:**` (what is left out and why), `**Chosen by the generator:**`
+    (every value that no public source gives and the generator chooses, such as a conservative release or the lowest
+    possible version: all in this one list, so that a search finds them; none is read from an Apple SDK or binary), `**Checks:**` (tests that are no source).
+    Where needed also `**Limits:**` and `**License:**`.
+  - A section of more than about ten items gets subsections (`####`) by topic.
+  - The same kind of fact for several things (an install name per framework, a module per stub)
+    becomes a table with short columns and numbered notes below it, not one item per thing.
+  - The overview tables name what a section covers in a few words, not a list of names.
+  - A project whose name other projects share (Libc, Libm, libiconv, libedit, CF, Security, ...) is written
+    "apple-oss Libc" when it is Apple's open source release (at least once per section and in the overview tables);
+    projects that only Apple has (xnu, dyld, Libsystem, IOKitUser) need no prefix.
+- A URL is written as a Markdown link with a readable text (`[File System Events](https://...)`), not as bare text;
+  a pattern with a placeholder (`.../<name>`) stays a code span.
+- Where the SDK made by this generator is meant, write "Open SDK" ("the full Open SDK", "not in the Open SDK"),
+  so it cannot be taken for Apple's SDK or any other SDK.
 - `docs/TESTED.md`: a new entry looks like the ones there, as short as possible, with only
   the details that matter (an option it needs, what it was tested with). No build commands,
   no list of what was not tried, no counts.

@@ -2,8 +2,7 @@
 
 Open source projects that were built with the full Open SDK of macOS 26.5 for x86_64 and arm64 (OSXCross  
 llvm flavor, Clang 23.1.6, `ld64.lld`, deployment target 11.0). The x86_64 programs ran on macOS 26.0:  
-with the test suite of the project where it could be built, otherwise with a smoke test. 29 of the  
-projects were also built with the stable flavor (cctools/ld64).  
+with the test suite of the project where it could be built, otherwise with a smoke test.  
 `tests/projects.sh` builds and tests the projects except the Rust crates, see [BUILDING.md](BUILDING.md#tests).
 
 - **Compression:** `zlib`, `bzip2`, `xz`, `zstd`, `lz4`, `brotli`, `libarchive`
