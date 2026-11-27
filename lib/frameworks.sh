@@ -7,7 +7,7 @@
 # Frameworks (not with --core): CoreFoundation, IOKit, DiskArbitration,
 # Security, SystemConfiguration: headers from the open source releases and a
 # <Name>.tbd in the framework directory (Name.framework/Name.tbd); CoreServices:
-# own headers (File System Events only); Foundation, CoreGraphics, AppKit, CoreText, CoreVideo: only
+# own headers (File System Events only); Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore: only
 # the .tbd, with the symbols of Apple's documentation (fw_doc).
 # ---------------------------------------------------------------------------
 # fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/):
@@ -196,11 +196,11 @@ step_frameworks() {
   # shellcheck disable=SC2046
   fw_tbd SystemConfiguration $(cd "$H" && ls *.h | tr '\n' ' ')
 
-  # Foundation, CoreGraphics, AppKit, CoreText, CoreVideo: link stubs without headers (fw_doc).  Foundation
+  # Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore: link stubs without headers (fw_doc).  Foundation
   # also lets `-framework Foundation` link (Clang adds it for -fobjc-arc, and build systems
   # pass it without using Foundation).  A program loads the system's frameworks at run time.
   local fw
-  for fw in Foundation CoreGraphics AppKit CoreText CoreVideo; do
+  for fw in Foundation CoreGraphics AppKit CoreText CoreVideo QuartzCore; do
     echo "$fw"
     fw_doc "$fw"
   done
