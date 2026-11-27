@@ -18,6 +18,12 @@ At run time macOS loads its own libraries.
 - **`libc++.1.tbd`, `libc++abi.tbd`**: LLVM's ABI lists of the release.
 - **The other libraries and frameworks**: the declarations in their headers and the export lists  
   of their projects.
+- **Layout of the frameworks**: as in Apple's description of framework bundles, the files are in `Versions/<V>`  
+  (`Name.framework/Versions/A/Name.tbd`, `Headers`, `Modules`), `Versions/Current` is a link to `<V>`, and the top level  
+  has the links `Name.tbd`, `Headers` and `Modules` to `Versions/Current/...`.  
+  `<V>` is the letter in the install name of `data/libraries.txt` (`Foundation` and `AppKit`: `C`, the others `A`).  
+  The install name of every `.tbd` is the path of the file: a linker finds a re-exported library at its install name  
+  plus `.tbd` below the SDK (ld64, `ld64.lld`). `tests/sdk-check.sh` checks it.
 - **`CoreFoundation.tbd`**: the declarations in its headers, and the symbols of newer APIs that Apple's documentation lists for macOS  
   and no header names (`data/symbols/doc/CoreFoundation.txt`), without their headers (`CFStringTokenizer`, `CFURLEnumerator`, ...).
 - **`Foundation.tbd`, `CoreGraphics.tbd`, `AppKit.tbd`, `CoreText.tbd`, `CoreVideo.tbd`, `QuartzCore.tbd`, `Metal.tbd`,  

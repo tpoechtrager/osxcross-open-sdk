@@ -385,7 +385,7 @@ class MakeLicenses(Tmp):
             paths, _ = self.own_section(md)
             self.assertEqual(sorted(paths), self.expected_own(variant), variant)
         _, core = self.run_it("core", False)
-        for p in ("xpc/xpc.h", "libDER/DERItem.h", "CoreFoundation.framework/Modules/module.modulemap"):
+        for p in ("xpc/xpc.h", "libDER/DERItem.h", "CoreFoundation.framework/Versions/A/Modules/module.modulemap"):
             self.assertNotIn(p, core)
 
     def test_own_files_have_their_notes_and_the_fallback_its_condition(self):
@@ -684,6 +684,13 @@ class DataFiles(unittest.TestCase):
                 names.append(f[0])
             self.assertEqual(names, sorted(names), n)
 
+    def test_framework_install_names_are_paths_of_versions(self):
+        # a framework's install name is /System/Library/Frameworks/N.framework/Versions/V/N (the layout of fw_layout)
+        libs = data_files.read_libraries(os.path.join(DATA, "libraries.txt"))
+        fws = {k: v for k, v in libs.items() if v[0].startswith("/System/Library/Frameworks/")}
+        for k, v in fws.items():
+            self.assertRegex(v[0], r"^/System/Library/Frameworks/%s\.framework/Versions/[A-Z]/%s$" % (k, k), k)
+
     def test_releases_and_libcxx_versions(self):
         llvm = data_files.read_libcxx_versions(os.path.join(DATA, "libcxx-versions.txt"))
         rel = data_files.read_releases(os.path.join(DATA, "releases.txt"))
@@ -765,7 +772,7 @@ class DataFiles(unittest.TestCase):
         """data/symbols/CoreServices-fsevents.txt: the functions that CoreServices/FSEvents.h
         declares, each with the first release of its API_AVAILABLE or API_DEPRECATED"""
         hdr = read(os.path.join(DATA, "headers", "System", "Library", "Frameworks", "CoreServices.framework",
-                                "Headers", "FSEvents.h"))
+                                "Versions", "A", "Headers", "FSEvents.h"))
         hdr = re.sub(r"^#.*$", "", re.sub(r"/\*.*?\*/", "", hdr, flags=re.S), flags=re.M)
         avail = {}
         for decl in hdr.split(";"):

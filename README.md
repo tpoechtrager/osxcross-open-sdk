@@ -47,6 +47,8 @@ install name and version. A real SDK was used only to test a result, never as a 
   `CoreAudio`, `AudioToolbox`, `ApplicationServices` (with `ColorSync`) and `Carbon`: the C functions and constants  
   of Apple's documentation, for languages and crates that declare what they use themselves  
   (Rust: `winit`, `wgpu`, `cpal`, `enigo`, `global-hotkey`), see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd) and [docs/TESTED.md](docs/TESTED.md).
+- Every framework has the layout of a framework bundle: `Name.framework/Versions/<V>/Name.tbd` (the path of its install name),  
+  `Versions/Current` and links `Name.tbd`, `Headers` and `Modules` at the top.
 - `OpenGL.framework`: the headers `gl.h` (legacy, up to 2.1), `gl3.h` (core, 3.2 to 4.1), `glext.h`, `gl3ext.h`, `gltypes.h` and the CGL headers  
   (`OpenGL.h`, `CGLTypes.h`, `CGLCurrent.h`, `CGLDevice.h`, `CGLIOSurface.h`, `CGLRenderers.h`), and the link stub.  
   The OpenGL part is made from the Khronos Registry's `gl.xml`; the CGL part from open projects that declare it.  

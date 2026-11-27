@@ -24,9 +24,9 @@ usr/include/os/log.h                                                         all
 usr/include/os/signpost.h                                                    all   copied     stand-ins that trace nothing
 usr/include/os/trace.h                                                       all   copied     stand-ins that trace nothing
 usr/lib/*.tbd                                                                all   written
-System/Library/Frameworks/*.framework/*.tbd                                  full  written
-System/Library/Frameworks/CoreFoundation.framework/Modules/module.modulemap  full  copied
+System/Library/Frameworks/*.framework/Versions/*/*.tbd                       full  written
+System/Library/Frameworks/CoreFoundation.framework/Versions/A/Modules/module.modulemap  full  copied
 usr/include/xpc/xpc.h                                                        full  copied     part of XPC, written from Apple's documentation and WebKit's XPCSPI.h
-System/Library/Frameworks/CoreServices.framework/Headers/CoreServices.h      full  copied     includes only FSEvents.h: a part of CoreServices
-System/Library/Frameworks/CoreServices.framework/Headers/FSEvents.h          full  copied     File System Events, written from Apple's documentation, fsevent-sys and dotnet/macios
+System/Library/Frameworks/CoreServices.framework/Versions/A/Headers/CoreServices.h      full  copied     includes only FSEvents.h: a part of CoreServices
+System/Library/Frameworks/CoreServices.framework/Versions/A/Headers/FSEvents.h          full  copied     File System Events, written from Apple's documentation, fsevent-sys and dotnet/macios
 usr/include/libDER/DERItem.h                                                 full  fallback   only where xnu has no EXTERNAL_HEADERS/libDER (releases before macOS 26.5)

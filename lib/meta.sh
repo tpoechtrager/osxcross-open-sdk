@@ -14,7 +14,8 @@ step_meta() {
   # public headers of an SDK do not name it either (usr/include and the headers
   # of the frameworks: Security, SystemConfiguration).
   local scrub_dirs=("$M/usr/include") fw
-  for fw in "$M"/System/Library/Frameworks/*.framework/Headers; do
+  for fw in "$M"/System/Library/Frameworks/*.framework/Versions/*/Headers; do
+    case $fw in */Versions/Current/*) continue;; esac   # the link to the version that the loop has
     [ -d "$fw" ] && scrub_dirs+=("$fw")   # (the pattern stays as it is if there are no frameworks: core)
   done
   quiet python3 -I "$HELPERS/scrub_platforms.py" "$NOTICE_DATE" "${scrub_dirs[@]}"   # (it prints a count)

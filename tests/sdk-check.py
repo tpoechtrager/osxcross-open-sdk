@@ -6,7 +6,7 @@ Checks an SDK that make-open-sdk.sh made, without running anything of it:
   files     the files that every SDK has, valid JSON, no broken or absolute links
   tbd       every .tbd is well formed (install name, versions, both architectures)
             and, if data/libraries.txt names the library, has its install name
-            (usr/lib/NAME.tbd, System/Library/Frameworks/NAME.framework/NAME.tbd)
+            (usr/lib/NAME.tbd, System/Library/Frameworks/NAME.framework/Versions/V/NAME.tbd)
   headers   every header of usr/include on its own with clang, for C and C++
             and both architectures; a header that fails and is not in
             tests/data/header-allow.txt is an error (the headers in the list
@@ -151,9 +151,9 @@ def libraries():
 
 def library_name(rel):
     """The name of data/libraries.txt of a .tbd of the SDK: usr/lib/NAME.tbd or
-    System/Library/Frameworks/NAME.framework/NAME.tbd (None for the others)"""
+    System/Library/Frameworks/NAME.framework/Versions/V/NAME.tbd (None for the others)"""
     m = re.match(r"^usr/lib/([^/]+)\.tbd$", rel) or \
-        re.match(r"^System/Library/Frameworks/([^/]+)\.framework/\1\.tbd$", rel)
+        re.match(r"^System/Library/Frameworks/([^/]+)\.framework/Versions/[^/]+/\1\.tbd$", rel)
     return m.group(1) if m else None
 
 
@@ -189,7 +189,21 @@ def check_tbd(sdk, rep):
             lib = library_name(rel)
             if lib in table and m.group(1) != table[lib]:
                 rep.error("%s: install name %s, data/libraries.txt has %s" % (rel, m.group(1), table[lib]))
-            if not re.search(r"symbols:\s*\[", t) and "re-exports" not in t:
+            if rel.startswith("System/Library/Frameworks/"):
+                # the linker finds a re-exported library at its install name plus ".tbd"
+                if m.group(1) + ".tbd" != "/" + rel:
+                    rep.error("%s: install name %s is not the path of the file" % (rel, m.group(1)))
+                if lib is None:
+                    rep.error(rel + ": a .tbd of a framework must be Name.framework/Versions/V/Name.tbd")
+            fw = re.match(r"^(System/Library/Frameworks/([^/]+)\.framework)/Versions/([^/]+)/", rel)
+            if fw:
+                top, nm, ver = fw.groups()
+                cur = os.path.join(sdk, top, "Versions", "Current")
+                if not os.path.islink(cur) or os.readlink(cur) != ver:
+                    rep.error("%s: Versions/Current is not a link to %s" % (top, ver))
+                if os.path.realpath(os.path.join(sdk, top, nm + ".tbd")) != os.path.realpath(p):
+                    rep.error("%s: %s.tbd is not a link to Versions/Current/%s.tbd" % (top, nm, nm))
+            if not re.search(r"symbols:\s*\[", t) and "re-exports" not in t and "reexported-libraries" not in t:
                 rep.error(rel + ": no symbols")
     rep.info("tbd: %d files checked" % n)
 

@@ -38,6 +38,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | `OpenGL.framework` (headers, link stub) | Khronos OpenGL Registry (`gl.xml`), open projects that declare CGL ([details](#openglframework)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
+| Layout of the frameworks | Apple's documentation of framework bundles ([details](#framework-layout)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
 | `stdbool.h`, `stdarg.h`, `float.h` of the scans | ISO C99, Clang's predefined macros ([details](#c-headers-of-the-scans)) |
@@ -357,7 +358,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### `CoreServices/FSEvents.h` and its symbols
 
-**Files:** `data/headers/System/Library/Frameworks/CoreServices.framework/Headers/`, `data/symbols/CoreServices-fsevents.txt`,  
+**Files:** `data/headers/System/Library/Frameworks/CoreServices.framework/Versions/A/Headers/`, `data/symbols/CoreServices-fsevents.txt`,  
 `lib/frameworks.sh`
 
 - Own text (0BSD), full SDK only. CoreServices has no open source release. `CoreServices.h` includes only `FSEvents.h`.
@@ -381,7 +382,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   without headers; they are added to the symbols above, whose check against the header does not change.
 - **Left out, no C name in these sources:** the flags of dotnet/macios `WithDocId`, `DeviceState` and the key `docID`.
 - The stub re-exports `CoreFoundation` (`reexported-libraries`, install name from `data/libraries.txt`);  
-  `CoreFoundation.framework/Versions/A/CoreFoundation.tbd` is a link to `CoreFoundation.tbd`:  
+  `CoreFoundation.framework/Versions/A/CoreFoundation.tbd` is the file (see [framework layout](#framework-layout)):  
   the linker looks for a re-exported library at its install name below the SDK plus `.tbd`  
   (ld64: `Options::findFile` in `ld/Options.cpp` of cctools-port; ld64.lld does the same).
 - Why CoreServices re-exports CoreFoundation: open projects link only `CoreServices`  
@@ -397,7 +398,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ### `CoreFoundation.modulemap`, `CFCompat.h.in`
 
-**Files:** `data/headers/System/Library/Frameworks/CoreFoundation.framework/Modules/module.modulemap`, `data/CFCompat.h.in`
+**Files:** `data/headers/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Modules/module.modulemap`, `data/CFCompat.h.in`
 
 - `CFCompat.h.in` (appended to `CFAvailability.h` of CF, APSL 2.0): the macros that the headers of DiskArbitration,  
   SystemConfiguration and Security use, but the older `CFAvailability.h` does not define.
@@ -688,6 +689,21 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - The install name of Foundation is the one that dyld's source names.
 - That of CoreServices follows the layout of the frameworks inside it,  
   which `CF/CFUtilities.c` and Security's `SecTranslocateLSNotification.cpp` name. The versions are the lowest possible ones.
+
+---
+
+### Framework layout
+
+**Files:** `lib/frameworks.sh` (`fw_layout`), `data/libraries.txt`, `tests/sdk-check.py`
+
+- The layout: Apple's "Anatomy of Framework Bundles" (developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPFrameworks/Concepts/FrameworkAnatomy.html):  
+  the files are in `Versions/<V>`, `Versions/Current` is a link to the current version, and the top level has links  
+  to `Versions/Current/<Name>` and `Headers` (and `Resources`). The page does not describe `Modules`;  
+  it is linked the same way, where the framework has one (Clang finds `Name.framework/Modules/module.modulemap`).
+- The letter `<V>` is that of the install name of the framework in `data/libraries.txt` (each with its source above).
+- Why the install name must be the path of the file: a re-exported library is looked up at its install name below the SDK  
+  plus `.tbd` (ld64: `Options::findFile` in `ld/Options.cpp` of cctools-port; `ld64.lld` does the same).  
+  The test `tests/sdk-check.sh` compares the install name of every `.tbd` with its path.
 
 ---
 

@@ -71,6 +71,28 @@ check "mk_lib_tbd writes the install name of data/libraries.txt" "$(grep -q "^in
 check "  and its versions" "$(grep -q '^current-version: 1.2.12' "$T/libz.1.tbd" && grep -q '^compatibility-version: 1$' "$T/libz.1.tbd" && echo ok || echo no)"
 check "mk_lib_tbd of a library that is not in the table fails" "$(lib mk_lib_tbd nothere "$T/x.tbd" "$T/syms.txt" >/dev/null 2>&1 && echo no || echo ok)"
 
+# fw_layout: the layout of a framework bundle, with the install name of data/libraries.txt
+fwl() ( # shellcheck disable=SC2034
+  SELF=$ROOT HELPERS=$ROOT/helpers DATA=$ROOT/data SDK_VERSION=26.5 STAGE=$T/stage STAGE_FW=$T/stage/fw
+  . "$ROOT/lib/common.sh"
+  . "$ROOT/lib/frameworks.sh"
+  "$@"
+)
+mkdir -p "$T/stage/fw/Foundation.framework" "$T/stage/fw/CoreServices.framework/Versions/A/Headers" "$T/stage/fw/CoreFoundation.framework/Headers"
+for f in Foundation CoreServices CoreFoundation; do echo tbd > "$T/stage/fw/$f.framework/$f.tbd"; done
+echo h > "$T/stage/fw/CoreFoundation.framework/Headers/a.h"
+echo h > "$T/stage/fw/CoreServices.framework/Versions/A/Headers/b.h"
+fwl fw_layout >/dev/null 2>&1; fwl fw_layout >/dev/null 2>&1   # twice: it is safe to repeat
+F=$T/stage/fw
+check "fw_layout: the .tbd is in Versions/<letter of the install name> (Foundation: C)" "$(is "$(cat "$F/Foundation.framework/Versions/C/Foundation.tbd" 2>&1)" tbd)"
+check "  Versions/Current is a link to it" "$(is "$(readlink "$F/Foundation.framework/Versions/Current")" C)"
+check "  Name.tbd at the top is a link to Versions/Current/Name.tbd" "$(is "$(readlink "$F/Foundation.framework/Foundation.tbd")" Versions/Current/Foundation.tbd)"
+check "  Headers are moved and linked" "$(is "$(readlink "$F/CoreFoundation.framework/Headers") $(cat "$F/CoreFoundation.framework/Versions/A/Headers/a.h")" "Versions/Current/Headers h")"
+check "  Headers that are in Versions/A already are linked" "$(is "$(cat "$F/CoreServices.framework/Headers/b.h")" h)"
+check "  there is no Headers where there were none" "$(test -e "$F/Foundation.framework/Headers" && echo no || echo ok)"
+echo x > "$T/stage/fw/Foundation.framework/Headers"; mkdir -p "$T/stage/fw/Foundation.framework/Versions/C/Headers"
+check "  a file that would overwrite one of Versions fails" "$(fwl fw_layout >/dev/null 2>&1 && echo no || echo ok)"
+
 printf 'one\ntwo\n' > "$T/f"
 lib sed_inplace "$T/f" 's/one/1/'
 check "sed_inplace changes the file" "$(is "$(tr '\n' ' ' < "$T/f")" "1 two ")"

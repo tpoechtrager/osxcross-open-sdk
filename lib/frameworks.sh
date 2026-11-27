@@ -192,6 +192,7 @@ step_frameworks() {
   # The own files of the full SDK (data/own-files.txt): xpc/xpc.h, the
   # module map of CoreFoundation and the headers of CoreServices.
   install_own_files full
+  fw_layout CoreServices   # its headers are in Versions/A: the scan below finds them through the link Headers
   # The xnu of macOS 26.5 has them; earlier releases do not, and get the small
   # own DERItem.h (the same types and struct).
   mkdir -p "$STAGE_INC/libDER"
@@ -269,8 +270,38 @@ step_frameworks() {
   mv "$STAGE_WORK/fw-CoreServices.syms.new" "$STAGE_WORK/fw-CoreServices.syms"
   mk_lib_tbd CoreServices "$STAGE_FW/CoreServices.framework/CoreServices.tbd" "$STAGE_WORK/fw-CoreServices.syms" \
     --reexport-library "$(lib_field CoreFoundation 2)"
-  # The linker (ld64, ld64.lld) finds a re-exported library by its install name below the SDK's
-  # root plus ".tbd" (.../CoreFoundation.framework/Versions/A/CoreFoundation.tbd)
-  mkdir -p "$STAGE_FW/CoreFoundation.framework/Versions/A"
-  ln -sf ../../CoreFoundation.tbd "$STAGE_FW/CoreFoundation.framework/Versions/A/CoreFoundation.tbd"
+
+  fw_layout
+}
+
+# fw_layout: the layout of a framework bundle (Apple's "Anatomy of Framework Bundles"): the files
+# are in Versions/V (V is the version in the install name of data/libraries.txt), Versions/Current
+# is a link to V, and the top level has links to Versions/Current/NAME.tbd, Headers and Modules.
+# The linker (ld64, ld64.lld) finds a re-exported library at its install name below the SDK's root
+# plus ".tbd" (.../CoreServices.framework/Versions/A/CoreServices.tbd), so the install name of every
+# .tbd must be the path of the file (tests/sdk-check.sh checks it).
+# fw_layout [NAME...]: the frameworks given (all of the stage without arguments); safe to repeat.
+fw_layout() {
+  local d name inst v e
+  local fws="$*"
+  [ $# -gt 0 ] || fws=$(cd "$STAGE_FW" && ls -d ./*.framework | sed 's#^\./##; s#\.framework$##')
+  for name in $fws; do
+    d=$STAGE_FW/$name.framework
+    inst=$(lib_field "$name" 2)
+    case $inst in
+      /System/Library/Frameworks/"$name".framework/Versions/*/"$name") v=${inst#*/Versions/}; v=${v%%/*};;
+      *) die "the install name of $name is not that of a framework: $inst";;
+    esac
+    mkdir -p "$d/Versions/$v"
+    for e in "$name.tbd" Headers Modules Resources; do
+      if [ -e "$d/$e" ] && [ ! -L "$d/$e" ]; then
+        [ ! -e "$d/Versions/$v/$e" ] || die "$d/$e is also in Versions/$v"
+        mv "$d/$e" "$d/Versions/$v/$e"
+      fi
+    done
+    ln -sfn "$v" "$d/Versions/Current"
+    for e in "$name.tbd" Headers Modules Resources; do
+      [ ! -e "$d/Versions/$v/$e" ] || ln -sfn "Versions/Current/$e" "$d/$e"
+    done
+  done
 }
