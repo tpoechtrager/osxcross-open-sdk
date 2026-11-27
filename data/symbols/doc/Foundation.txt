@@ -1,6 +1,6 @@
-# The C functions and global data of Foundation that Apple's documentation lists
-# for macOS: the symbols of Foundation.tbd of the full SDK (a link stub without
-# headers; Foundation has no open source release).
+# The C functions and global data of Foundation that Apple's online documentation
+# lists for macOS: the symbols of Foundation.tbd of the full Open SDK, a link stub without headers.
+# Apple publishes no source code of Foundation, so the names come from its documentation.
 # Made by tools/doc_symbols.py (do not edit) from the pages of
 # developer.apple.com/documentation, fetched 2026-11-26 to 2026-11-27.
 # The headers of GNUstep: github.com/gnustep/libs-base f3d4795594c5 (Headers/Foundation,

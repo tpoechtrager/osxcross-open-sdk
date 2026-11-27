@@ -1,5 +1,6 @@
-# The C functions and global data of OpenDirectory that Apple's documentation lists
-# for macOS: the symbols of OpenDirectory.tbd of the full SDK (a link stub without headers; made from the documentation only, not from the open source release of OpenDirectory).
+# The C functions and global data of OpenDirectory that Apple's online documentation
+# lists for macOS: the symbols of OpenDirectory.tbd of the full Open SDK, a link stub without headers.
+# The names come from the documentation only, not from the open source release of OpenDirectory.
 # Made by tools/doc_symbols.py (do not edit) from the pages of
 # developer.apple.com/documentation, fetched 2026-11-27.
 #

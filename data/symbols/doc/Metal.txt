@@ -1,6 +1,6 @@
-# The C functions and global data of Metal that Apple's documentation lists
-# for macOS: the symbols of Metal.tbd of the full SDK (a link stub without
-# headers; Metal has no open source release).
+# The C functions and global data of Metal that Apple's online documentation
+# lists for macOS: the symbols of Metal.tbd of the full Open SDK, a link stub without headers.
+# Apple publishes no source code of Metal, so the names come from its documentation.
 # Made by tools/doc_symbols.py (do not edit) from the pages of
 # developer.apple.com/documentation, fetched 2026-11-27.
 #

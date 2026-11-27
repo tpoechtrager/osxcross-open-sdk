@@ -245,8 +245,8 @@ def assign(recs, frameworks, gs):
 
 
 HEADER = """\
-# The C functions and global data of {fw} that Apple's documentation lists
-# for macOS: the symbols of {fw}.tbd of the full SDK ({what}).
+# The C functions and global data of {fw} that Apple's online documentation
+# lists for macOS: the symbols of {fw}.tbd of the full Open SDK, {what}.
 # Made by tools/doc_symbols.py (do not edit) from the pages of
 # developer.apple.com/documentation{days}.{gs}
 #
@@ -257,9 +257,9 @@ HEADER = """\
 # The documentation does not say which symbols exist only on one architecture:
 # every symbol is for x86_64 and arm64.
 """
-WHAT = "a link stub without headers; {fw} has no open source release"
-# WebKit and OpenDirectory have one, but their lists, too, are made from the documentation only.
-WHAT_OPEN = "a link stub without headers; made from the documentation only, not from the open source release of {fw}"
+WHAT = "a link stub without headers.\n# Apple publishes no source code of {fw}, so the names come from its documentation"
+# WebKit and OpenDirectory have an open source release, but their lists, too, come from the documentation only.
+WHAT_OPEN = "a link stub without headers.\n# The names come from the documentation only, not from the open source release of {fw}"
 OPEN_SOURCE = {"WebKit", "OpenDirectory"}
 WHAT_CF = "those that no header names; the headers give the rest"
 NOTE_DOC = """

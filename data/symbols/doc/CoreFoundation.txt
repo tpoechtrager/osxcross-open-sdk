@@ -1,5 +1,5 @@
-# The C functions and global data of CoreFoundation that Apple's documentation lists
-# for macOS: the symbols of CoreFoundation.tbd of the full SDK (those that no header names; the headers give the rest).
+# The C functions and global data of CoreFoundation that Apple's online documentation
+# lists for macOS: the symbols of CoreFoundation.tbd of the full Open SDK, those that no header names; the headers give the rest.
 # Made by tools/doc_symbols.py (do not edit) from the pages of
 # developer.apple.com/documentation, fetched 2026-11-27.
 #
