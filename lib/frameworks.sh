@@ -212,6 +212,19 @@ step_frameworks() {
     fw_doc "$fw"
   done
 
+  # OpenGL: headers made from the OpenGL Registry's gl.xml and the CGL lists of data/opengl/
+  # (helpers/write_opengl_headers.py), and the link stub with the exports of
+  # helpers/opengl_syms.py (docs/SOURCES.md, "OpenGL.framework")
+  echo "OpenGL"
+  FETCH_QUIET=1 fetch_opengl_registry
+  rm -rf "$STAGE_FW/OpenGL.framework"; mkdir -p "$STAGE_FW/OpenGL.framework"
+  python3 -I "$HELPERS/write_opengl_headers.py" "$SRC/OpenGL-Registry/gl.xml" "$DATA/opengl" \
+    "$STAGE_FW/OpenGL.framework/Headers" "$NOTICE_DATE"
+  python3 -I "$HELPERS/opengl_syms.py" "$SRC/OpenGL-Registry/gl.xml" "$DATA/opengl" "$STAGE_WORK/fw-OpenGL.list"
+  require_lines "$STAGE_WORK/fw-OpenGL.list" 900 "OpenGL has too few exports"
+  syms_for_archs "$STAGE_WORK/fw-OpenGL.list" > "$STAGE_WORK/fw-OpenGL.syms"
+  mk_lib_tbd OpenGL "$STAGE_FW/OpenGL.framework/OpenGL.tbd" "$STAGE_WORK/fw-OpenGL.syms"
+
   # CoreServices: only File System Events, with the own headers installed
   # above (CoreServices.h includes only FSEvents.h); CoreServices has no open
   # source.  The stub also has the symbols of Apple's documentation.

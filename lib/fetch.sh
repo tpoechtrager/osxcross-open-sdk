@@ -128,7 +128,7 @@ step_fetch() {
 $PROJECTS
 EOF2
   fetch_llvm
-  [ "$VARIANT" = core ] || { fetch_sqlite; fetch_xz; }
+  [ "$VARIANT" = core ] || { fetch_sqlite; fetch_xz; fetch_opengl_registry; }
 }
 
 fetch_llvm() {
@@ -154,6 +154,27 @@ fetch_xz() {
   git_pinned "$SRC/xz" "$XZ_URL" "$XZ_TAG" "$XZ_COMMIT"
   git --git-dir="$SRC/xz/.git" --work-tree="$SRC/xz" checkout -q -f HEAD
   echo "$XZ_TAG" > "$SRC/xz/.open-sdk-tag"
+}
+
+# fetch_opengl_registry: gl.xml of the OpenGL Registry at the commit of data/opengl/registry.txt
+# (project repository commit file sha256), checked against the SHA-256; the result is
+# $SRC/OpenGL-Registry/gl.xml
+fetch_opengl_registry() {
+  local project repo commit file sha d=$SRC/OpenGL-Registry
+  read -r project repo commit file sha <<EOF2
+$(data_lines "$DATA/opengl/registry.txt")
+EOF2
+  [ -n "$sha" ] || die "data/opengl/registry.txt has no complete line"
+  if [ -f "$d/gl.xml" ] && sha256_check "$sha" "$d/gl.xml"; then
+    [ -n "${FETCH_QUIET:-}" ] || fetch_line "$project" "${commit%"${commit#???????}"}" present   # (the step frameworks calls this too)
+    return 0
+  fi
+  fetch_line "$project" "${commit%"${commit#???????}"}" downloading
+  rm -rf "${d:?}"; mkdir -p "$d"
+  curl -fsSL -o "$d/gl.xml.part" "https://raw.githubusercontent.com/${repo#https://github.com/}/$commit/$file" ||
+    { rm -rf "${d:?}"; die "cannot download $file of $repo"; }
+  sha256_check "$sha" "$d/gl.xml.part" || { rm -rf "${d:?}"; die "the checksum of $file of $repo does not match data/opengl/registry.txt"; }
+  mv "$d/gl.xml.part" "$d/gl.xml"
 }
 
 # sqlite_dir: the directory of the sqlite amalgamation in SRC (the name of the archive)

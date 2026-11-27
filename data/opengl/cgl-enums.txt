@@ -1,0 +1,157 @@
+# The constants of the CGL headers (CGLTypes.h, CGLRenderers.h): helpers/write_opengl_headers.py
+# writes them into OpenGL.framework/Headers.  Apple's headers are not a source: every value is
+# declared by an open source project that wrote it down, and every name is used or listed by
+# open source (docs/SOURCES.md, "OpenGL.framework").
+# Columns:
+#   group   the type that the constant belongs to: error CGLError, pfa CGLPixelFormatAttribute,
+#           rp CGLRendererProperty, ce CGLContextEnable, cp CGLContextParameter,
+#           go CGLGlobalOption, oglp CGLOpenGLProfile, renderer (a renderer ID, an int)
+#   name    the constant
+#   value   its value
+#   values  the projects whose source declares this value (all that do agree):
+#             cgl-rs   servo/cgl-rs d97cc08, src/cgl.rs (MIT or Apache-2.0)
+#             vogl     ValveSoftware/vogl 434dcc5, glspec/cglenum.spec (MIT)
+#             apitrace apitrace/apitrace 28bb3ab, dispatch/glimports.hpp (MIT)
+#             factor   factor/factor f05a4e9, basis/core-graphics/core-graphics.factor (BSD-2-Clause)
+#   named   the other sources that use or list the name (no value):
+#             apitrace-spec  apitrace/apitrace 28bb3ab, specs/cglapi.py (MIT)
+#             wine           wine-mirror/wine ecca8e7, dlls/winemac.drv/opengl.c (LGPL-2.1)
+#             xquartz        XQuartz/xorg-server 0ea9b59, hw/xquartz/GL/indirect.c (MIT)
+#             mesa           mesa 7564f95, src/glx/apple/apple_visual.c, apple_glx_context.c (MIT)
+#             renderdoc      baldurk/renderdoc, renderdoc/driver/gl/cgl_platform.cpp (MIT)
+#             guide          Apple's archived "OpenGL Programming Guide for Mac" (pages of
+#                            developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide)
+# group  name  value  values  named
+
+error    kCGLNoError                              0          cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa,guide,renderdoc
+error    kCGLBadAttribute                         10000      vogl                     apitrace-spec,renderdoc
+error    kCGLBadProperty                          10001      vogl                     apitrace-spec,wine,renderdoc
+error    kCGLBadPixelFormat                       10002      vogl                     apitrace-spec,mesa,renderdoc
+error    kCGLBadRendererInfo                      10003      vogl                     apitrace-spec,renderdoc
+error    kCGLBadContext                           10004      vogl                     apitrace-spec,renderdoc
+error    kCGLBadDrawable                          10005      vogl                     apitrace-spec,renderdoc
+error    kCGLBadDisplay                           10006      vogl                     apitrace-spec,renderdoc
+error    kCGLBadState                             10007      vogl                     apitrace-spec,renderdoc
+error    kCGLBadValue                             10008      vogl                     apitrace-spec,renderdoc
+error    kCGLBadMatch                             10009      vogl                     apitrace-spec,mesa,renderdoc
+error    kCGLBadEnumeration                       10010      vogl                     apitrace-spec,renderdoc
+error    kCGLBadOffScreen                         10011      vogl                     apitrace-spec,renderdoc
+error    kCGLBadFullScreen                        10012      vogl                     apitrace-spec,renderdoc
+error    kCGLBadWindow                            10013      vogl                     apitrace-spec,renderdoc
+error    kCGLBadAddress                           10014      vogl                     apitrace-spec,renderdoc
+error    kCGLBadCodeModule                        10015      vogl                     apitrace-spec,renderdoc
+error    kCGLBadAlloc                             10016      vogl                     apitrace-spec,renderdoc
+error    kCGLBadConnection                        10017      vogl                     apitrace-spec,renderdoc
+
+pfa      kCGLPFAAllRenderers                      1          cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFATripleBuffer                      3          apitrace,vogl            apitrace-spec
+pfa      kCGLPFADoubleBuffer                      5          cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa,guide
+pfa      kCGLPFAStereo                            6          cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa
+pfa      kCGLPFAAuxBuffers                        7          cgl-rs,vogl              apitrace-spec,wine,xquartz,guide
+pfa      kCGLPFAColorSize                         8          cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa,guide
+pfa      kCGLPFAAlphaSize                         11         cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa
+pfa      kCGLPFADepthSize                         12         cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa,guide
+pfa      kCGLPFAStencilSize                       13         cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa
+pfa      kCGLPFAAccumSize                         14         cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa,guide
+pfa      kCGLPFAMinimumPolicy                     51         cgl-rs,vogl              apitrace-spec,wine,guide
+pfa      kCGLPFAMaximumPolicy                     52         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFAOffScreen                         53         cgl-rs,vogl              apitrace-spec,mesa,guide
+pfa      kCGLPFAFullScreen                        54         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFASampleBuffers                     55         cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa,guide
+pfa      kCGLPFASamples                           56         cgl-rs,vogl              apitrace-spec,wine,xquartz,mesa,guide
+pfa      kCGLPFAAuxDepthStencil                   57         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFAColorFloat                        58         cgl-rs,vogl              apitrace-spec,wine
+pfa      kCGLPFAMultisample                       59         cgl-rs,vogl              apitrace-spec,mesa,guide
+pfa      kCGLPFASupersample                       60         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFASampleAlpha                       61         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFARendererID                        70         cgl-rs,vogl              apitrace-spec,wine,mesa,guide
+pfa      kCGLPFASingleRenderer                    71         cgl-rs,vogl              apitrace-spec,wine
+pfa      kCGLPFANoRecovery                        72         cgl-rs,vogl              apitrace-spec,wine,guide
+pfa      kCGLPFAAccelerated                       73         cgl-rs,vogl              apitrace-spec,wine,mesa,guide
+pfa      kCGLPFAClosestPolicy                     74         cgl-rs,vogl              apitrace-spec,wine,mesa,guide
+pfa      kCGLPFARobust                            75         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFABackingStore                      76         cgl-rs,vogl              apitrace-spec,wine,guide
+pfa      kCGLPFABackingVolatile                   77         apitrace,vogl            apitrace-spec
+pfa      kCGLPFAMPSafe                            78         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFAWindow                            80         cgl-rs,vogl              apitrace-spec,wine,guide
+pfa      kCGLPFAMultiScreen                       81         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFACompliant                         83         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFADisplayMask                       84         cgl-rs,vogl              apitrace-spec,wine,guide
+pfa      kCGLPFAPBuffer                           90         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFARemotePBuffer                     91         cgl-rs,vogl              apitrace-spec,guide
+pfa      kCGLPFAAllowOfflineRenderers             96         cgl-rs,vogl              apitrace-spec
+pfa      kCGLPFAAcceleratedCompute                97         apitrace,cgl-rs,vogl     apitrace-spec
+pfa      kCGLPFAOpenGLProfile                     99         apitrace,cgl-rs,vogl     apitrace-spec,wine,mesa,guide
+pfa      kCGLPFASupportsAutomaticGraphicsSwitching 101        apitrace,vogl            apitrace-spec
+pfa      kCGLPFAVirtualScreenCount                128        cgl-rs,vogl              apitrace-spec
+
+rp       kCGLRPOffScreen                          53         vogl                     apitrace-spec,wine
+rp       kCGLRPFullScreen                         54         vogl                     apitrace-spec
+rp       kCGLRPRendererID                         70         vogl                     apitrace-spec,wine
+rp       kCGLRPAccelerated                        73         vogl                     apitrace-spec,wine
+rp       kCGLRPRobust                             75         vogl                     apitrace-spec
+rp       kCGLRPBackingStore                       76         vogl                     apitrace-spec,wine
+rp       kCGLRPMPSafe                             78         vogl                     apitrace-spec
+rp       kCGLRPWindow                             80         vogl                     apitrace-spec,wine
+rp       kCGLRPMultiScreen                        81         vogl                     apitrace-spec
+rp       kCGLRPCompliant                          83         vogl                     apitrace-spec
+rp       kCGLRPDisplayMask                        84         vogl                     apitrace-spec,wine
+rp       kCGLRPBufferModes                        100        vogl                     apitrace-spec,wine
+rp       kCGLRPColorModes                         103        vogl                     apitrace-spec,wine
+rp       kCGLRPAccumModes                         104        vogl                     apitrace-spec,wine
+rp       kCGLRPDepthModes                         105        vogl                     apitrace-spec,wine
+rp       kCGLRPStencilModes                       106        vogl                     apitrace-spec,wine
+rp       kCGLRPMaxAuxBuffers                      107        vogl                     apitrace-spec,wine
+rp       kCGLRPMaxSampleBuffers                   108        vogl                     apitrace-spec,wine
+rp       kCGLRPMaxSamples                         109        vogl                     apitrace-spec,wine,guide
+rp       kCGLRPSampleModes                        110        vogl                     apitrace-spec,guide
+rp       kCGLRPSampleAlpha                        111        vogl                     apitrace-spec,guide
+rp       kCGLRPVideoMemory                        120        vogl                     apitrace-spec,wine
+rp       kCGLRPTextureMemory                      121        vogl                     apitrace-spec
+rp       kCGLRPGPUVertProcCapable                 122        vogl                     apitrace-spec
+rp       kCGLRPGPUFragProcCapable                 123        vogl                     apitrace-spec
+rp       kCGLRPRendererCount                      128        vogl                     apitrace-spec
+rp       kCGLRPOnline                             129        vogl                     apitrace-spec,wine
+rp       kCGLRPAcceleratedCompute                 130        apitrace,vogl            apitrace-spec
+rp       kCGLRPVideoMemoryMegabytes               131        apitrace,vogl            apitrace-spec,wine
+rp       kCGLRPTextureMemoryMegabytes             132        apitrace,vogl            apitrace-spec
+rp       kCGLRPMajorGLVersion                     133        apitrace,vogl            apitrace-spec
+
+ce       kCGLCESwapRectangle                      201        cgl-rs,vogl              apitrace-spec
+ce       kCGLCESwapLimit                          203        cgl-rs,vogl              apitrace-spec
+ce       kCGLCERasterization                      221        cgl-rs,vogl              apitrace-spec
+ce       kCGLCEStateValidation                    301        cgl-rs,vogl              apitrace-spec
+ce       kCGLCESurfaceBackingSize                 305        cgl-rs,vogl              apitrace-spec,wine,guide
+ce       kCGLCEDisplayListOptimization            307        cgl-rs,vogl              apitrace-spec
+ce       kCGLCEMPEngine                           313        cgl-rs,vogl              apitrace-spec,guide
+ce       kCGLCECrashOnRemovedFunctions            316        apitrace,cgl-rs,vogl     apitrace-spec
+
+cp       kCGLCPSwapRectangle                      200        cgl-rs,vogl              apitrace-spec
+cp       kCGLCPSwapInterval                       222        cgl-rs,vogl              apitrace-spec,wine,mesa,guide
+cp       kCGLCPDispatchTableSize                  224        cgl-rs,vogl              apitrace-spec
+cp       kCGLCPClientStorage                      226        cgl-rs,vogl              apitrace-spec
+cp       kCGLCPSurfaceTexture                     228        cgl-rs,vogl              apitrace-spec
+cp       kCGLCPSurfaceOrder                       235        cgl-rs,vogl              apitrace-spec,wine,guide
+cp       kCGLCPSurfaceOpacity                     236        cgl-rs,vogl              apitrace-spec,wine,guide
+cp       kCGLCPSurfaceBackingSize                 304        cgl-rs,vogl              apitrace-spec,guide
+cp       kCGLCPSurfaceSurfaceVolatile             306        cgl-rs,vogl              apitrace-spec
+cp       kCGLCPReclaimResources                   308        cgl-rs,vogl              apitrace-spec
+cp       kCGLCPCurrentRendererID                  309        cgl-rs,vogl              apitrace-spec
+cp       kCGLCPGPUVertexProcessing                310        cgl-rs,vogl              apitrace-spec,guide
+cp       kCGLCPGPUFragmentProcessing              311        cgl-rs,vogl              apitrace-spec,guide
+cp       kCGLCPHasDrawable                        314        cgl-rs,vogl              apitrace-spec
+cp       kCGLCPMPSwapsInFlight                    315        cgl-rs,vogl              apitrace-spec
+
+go       kCGLGOFormatCacheSize                    501        cgl-rs,vogl              apitrace-spec
+go       kCGLGOClearFormatCache                   502        cgl-rs,vogl              apitrace-spec
+go       kCGLGORetainRenderers                    503        cgl-rs,vogl              apitrace-spec
+go       kCGLGOResetLibrary                       504        cgl-rs,vogl              apitrace-spec
+go       kCGLGOUseErrorHandler                    505        cgl-rs,vogl              apitrace-spec
+go       kCGLGOUseBuildCache                      506        cgl-rs,vogl              apitrace-spec
+
+oglp     kCGLOGLPVersion_Legacy                   0x1000     apitrace                 apitrace-spec,wine,guide
+oglp     kCGLOGLPVersion_3_2_Core                 0x3200     apitrace                 apitrace-spec,wine,mesa,guide
+oglp     kCGLOGLPVersion_GL3_Core                 0x3200     apitrace                 apitrace-spec,wine
+oglp     kCGLOGLPVersion_GL4_Core                 0x4100     apitrace                 apitrace-spec,wine,mesa
+
+renderer kCGLRendererGenericFloatID               0x00020400 factor                   wine,mesa,guide

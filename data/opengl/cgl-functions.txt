@@ -1,0 +1,57 @@
+# The functions of the CGL headers (OpenGL.h, CGLCurrent.h, CGLDevice.h, CGLIOSurface.h):
+# helpers/write_opengl_headers.py declares them in OpenGL.framework/Headers, and they are exports of
+# OpenGL.tbd.  Apple's headers are not a source.  A function is listed when at least two open
+# source projects name it, and the header comes from the comments of the sources that name the
+# header (apitrace specs/cglapi.py: "CGLCurrent.h", "OpenGL.h", "CGLIOSurface.h", "CGLDevice.h").
+# The types of the parameters follow the C declarations of mesa src/glx/apple/apple_cgl.h and
+# apitrace specs/cglapi.py (also vogl glspec/cgl.spec, servo/cgl-rs src/cgl.rs).
+# Columns, separated by "|": header | return type | name | parameters | sources, where the sources
+# are the names of the projects that use the function (the keys of cgl-enums.txt, plus cgl-rs,
+# vogl, mesa, glutin: servo/cgl-rs, ValveSoftware/vogl glspec/cgl.spec, mesa apple_cgl.c).
+
+CGLCurrent.h|CGLError|CGLSetCurrentContext|CGLContextObj ctx|apitrace,vogl,cgl-rs,mesa,wine,xquartz,guide,renderdoc
+CGLCurrent.h|CGLContextObj|CGLGetCurrentContext|void|apitrace,vogl,cgl-rs,mesa,wine,guide
+OpenGL.h|CGLError|CGLChoosePixelFormat|const CGLPixelFormatAttribute *attribs, CGLPixelFormatObj *pix, GLint *npix|apitrace,vogl,cgl-rs,mesa,wine,xquartz,guide
+OpenGL.h|CGLError|CGLDestroyPixelFormat|CGLPixelFormatObj pix|apitrace,vogl,cgl-rs,mesa,xquartz,guide
+OpenGL.h|CGLError|CGLDescribePixelFormat|CGLPixelFormatObj pix, GLint pix_num, CGLPixelFormatAttribute attrib, GLint *value|apitrace,vogl,cgl-rs,wine
+OpenGL.h|void|CGLReleasePixelFormat|CGLPixelFormatObj pix|apitrace,vogl,cgl-rs,wine
+OpenGL.h|CGLPixelFormatObj|CGLRetainPixelFormat|CGLPixelFormatObj pix|apitrace,vogl,cgl-rs
+OpenGL.h|GLuint|CGLGetPixelFormatRetainCount|CGLPixelFormatObj pix|apitrace,cgl-rs
+OpenGL.h|CGLError|CGLQueryRendererInfo|GLuint display_mask, CGLRendererInfoObj *rend, GLint *nrend|apitrace,vogl,wine
+OpenGL.h|CGLError|CGLDestroyRendererInfo|CGLRendererInfoObj rend|apitrace,vogl,wine
+OpenGL.h|CGLError|CGLDescribeRenderer|CGLRendererInfoObj rend, GLint rend_num, CGLRendererProperty prop, GLint *value|apitrace,vogl,wine,guide
+OpenGL.h|CGLError|CGLCreateContext|CGLPixelFormatObj pix, CGLContextObj share, CGLContextObj *ctx|apitrace,vogl,cgl-rs,mesa,wine,xquartz,guide,renderdoc
+OpenGL.h|CGLError|CGLDestroyContext|CGLContextObj ctx|apitrace,vogl,cgl-rs,mesa,xquartz,guide,renderdoc
+OpenGL.h|CGLError|CGLCopyContext|CGLContextObj src, CGLContextObj dst, GLbitfield mask|apitrace,vogl,mesa,xquartz
+OpenGL.h|CGLContextObj|CGLRetainContext|CGLContextObj ctx|apitrace,vogl
+OpenGL.h|void|CGLReleaseContext|CGLContextObj ctx|apitrace,vogl,wine
+OpenGL.h|CGLPixelFormatObj|CGLGetPixelFormat|CGLContextObj ctx|apitrace,vogl,cgl-rs,wine
+OpenGL.h|CGLError|CGLCreatePBuffer|GLsizei width, GLsizei height, GLenum target, GLenum internalFormat, GLint max_level, CGLPBufferObj *pbuffer|apitrace,vogl,mesa,guide
+OpenGL.h|CGLError|CGLDestroyPBuffer|CGLPBufferObj pbuffer|apitrace,vogl,mesa,guide
+OpenGL.h|CGLError|CGLDescribePBuffer|CGLPBufferObj pbuffer, GLsizei *width, GLsizei *height, GLenum *target, GLenum *internalFormat, GLint *mipmap|apitrace,vogl
+OpenGL.h|CGLError|CGLTexImagePBuffer|CGLContextObj ctx, CGLPBufferObj pbuffer, GLenum source|apitrace,vogl,guide
+OpenGL.h|CGLPBufferObj|CGLRetainPBuffer|CGLPBufferObj pbuffer|apitrace,vogl
+OpenGL.h|CGLError|CGLSetOffScreen|CGLContextObj ctx, GLsizei width, GLsizei height, GLint rowbytes, void *baseaddr|apitrace,vogl,mesa
+OpenGL.h|CGLError|CGLGetOffScreen|CGLContextObj ctx, GLsizei *width, GLsizei *height, GLint *rowbytes, void **baseaddr|apitrace,vogl
+OpenGL.h|CGLError|CGLSetFullScreen|CGLContextObj ctx|apitrace,vogl
+OpenGL.h|CGLError|CGLSetPBuffer|CGLContextObj ctx, CGLPBufferObj pbuffer, GLenum face, GLint level, GLint screen|apitrace,vogl,mesa,guide
+OpenGL.h|CGLError|CGLGetPBuffer|CGLContextObj ctx, CGLPBufferObj *pbuffer, GLenum *face, GLint *level, GLint *screen|apitrace,vogl
+OpenGL.h|CGLError|CGLClearDrawable|CGLContextObj ctx|apitrace,vogl,mesa,xquartz
+OpenGL.h|CGLError|CGLFlushDrawable|CGLContextObj ctx|apitrace,vogl,mesa,xquartz,guide
+OpenGL.h|CGLError|CGLEnable|CGLContextObj ctx, CGLContextEnable pname|apitrace,vogl,cgl-rs,guide
+OpenGL.h|CGLError|CGLDisable|CGLContextObj ctx, CGLContextEnable pname|apitrace,vogl,cgl-rs,wine
+OpenGL.h|CGLError|CGLIsEnabled|CGLContextObj ctx, CGLContextEnable pname, GLint *enable|apitrace,cgl-rs,wine
+OpenGL.h|CGLError|CGLSetParameter|CGLContextObj ctx, CGLContextParameter pname, const GLint *params|apitrace,vogl,cgl-rs,mesa,wine,guide,glutin
+OpenGL.h|CGLError|CGLGetParameter|CGLContextObj ctx, CGLContextParameter pname, GLint *params|apitrace,vogl,cgl-rs,mesa,guide
+OpenGL.h|CGLError|CGLSetVirtualScreen|CGLContextObj ctx, GLint screen|apitrace,vogl
+OpenGL.h|CGLError|CGLGetVirtualScreen|CGLContextObj ctx, GLint *screen|apitrace,vogl,wine,guide
+OpenGL.h|CGLError|CGLSetGlobalOption|CGLGlobalOption pname, const GLint *params|apitrace,vogl,cgl-rs
+OpenGL.h|CGLError|CGLGetGlobalOption|CGLGlobalOption pname, GLint *params|apitrace,cgl-rs
+OpenGL.h|CGLError|CGLSetOption|CGLGlobalOption pname, GLint param|apitrace,vogl,cgl-rs
+OpenGL.h|CGLError|CGLGetOption|CGLGlobalOption pname, GLint *param|apitrace,vogl,cgl-rs
+OpenGL.h|CGLError|CGLLockContext|CGLContextObj ctx|apitrace,vogl,cgl-rs,guide
+OpenGL.h|CGLError|CGLUnlockContext|CGLContextObj ctx|apitrace,vogl,cgl-rs,guide
+OpenGL.h|void|CGLGetVersion|GLint *majorvers, GLint *minorvers|apitrace,vogl,cgl-rs,mesa
+OpenGL.h|const char *|CGLErrorString|CGLError error|apitrace,vogl,cgl-rs,mesa,wine,xquartz,glutin
+CGLIOSurface.h|CGLError|CGLTexImageIOSurface2D|CGLContextObj ctx, GLenum target, GLenum internal_format, GLsizei width, GLsizei height, GLenum format, GLenum type, IOSurfaceRef ioSurface, GLuint plane|apitrace,vogl,cgl-rs
+CGLDevice.h|CGLShareGroupObj|CGLGetShareGroup|CGLContextObj ctx|apitrace,vogl,cgl-rs

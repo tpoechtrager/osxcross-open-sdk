@@ -797,3 +797,89 @@ class SdkCheckVersionTest(unittest.TestCase):
         self.assertEqual(n, 5)
         self.assertIn("MacOSX14.3.sdk", out)
         self.assertIn("SystemVersion.plist ProductVersion is 26.5", out)
+
+
+GL_XML = """<registry><comment>
+Copyright 2013-2026 The Khronos Group Inc.
+SPDX-License-Identifier: Apache-2.0
+</comment>
+<types>@TYPES@</types>
+<enums namespace="GL"><enum value="0x0001" name="GL_A"/><enum value="0x0002" name="GL_OLD"/>
+<enum value="0xFFFFFFFF" name="GL_ALL" type="u"/></enums>
+<commands>
+<command><proto>void <name>glOld</name></proto></command>
+<command><proto>const <ptype>GLubyte</ptype> *<name>glStr</name></proto><param><ptype>GLenum</ptype> <name>n</name></param></command>
+<command><proto>void <name>glExt</name></proto><param>const <ptype>GLfloat</ptype> *<name>v</name></param></command>
+</commands>
+<feature api="gl" name="GL_VERSION_1_0" number="1.0"><require><enum name="GL_A"/><enum name="GL_OLD"/>
+<command name="glOld"/><command name="glStr"/></require></feature>
+<feature api="gl" name="GL_VERSION_3_2" number="3.2"><require><enum name="GL_ALL"/></require>
+<remove profile="core"><enum name="GL_OLD"/><command name="glOld"/></remove></feature>
+<extensions><extension name="GL_X_ext" supported="gl"><require><enum name="GL_A"/><command name="glExt"/></require></extension></extensions>
+</registry>
+"""
+
+
+class OpenGL(Tmp):
+    def setUp(self):
+        super().setUp()
+        self.xml = os.path.join(self.tmp, "gl.xml")
+        with open(self.xml, "w") as f:
+            names = "GLenum GLboolean GLbitfield GLvoid GLbyte GLubyte GLshort GLushort GLint GLuint GLsizei GLfloat GLclampf GLdouble GLclampd GLchar GLintptr GLsizeiptr GLint64 GLuint64 GLsync".split()
+            f.write(GL_XML.replace("@TYPES@", "".join("<type>typedef int <name>%s</name>;</type>" % n for n in names)))
+        self.data = os.path.join(self.tmp, "data")
+        os.mkdir(self.data)
+        with open(os.path.join(self.data, "extensions.txt"), "w") as f:
+            f.write("GL_X_ext|glExt|page\n")
+        with open(os.path.join(self.data, "cgl-functions.txt"), "w") as f:
+            f.write("OpenGL.h|CGLError|CGLFoo|GLint x|a,b\n")
+        with open(os.path.join(self.data, "cgl-enums.txt"), "w") as f:
+            f.write("error kCGLNoError 0 a b\npfa kCGLPFAColorSize 8 a b\n")
+
+    def test_profiles(self):
+        R = load("gl_registry")
+        reg = R.Registry(self.xml)
+        legacy = reg.select((1, 0), (2, 1), "compatibility")
+        self.assertEqual(legacy, [("GL_VERSION_1_0", ["GL_A", "GL_OLD"], ["glOld", "glStr"])])
+        core = reg.select((1, 0), (4, 1), "core")
+        self.assertEqual(core[0], ("GL_VERSION_1_0", ["GL_A"], ["glStr"]))
+        self.assertEqual(core[1], ("GL_VERSION_3_2", ["GL_ALL"], []))
+        self.assertEqual(reg.all_commands((4, 1)), ["glOld", "glStr"])
+        self.assertEqual(reg.commands["glStr"].declaration(), "extern const GLubyte *glStr(GLenum n);")
+
+    def test_headers_and_symbols(self):
+        out = os.path.join(self.tmp, "h")
+        rc, _o, err = run("write_opengl_headers.py", self.xml, self.data, out, "2026-01-01")
+        self.assertEqual(rc, 0, err)
+        gl = read(os.path.join(out, "gl.h"))
+        self.assertIn("extern void glOld(void);", gl)
+        self.assertIn("SPDX-License-Identifier: Apache-2.0", gl)
+        gl3 = read(os.path.join(out, "gl3.h"))
+        self.assertNotIn("glOld", gl3)
+        self.assertIn("#define GL_ALL", gl3)
+        self.assertIn("0xFFFFFFFFu", gl3)
+        self.assertIn("extern void glExt(const GLfloat *v);", read(os.path.join(out, "glext.h")))
+        self.assertIn("extern CGLError CGLFoo(GLint x);", read(os.path.join(out, "OpenGL.h")))
+        self.assertIn("kCGLPFAColorSize = 8", read(os.path.join(out, "CGLTypes.h")))
+        syms = os.path.join(self.tmp, "syms")
+        rc, _o, err = run("opengl_syms.py", self.xml, self.data, syms)
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(read(syms).split(), ["_CGLFoo", "_glExt", "_glOld", "_glStr"])
+
+    def test_data_files(self):
+        R = load("gl_registry")
+        d = os.path.join(DATA, "opengl")
+        enums = R.read_cgl_enums(os.path.join(d, "cgl-enums.txt"))
+        names = [n for _g, n, _v in enums]
+        self.assertEqual(len(names), len(set(names)))
+        for _g, _n, v in enums:
+            int(v, 0)
+        for row in R.read_pipe_file(os.path.join(d, "cgl-functions.txt")):
+            self.assertEqual(len(row), 5, row)
+            self.assertGreaterEqual(len(row[4].split(",")), 2, row)
+        for row in R.read_pipe_file(os.path.join(d, "extensions.txt")):
+            self.assertEqual(len(row), 3, row)
+        pin = data_files.lines(os.path.join(d, "registry.txt"))
+        self.assertEqual(len(pin), 1)
+        self.assertRegex(pin[0][4], r"^[0-9a-f]{64}$")
+        self.assertIn("OpenGL", data_files.read_libraries(os.path.join(DATA, "libraries.txt")))

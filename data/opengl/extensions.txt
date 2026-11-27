@@ -1,0 +1,15 @@
+# The extensions that OpenGL.framework's headers declare and OpenGL.tbd exports (the functions
+# only; the tokens of the extension come with them).  The names and signatures are those of
+# Khronos' gl.xml; the source that macOS has the extension and exports its functions is Apple's
+# archived "OpenGL Programming Guide for Mac" (developer.apple.com/library/archive/documentation/
+# GraphicsImaging/Conceptual/OpenGL-MacProgGuide), whose sample code for Mac apps calls the
+# functions by name, without a lookup.  A function that the guide does not name is not here.
+# Columns, separated by "|": extension | functions | pages of the guide that name them
+
+GL_APPLE_fence|glGenFencesAPPLE glDeleteFencesAPPLE glSetFenceAPPLE glTestFenceAPPLE glFinishFenceAPPLE glFinishObjectAPPLE|opengl_designstrategies,opengl_vertexdata
+GL_APPLE_vertex_array_object|glBindVertexArrayAPPLE glGenVertexArraysAPPLE|opengl_vertexdata
+GL_APPLE_vertex_array_range|glVertexArrayRangeAPPLE glFlushVertexArrayRangeAPPLE glVertexArrayParameteriAPPLE|opengl_vertexdata
+GL_APPLE_texture_range|glTextureRangeAPPLE|opengl_texturedata
+GL_APPLE_flush_buffer_range|glBufferParameteriAPPLE glFlushMappedBufferRangeAPPLE|opengl_vertexdata
+GL_APPLE_client_storage||opengl_texturedata
+GL_EXT_framebuffer_object|glBindFramebufferEXT glBindRenderbufferEXT glCheckFramebufferStatusEXT glDeleteFramebuffersEXT glDeleteRenderbuffersEXT glFramebufferRenderbufferEXT glFramebufferTexture2DEXT glGenFramebuffersEXT glGenRenderbuffersEXT glRenderbufferStorageEXT|opengl_offscreen

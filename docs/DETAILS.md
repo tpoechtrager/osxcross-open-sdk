@@ -25,6 +25,8 @@ At run time macOS loads its own libraries.
   two private functions that winit declares itself (`data/symbols/CoreGraphics-extra.txt`) and the keyboard layout  
   functions that winit links from Carbon (`data/symbols/Carbon-extra.txt`; `Carbon` has nothing else).  
   No Objective-C classes (`_OBJC_CLASS_$_...`): the crates that were tested look them up at run time.
+- **`OpenGL.tbd`**: the commands of OpenGL 1.0 to 4.1 in `gl.xml`, the CGL functions and the extension functions of  
+  `data/opengl/` (see [OpenGL.framework](#opengl-framework)).
 - **Install names and versions** are in `data/libraries.txt`, with the project file that states each value;  
   `tools/check_libraries.py` checks them. A value without a public source is the lowest possible one.
 
@@ -92,3 +94,15 @@ The changes:
 - `data/manifests/` pins tag and commit of every project per macOS release.
 - Releases that the public AvailabilityVersions does not know yet (after 14.3) come from  
   `data/availability-extra.dsl`, which names its sources.
+
+## OpenGL.framework
+
+- The step `frameworks` writes the headers with `helpers/write_opengl_headers.py` from `gl.xml` of the OpenGL Registry  
+  (downloaded by the step `fetch`, pinned by commit and SHA-256 in `data/opengl/registry.txt`) and the lists of `data/opengl/`.  
+  The headers are made at build time, not kept in `data/headers/`, so that no value is typed by hand and  
+  the licenses stay separate: the files from `gl.xml` are Apache-2.0, the CGL headers 0BSD.
+- `gl.h` and `gl3.h` may be included in the same file: their macros and prototypes agree.  
+  A prototype in `gl.h` or `gl3.h` needs no `GL_GLEXT_PROTOTYPES`.
+- A program that creates a context without a window uses `CGLChoosePixelFormat` with `kCGLPFAOpenGLProfile`  
+  (`kCGLOGLPVersion_Legacy`, `_3_2_Core`, `_GL4_Core`), and for the software renderer `kCGLPFARendererID` with  
+  `kCGLRendererGenericFloatID`; see `tests/programs/opengl.c`.

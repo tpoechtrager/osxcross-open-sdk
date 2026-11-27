@@ -43,7 +43,7 @@
 #                        14.3 and later) the SDK also has the
 #                        libraries of /usr/lib and the frameworks
 #                        CoreFoundation, DiskArbitration, SystemConfiguration,
-#                        Security and IOKit, and link stubs without headers
+#                        Security, IOKit and OpenGL, and link stubs without headers
 #                        of Foundation, CoreGraphics, AppKit, CoreText,
 #                        CoreVideo, QuartzCore, Metal, CoreAudio,
 #                        AudioToolbox, ApplicationServices and Carbon
@@ -93,7 +93,8 @@
 #             liblzma
 #             (not with --core)
 #   frameworks  CoreFoundation, DiskArbitration, SystemConfiguration, IOKit,
-#             Security, CoreServices (with a link stub of its symbols
+#             Security, OpenGL (headers from the OpenGL Registry and
+#             link stub), CoreServices (with a link stub of its symbols
 #             without headers); link stubs of Foundation, CoreGraphics,
 #             AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio,
 #             AudioToolbox, ApplicationServices and Carbon (not with --core)

@@ -47,6 +47,11 @@ install name and version. A real SDK was used only to test a result, never as a 
   `CoreAudio`, `AudioToolbox`, `ApplicationServices` (with `ColorSync`) and `Carbon`: the C functions and constants  
   of Apple's documentation, for languages and crates that declare what they use themselves  
   (Rust: `winit`, `wgpu`, `cpal`), see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd) and [docs/TESTED.md](docs/TESTED.md).
+- `OpenGL.framework`: the headers `gl.h` (legacy, up to 2.1), `gl3.h` (core, 3.2 to 4.1), `glext.h`, `gl3ext.h`, `gltypes.h` and the CGL headers  
+  (`OpenGL.h`, `CGLTypes.h`, `CGLCurrent.h`, `CGLDevice.h`, `CGLIOSurface.h`, `CGLRenderers.h`), and the link stub.  
+  The OpenGL part is made from the Khronos Registry's `gl.xml`; the CGL part from open projects that declare it.  
+  A program makes a CGL context without a window, draws into a framebuffer object and reads the pixels back  
+  (see [docs/DETAILS.md](docs/DETAILS.md#opengl-framework) and [docs/TESTED.md](docs/TESTED.md)).
 - The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `tsan`, `rtsan`, `tysan`.
 
 ### What does not work
@@ -54,7 +59,9 @@ install name and version. A real SDK was used only to test a result, never as a 
 - **`Foundation`, `AppKit`** and all other frameworks: there is no public source for their headers;  
   `#import <Foundation/Foundation.h>` fails. Objective-C classes are not in the stubs.
 - Rust crates that compile C or Objective-C against the headers of these frameworks, and frameworks  
-  without a stub (`OpenGL`, `AVFoundation`, `WebKit`, ...).
+  without a stub (`AVFoundation`, `WebKit`, ...).
+- `OpenGL.framework`: no GLU (`glu.h`), no extensions except those that Apple's guide for Mac names (`docs/SOURCES.md`),  
+  no renderer IDs except the software renderer, no `NSOpenGL*` (AppKit).
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
 - `libbsm`, the other `IOKit` device families (`storage/ata`, `network`, ...) and the headers of `CoreServices` except File System Events.
 - `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h`: no open source defines their functions  
@@ -161,7 +168,7 @@ A project without a license file gets the notice block of its headers, or the pu
   a program that uses one links but stops at start with "symbol not found".
 - **Versions.** Stubs without a public version source (`sqlite3`, `liblzma`, `Foundation`, `CoreServices`,  
   `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`, `CoreAudio`, `AudioToolbox`,  
-  `ApplicationServices`, `Carbon`)  
+  `ApplicationServices`, `Carbon`, `OpenGL`)  
   have the lowest compatibility version.
 - **`CoreFoundation`** is CF-1153.18 (2018), the last one Apple published: newer CF APIs are missing.
 - **arm64e and x86_64h.** The stubs give arm64e the symbols of arm64. x86_64h is not listed:  

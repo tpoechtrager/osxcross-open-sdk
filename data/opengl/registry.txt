@@ -1,0 +1,6 @@
+# The OpenGL API Registry of the Khronos Group, from which the headers and the exports of
+# OpenGL.framework are made (helpers/write_opengl_headers.py, helpers/opengl_syms.py).
+# gl.xml is Apache-2.0 (its own notice, "SPDX-License-Identifier: Apache-2.0").  The file is
+# fetched at the commit and checked against the SHA-256.
+# project  repository  commit  file  sha256
+OpenGL-Registry https://github.com/KhronosGroup/OpenGL-Registry 6af574a14089ccfee87efe230ebcdd8742859813 xml/gl.xml b9ca2cfa5c676e901c20d34af3407f1687cde0f1336a5ff7a8974d04c7494ad3

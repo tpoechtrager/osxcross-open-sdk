@@ -89,6 +89,7 @@ P = [
  ("IOHIDFamily", "IOHIDFamily", "APSL 2.0 (file notices)", "IOKit.framework/Headers/hid (keys, types, usage tables), hidsystem (IOHIDTypes, IOLLEvent, ...)", "frameworks", [], "IOHIDFamily/IOHIDKeys.h"),
  ("IOGraphics", "IOGraphics", "APSL 2.0 (APPLE_LICENSE), APSL 1.1 (file notices of the headers)", "IOKit.framework/Headers/graphics (all but IOGraphicsLib.h), i2c, ndrvsupport", "frameworks", ["../Libinfo/APPLE_LICENSE=APPLE_LICENSE-1.1 (APSL 1.1, from Libinfo)"]),
  ("IOUSBFamily", "IOUSBFamily", "APSL 2.0", "IOKit.framework/Headers/usb (USB.h, USBSpec.h, IOUSBLib.h, IOUSBUserClient.h)", "frameworks"),
+ ("OpenGL Registry", None, "Apache License 2.0 (gl.xml); the CGL headers are 0BSD", "OpenGL.framework/Headers gl.h, gl3.h, glext.h, gl3ext.h, gltypes.h (written from gl.xml), OpenGL.tbd symbol names; OpenGL.h and the CGL*.h headers are written from data/opengl/ (0BSD)", "frameworks"),
  ("sqlite", None, "Public domain (SQLite blessing)", "sqlite3.h, sqlite3ext.h (upstream amalgamation {version}), libsqlite3.tbd", "libs"),
  ("Swift runtime stubs", None, "Apache 2.0 with Runtime Library Exception", "usr/lib/swift/*.tbd generated from the Swift runtime dylibs of swift.org's macOS package", "swift"),
 ]
@@ -139,6 +140,14 @@ def sqlite_version(header):
     return m.group(1)
 
 
+def registry_notice(path):
+    """The comment at the top of gl.xml (copyright and license)"""
+    with open(path, errors="replace") as f:
+        t = f.read(4000)
+    m = re.search(r"<comment>(.*?)</comment>", t, re.S)
+    return m.group(1).strip() if m else t[:1000]
+
+
 def header_notice(path):
     with open(path, errors="replace") as f:
         t = f.read()
@@ -170,6 +179,15 @@ def install(src, out, variant, apache, sqlite, swift_lic):
             tag = "%s (%s)" % (version, os.path.basename(os.path.normpath(sqlite)))
             what = what.replace("{version}", version)
             note = "notice block copied from sqlite3.h (SQLite has no license file)"
+        elif name == "OpenGL Registry":
+            xml = os.path.join(src, "OpenGL-Registry", "gl.xml")
+            if not os.path.exists(xml):
+                continue
+            shutil.copy(apache, os.path.join(dst, "LICENSE-Apache-2.0.txt"))
+            with open(os.path.join(dst, "NOTICE.txt"), "w") as f:
+                f.write(registry_notice(xml) + "\n")
+            tag = "gl.xml"
+            note = "notice of gl.xml (SPDX-License-Identifier: Apache-2.0) and the text of the Apache License 2.0 added"
         elif name == "Swift runtime stubs":
             shutil.copy(swift_lic, os.path.join(dst, "LICENSE.txt"))
             tag = "swift.org package"
@@ -204,7 +222,7 @@ def install(src, out, variant, apache, sqlite, swift_lic):
                 if not os.listdir(dst):
                     note = "no license text found"
         rows.append((name, tag, lic, what, note))
-        if name not in ("sqlite", "Swift runtime stubs"):
+        if name not in ("sqlite", "Swift runtime stubs", "OpenGL Registry"):
             p = (name.replace("LLVM libc++abi", "llvm-project").replace("LLVM libc++", "llvm-project"), tag, commit_of(src, d))
             if p not in projects:
                 projects.append(p)

@@ -35,6 +35,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
 | Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
+| `OpenGL.framework` (headers, link stub) | Khronos OpenGL Registry (`gl.xml`), open projects that declare CGL ([details](#openglframework)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
@@ -558,6 +559,61 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   Carbon's install name (`Versions/A`): the same two lists as for CoreGraphics (python-build-standalone 139273f,  
   `src/validation.rs`; maiko f984528, `crates/patcher/src/macos.rs`).
 - Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
+
+---
+
+### OpenGL.framework
+
+**Files:** `data/opengl/` (`registry.txt`, `cgl-enums.txt`, `cgl-functions.txt`, `extensions.txt`),  
+`helpers/gl_registry.py`, `helpers/write_opengl_headers.py`, `helpers/opengl_syms.py`, `lib/frameworks.sh`, `lib/fetch.sh`
+
+- Headers and install name only come from open sources; Apple's headers and libraries are not read.  
+  The headers are written by the generator at build time from the data files, not copied.
+- **OpenGL itself** (names, values and signatures of the functions and tokens of `gl.h`, `gl3.h`, `glext.h`):  
+  the OpenGL API Registry of the Khronos Group, `xml/gl.xml` of github.com/KhronosGroup/OpenGL-Registry  
+  (commit and SHA-256 in `data/opengl/registry.txt`; downloaded by the step `fetch`).  
+  `gl.xml` is licensed Apache-2.0 (`SPDX-License-Identifier: Apache-2.0` in its first comment);  
+  the generated `gltypes.h`, `gl.h`, `gl3.h`, `glext.h` and `gl3ext.h` carry that notice and are Apache-2.0 too.  
+  No header of the Registry (`glext.h`, `glcorearb.h`, MIT) is copied: the generator reads only `gl.xml`.  
+  The C types are those of the Registry's `KHR/khrplatform.h` (`int8_t`, `float`, `intptr_t`, ...).
+- **Which header has what.** The names of the headers are those that open projects include:  
+  `<OpenGL/gl.h>`, `<OpenGL/gl3.h>`, `<OpenGL/glext.h>`, `<OpenGL/gl3ext.h>`, `<OpenGL/OpenGL.h>`, `<OpenGL/CGLTypes.h>`,  
+  `<OpenGL/CGLCurrent.h>`, `<OpenGL/CGLRenderers.h>`, `<OpenGL/CGLDevice.h>`, `<OpenGL/CGLIOSurface.h>`  
+  (mesa 7564f95, `src/glx/apple/apple_cgl.h` and `apple_visual.c`; apitrace 28bb3ab, `dispatch/glimports.hpp`;  
+  GLFW and the projects that include `gl3ext.h` for `GLFW_INCLUDE_GLCOREARB`) and `<OpenGL/gltypes.h>`  
+  (Syphon-Framework and libpag include it).  
+  `gl.h` is the legacy profile and has what `gl.xml` requires for OpenGL 1.0 to 2.1 in the compatibility profile;  
+  `gl3.h` is the core profile, OpenGL 1.0 to 4.1 without what the registry removes for the core profile.  
+  The limit 2.1 / 3.2 to 4.1 is the one of the contexts that `kCGLOGLPVersion_Legacy`, `_3_2_Core` and `_GL4_Core` select  
+  (`data/opengl/cgl-enums.txt`; Apple's archived "OpenGL Programming Guide for Mac" names Legacy and 3.2 Core).  
+  `gl.h` and `gl3.h` may be included together. `gl3ext.h` is empty: no source says which extensions a core context has.
+- **The CGL types and constants** (`CGLTypes.h`, `CGLRenderers.h`): no Khronos standard, no current Apple documentation.  
+  Every value is declared by an open project that wrote it down (`data/opengl/cgl-enums.txt` names them per entry):  
+  servo/cgl-rs d97cc08 `src/cgl.rs` (MIT or Apache-2.0), ValveSoftware/vogl 434dcc5 `glspec/cglenum.spec` (MIT, "hand generated"),  
+  apitrace 28bb3ab `dispatch/glimports.hpp` (MIT), factor/factor f05a4e9 `basis/core-graphics/core-graphics.factor` (BSD).  
+  The names are also used or listed by apitrace `specs/cglapi.py`, Wine (`dlls/winemac.drv/opengl.c`), XQuartz (`hw/xquartz/GL/indirect.c`),  
+  mesa, renderdoc and Apple's archived programming guide.  
+  Values with one source: the `kCGLBad...` errors, the `kCGLRP...` renderer properties (vogl only),  
+  the `kCGLOGLPVersion_...` profiles (apitrace only) and `kCGLRendererGenericFloatID` (Factor only).  
+  Left out because no source declares a value: the other renderer IDs, the buffer and color mode bits (`kCGLRGB888Bit`, ...),  
+  the constants of `CGLProfiler.h` (apitrace only, and it notes that the header is gone), `CGLContext.h` and `CGLMacro.h`.
+- **The CGL functions** (`data/opengl/cgl-functions.txt`): those that at least two projects name  
+  (apitrace `specs/cglapi.py`, which also names the header of each, vogl `glspec/cgl.spec`, servo/cgl-rs,  
+  mesa `apple_cgl.c`, Wine, XQuartz, renderdoc, Apple's guide). The parameter types follow mesa `apple_cgl.h` and apitrace.  
+  Left out because only apitrace names them: `CGLGetContextRetainCount`, `CGLReleasePBuffer`, `CGLGetPBufferRetainCount`,  
+  `CGLSetFullScreenOnDisplay`; and the functions that apitrace calls undocumented.
+- **Exports of `OpenGL.tbd`** (conservative):  
+  every command that `gl.xml` requires for OpenGL 1.0 to 4.1;  
+  the CGL functions above;  
+  the functions of the extensions of `data/opengl/extensions.txt` (`GL_APPLE_fence`, `GL_APPLE_vertex_array_object`,  
+  `GL_APPLE_vertex_array_range`, `GL_APPLE_texture_range`, `GL_APPLE_flush_buffer_range`, `GL_EXT_framebuffer_object`):  
+  Apple's guide for Mac (developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide,  
+  the pages `opengl_designstrategies`, `opengl_vertexdata`, `opengl_texturedata`, `opengl_offscreen`)  
+  calls each of these functions by name in its sample code, with no lookup. Other extensions are not exported and not declared.  
+  Not in the stub: GLU (`glu.h`, `libGLU`), the functions of OpenGL 4.2 and later, `CGLContext.h`.
+- Install name `/System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL`: mesa `src/glx/apple/apple_cgl.c` (`OPENGL_FRAMEWORK_PATH`).  
+  Godot's glad loader names the same framework by `.../OpenGL.framework/Versions/Current/OpenGL`.  
+  Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
 
 ---
 
