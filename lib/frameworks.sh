@@ -271,6 +271,15 @@ step_frameworks() {
   mk_lib_tbd CoreServices "$STAGE_FW/CoreServices.framework/CoreServices.tbd" "$STAGE_WORK/fw-CoreServices.syms" \
     --reexport-library "$(lib_field CoreFoundation 2)"
 
+  # Cocoa: the umbrella framework.  Apple's documentation says that it imports AppKit, Foundation
+  # and Core Data; the SDK has no Core Data, so the stub re-exports the other two (docs/SOURCES.md).
+  # Only the .tbd, no headers: an umbrella of the sort that data/libraries.txt lists.
+  echo "Cocoa"
+  rm -rf "$STAGE_FW/Cocoa.framework"; mkdir -p "$STAGE_FW/Cocoa.framework"
+  : > "$STAGE_WORK/fw-Cocoa.syms"
+  mk_lib_tbd Cocoa "$STAGE_FW/Cocoa.framework/Cocoa.tbd" "$STAGE_WORK/fw-Cocoa.syms" \
+    --reexport-library "$(lib_field AppKit 2)" --reexport-library "$(lib_field Foundation 2)"
+
   fw_layout
 }
 

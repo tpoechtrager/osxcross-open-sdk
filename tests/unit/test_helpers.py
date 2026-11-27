@@ -688,6 +688,7 @@ class DataFiles(unittest.TestCase):
         # a framework's install name is /System/Library/Frameworks/N.framework/Versions/V/N (the layout of fw_layout)
         libs = data_files.read_libraries(os.path.join(DATA, "libraries.txt"))
         fws = {k: v for k, v in libs.items() if v[0].startswith("/System/Library/Frameworks/")}
+        self.assertIn("Cocoa", fws)
         for k, v in fws.items():
             self.assertRegex(v[0], r"^/System/Library/Frameworks/%s\.framework/Versions/[A-Z]/%s$" % (k, k), k)
 

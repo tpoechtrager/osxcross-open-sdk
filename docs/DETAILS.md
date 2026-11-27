@@ -24,6 +24,9 @@ At run time macOS loads its own libraries.
   `<V>` is the letter in the install name of `data/libraries.txt` (`Foundation` and `AppKit`: `C`, the others `A`).  
   The install name of every `.tbd` is the path of the file: a linker finds a re-exported library at its install name  
   plus `.tbd` below the SDK (ld64, `ld64.lld`). `tests/sdk-check.sh` checks it.
+- **`Cocoa.tbd`**: the umbrella framework, only the `.tbd`: it re-exports `AppKit` and `Foundation`. Apple's documentation  
+  names `Core Data` as the third framework that `Cocoa` imports; the SDK has none, so there is no re-export of it.  
+  A program that links `-framework Cocoa` finds the symbols of the stubs of `AppKit` and `Foundation`.
 - **`CoreFoundation.tbd`**: the declarations in its headers, and the symbols of newer APIs that Apple's documentation lists for macOS  
   and no header names (`data/symbols/doc/CoreFoundation.txt`), without their headers (`CFStringTokenizer`, `CFURLEnumerator`, ...).
 - **`Foundation.tbd`, `CoreGraphics.tbd`, `AppKit.tbd`, `CoreText.tbd`, `CoreVideo.tbd`, `QuartzCore.tbd`, `Metal.tbd`,  

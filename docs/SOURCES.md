@@ -38,7 +38,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | `OpenGL.framework` (headers, link stub) | Khronos OpenGL Registry (`gl.xml`), open projects that declare CGL ([details](#openglframework)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
-| Layout of the frameworks | Apple's documentation of framework bundles ([details](#framework-layout)) |
+| Layout of the frameworks, `Cocoa.framework` | Apple's documentation of framework bundles and of Cocoa, python-build-standalone ([details](#framework-layout-and-cocoaframework)) |
 | Swift runtime stubs | The swift.org package ([details](#swift-runtime-stubs)) |
 | Manifests | distribution-macOS, `git ls-remote` ([details](#manifests)) |
 | `stdbool.h`, `stdarg.h`, `float.h` of the scans | ISO C99, Clang's predefined macros ([details](#c-headers-of-the-scans)) |
@@ -382,7 +382,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   without headers; they are added to the symbols above, whose check against the header does not change.
 - **Left out, no C name in these sources:** the flags of dotnet/macios `WithDocId`, `DeviceState` and the key `docID`.
 - The stub re-exports `CoreFoundation` (`reexported-libraries`, install name from `data/libraries.txt`);  
-  `CoreFoundation.framework/Versions/A/CoreFoundation.tbd` is the file (see [framework layout](#framework-layout)):  
+  `CoreFoundation.framework/Versions/A/CoreFoundation.tbd` is the file (see [framework layout](#framework-layout-and-cocoaframework)):  
   the linker looks for a re-exported library at its install name below the SDK plus `.tbd`  
   (ld64: `Options::findFile` in `ld/Options.cpp` of cctools-port; ld64.lld does the same).
 - Why CoreServices re-exports CoreFoundation: open projects link only `CoreServices`  
@@ -692,7 +692,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ---
 
-### Framework layout
+### Framework layout and `Cocoa.framework`
 
 **Files:** `lib/frameworks.sh` (`fw_layout`), `data/libraries.txt`, `tests/sdk-check.py`
 
@@ -704,6 +704,15 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 - Why the install name must be the path of the file: a re-exported library is looked up at its install name below the SDK  
   plus `.tbd` (ld64: `Options::findFile` in `ld/Options.cpp` of cctools-port; `ld64.lld` does the same).  
   The test `tests/sdk-check.sh` compares the install name of every `.tbd` with its path.
+- `Cocoa.framework` re-exports `AppKit` and `Foundation`: "The Cocoa umbrella framework (`Cocoa.framework`) imports the core Objective-C  
+  frameworks for app development: AppKit, Foundation, and Core Data" (Apple's "Cocoa Application Layer",  
+  developer.apple.com/library/archive/documentation/MacOSX/Conceptual/OSX_Technology_Overview/CocoaApplicationLayer/CocoaApplicationLayer.html).  
+  There is no `CoreData` in the SDK, so it is not re-exported.
+- `CoreGraphics` is not re-exported: glfw's sources (`src/cocoa_monitor.m`) call `CGDisplay...` functions and its build links only
+  `Cocoa`, so a program may rely on that, but no public source says which framework gives them.  With a re-export of `CoreGraphics`
+  the link of the glfw crate lacks only `UCKeyTranslate` (Carbon) and the Objective-C classes.
+- Install name `/System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa`: astral-sh/python-build-standalone 139273f, `src/validation.rs`  
+  (MPL-2.0). Versions: the lowest possible ones (`1.0.0`), as for the other frameworks without a version source.
 
 ---
 
