@@ -56,3 +56,6 @@ __os_nospin_lock_lock           # libplatform/src/os/lock.c; libkern/OSSpinLockD
 __os_log_default                # the default log object (OS_LOG_DEFAULT): xnu libkern/os/log.h, config/Libkern.exports
 _os_log_create                  # xnu libkern/os/log.h, config/Libkern.exports
 _os_log_type_enabled            # called in configd SystemConfiguration.fproj/SCD.c (line 590): os_log_type_enabled(log, type)
+_lgamma_r                       # Libm/Source/ARM/math.h declares it behind _REENTRANT, which the scan of the headers does not set; Libm/Source/ARM/lgamma.c
+                                # defines it (the Intel export list of Libm has it); swift-numerics (_NumericsShims.h) declares it itself and links it on arm64
+_lgammaf_r                      # Libm/Source/ARM/math.h (behind _REENTRANT), Libm/Source/ARM/lgammaf.c
