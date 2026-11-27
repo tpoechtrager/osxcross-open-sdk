@@ -15,7 +15,7 @@ _UCKeyTranslate                          # winit b1a0534, winit-appkit/src/ffi.r
 
 # Text Input Sources (HIToolbox).  Functions and the constants (CFString) that the projects declare
 # in an extern block with link(name = "Carbon").
-_TISCopyCurrentKeyboardInputSource       # enigo 0.6.1, src/macos/macos_impl.rs; rdev 0.5.3, src/macos/keyboard.rs;
+_TISCopyCurrentKeyboardInputSource       # enigo 0.6.1, src/macos/macos_impl.rs; rdev 0.5.3 0e2a1c8, src/macos/keyboard.rs;
                                          # zed ed8dc1b, crates/gpui_macos/src/platform.rs
 _TISCopyCurrentASCIICapableKeyboardLayoutInputSource # enigo 0.6.1, src/macos/macos_impl.rs
 _TISCreateInputSourceList                # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs;

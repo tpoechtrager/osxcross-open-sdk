@@ -11,7 +11,7 @@
 #   source  doc:    Apple's documentation of XPC, the page of the name
 #                   (developer.apple.com/documentation/xpc), which shows
 #                   its C declaration and availability
-#           webkit: WebKit, Source/WTF/wtf/spi/darwin/XPCSPI.h
+#           webkit: WebKit 4940531, Source/WTF/wtf/spi/darwin/XPCSPI.h
 #                   (BSD-2-Clause): the variables behind the macros
 #                   XPC_TYPE_*, XPC_ERROR_* and XPC_ERROR_KEY_DESCRIPTION
 #

@@ -18,7 +18,7 @@
 #             wine           wine-mirror/wine ecca8e7, dlls/winemac.drv/opengl.c (LGPL-2.1)
 #             xquartz        XQuartz/xorg-server 0ea9b59, hw/xquartz/GL/indirect.c (MIT)
 #             mesa           mesa 7564f95, src/glx/apple/apple_visual.c, apple_glx_context.c (MIT)
-#             renderdoc      baldurk/renderdoc, renderdoc/driver/gl/cgl_platform.cpp (MIT)
+#             renderdoc      baldurk/renderdoc 762d40b, renderdoc/driver/gl/cgl_platform.cpp (MIT)
 #             guide          Apple's archived "OpenGL Programming Guide for Mac" (pages of
 #                            developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide)
 # group  name  value  values  named
