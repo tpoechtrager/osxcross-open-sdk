@@ -1,7 +1,7 @@
 # Symbols of Carbon that Apple's documentation does not list as C symbols of this framework:
-# the keyboard layout functions (HIToolbox, a framework inside Carbon) that open projects
-# declare themselves and link from Carbon, so they rely on them.  Each entry names the
-# project (commit) and file.
+# the keyboard layout and input source functions and the event handler and hot key functions
+# (HIToolbox, a framework inside Carbon) that open projects declare themselves and link from
+# Carbon, so they rely on them.  Each entry names the project (commit) and file.
 _TISCopyCurrentKeyboardLayoutInputSource # winit b1a0534, winit-appkit/src/ffi.rs (link Carbon);
                                          # also GLFW 92dcf4c, src/cocoa_init.m (from HIToolbox)
 _TISGetInputSourceProperty               # winit b1a0534, winit-appkit/src/ffi.rs (link Carbon);
@@ -12,3 +12,41 @@ _LMGetKbdType                            # winit b1a0534, winit-appkit/src/ffi.r
                                          # also GLFW 92dcf4c, src/cocoa_init.m (from HIToolbox)
 _UCKeyTranslate                          # winit b1a0534, winit-appkit/src/ffi.rs (link Carbon); the page of
                                          # Apple's documentation puts it in Core Services (CoreServices.tbd)
+
+# Text Input Sources (HIToolbox).  Functions and the constants (CFString) that the projects declare
+# in an extern block with link(name = "Carbon").
+_TISCopyCurrentKeyboardInputSource       # enigo 0.6.1, src/macos/macos_impl.rs; rdev 0.5.3, src/macos/keyboard.rs;
+                                         # zed ed8dc1b, crates/gpui_macos/src/platform.rs
+_TISCopyCurrentASCIICapableKeyboardLayoutInputSource # enigo 0.6.1, src/macos/macos_impl.rs
+_TISCreateInputSourceList                # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs;
+                                         # MystikoLab/rustcast 6f5d1aa, src/platform/macos/input_source.rs
+_TISSelectInputSource                    # MystikoLab/rustcast 6f5d1aa, src/platform/macos/input_source.rs
+_TISEnableInputSource                    # qingjian d75ca0e, apps/macos/src/app/input_source.rs
+_TISRegisterInputSource                  # qingjian d75ca0e, apps/macos/src/app/input_source.rs
+_kTISPropertyInputSourceID               # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs;
+                                         # zed ed8dc1b, crates/gpui_macos/src/platform.rs
+_kTISPropertyLocalizedName               # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs;
+                                         # zed ed8dc1b, crates/gpui_macos/src/platform.rs
+_kTISPropertyInputSourceLanguages        # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs
+_kTISPropertyInputSourceCategory         # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs
+_kTISPropertyInputSourceType             # zed ed8dc1b, crates/gpui_macos/src/platform.rs
+_kTISPropertyInputSourceIsASCIICapable   # zed ed8dc1b, crates/gpui_macos/src/platform.rs
+_kTISPropertyInputSourceIsEnabled        # qingjian d75ca0e, apps/macos/src/app/input_source.rs
+_kTISPropertyInputSourceIsSelectCapable  # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs
+_kTISCategoryKeyboardInputSource         # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs
+_kTISTypeKeyboardInputMode               # zed ed8dc1b, crates/gpui_macos/src/platform.rs
+_kTISTypeKeyboardLayout                  # n2ray/xdesk 1f9a0cf, desktop/src/tap.rs
+_kTISNotifySelectedKeyboardInputSourceChanged # anomalyco/hex 3b936b9, src/keyboard_input_sources/macos.rs
+
+# Event handlers and hot keys (Carbon Event Manager, HIToolbox).
+_RegisterEventHotKey                     # neovide 95c913b, src/window/application/macos/hotkey.rs;
+                                         # anomalyco/hex 3b936b9, src/suppression/secure_input.rs
+_UnregisterEventHotKey                   # neovide 95c913b, src/window/application/macos/hotkey.rs
+_InstallEventHandler                     # neovide 95c913b, src/window/application/macos/hotkey.rs;
+                                         # acsandmann/rift 2d28eac, src/sys/carbon.rs
+_RemoveEventHandler                      # neovide 95c913b, src/window/application/macos/hotkey.rs
+_GetApplicationEventTarget               # neovide 95c913b, src/window/application/macos/hotkey.rs
+_GetEventKind                            # acsandmann/rift 2d28eac, src/sys/carbon.rs;
+                                         # anomalyco/hex 3b936b9, src/suppression/secure_input.rs
+_GetEventParameter                       # neovide 95c913b, src/window/application/macos/hotkey.rs;
+                                         # acsandmann/rift 2d28eac, src/sys/carbon.rs

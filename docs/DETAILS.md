@@ -24,8 +24,9 @@ At run time macOS loads its own libraries.
   `CoreAudio.tbd`, `AudioToolbox.tbd`, `ApplicationServices.tbd`, `Carbon.tbd`** (no headers): the C functions and global data that  
   Apple's documentation lists for macOS up to the release of the SDK (`data/symbols/doc/`, made by  
   `tools/doc_symbols.py`; `ApplicationServices` has those of the modules Application Services and ColorSync),  
-  two private functions that winit declares itself (`data/symbols/CoreGraphics-extra.txt`) and the keyboard layout  
-  functions that winit links from Carbon (`data/symbols/Carbon-extra.txt`; `Carbon` has nothing else).  
+  two private functions that winit declares itself (`data/symbols/CoreGraphics-extra.txt`) and the keyboard layout,  
+  Text Input Sources and hot key functions and constants that open Rust projects link from Carbon  
+  (`data/symbols/Carbon-extra.txt`; `Carbon` has nothing else).  
   No Objective-C classes (`_OBJC_CLASS_$_...`): the crates that were tested look them up at run time.
 - **`OpenGL.tbd`**: the commands of OpenGL 1.0 to 4.1 in `gl.xml`, the CGL functions and the extension functions of  
   `data/opengl/` (see [OpenGL.framework](#opengl-framework)).

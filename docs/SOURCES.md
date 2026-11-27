@@ -597,10 +597,26 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   with a comment that ColorSync is part of ApplicationServices).  
   There is no ColorSync stub and no re-export: no open source names the re-exports of ApplicationServices.
 - Carbon has no list from the documentation (it has no pages of C symbols of its own): only `Carbon-extra.txt`,  
-  the functions and the constant that winit b1a0534 (`winit-appkit/src/ffi.rs`, `link(name = "Carbon")`) declares  
-  for the keyboard layout: `TISCopyCurrentKeyboardLayoutInputSource`, `TISGetInputSourceProperty`,  
-  `kTISPropertyUnicodeKeyLayoutData`, `LMGetKbdType` (GLFW 92dcf4c, `src/cocoa_init.m`, uses the same four  
-  from the HIToolbox bundle, which is a framework inside Carbon), and `UCKeyTranslate`.  
+  the names that open projects declare themselves in an `extern` block with `link(name = "Carbon")`, so they rely on them.  
+  Each entry of the file names the projects (commit) and files; a project that only includes Apple's `<Carbon/Carbon.h>`  
+  (Godot, OBS Studio, SDL) is no source here, and neither is a binding made by `bindgen` or `objc2` from Apple's headers  
+  (`global-hotkey`, `super_native_extensions`):
+  - Keyboard layout: `TISCopyCurrentKeyboardLayoutInputSource`, `TISGetInputSourceProperty`,  
+    `kTISPropertyUnicodeKeyLayoutData`, `LMGetKbdType` (winit b1a0534, `winit-appkit/src/ffi.rs`; GLFW 92dcf4c,  
+    `src/cocoa_init.m`, uses the same four from the HIToolbox bundle, which is a framework inside Carbon), and `UCKeyTranslate`.  
+  - Text Input Sources: `TISCopyCurrentKeyboardInputSource`, `TISCopyCurrentASCIICapableKeyboardLayoutInputSource` (enigo 0.6.1,  
+    rdev 0.5.3), `TISCreateInputSourceList` (anomalyco/hex 3b936b9, MystikoLab/rustcast 6f5d1aa), `TISSelectInputSource`  
+    (rustcast), `TISEnableInputSource`, `TISRegisterInputSource` (qingjian d75ca0e), and the constants `kTISProperty*`,  
+    `kTISCategoryKeyboardInputSource`, `kTISType*` and `kTISNotifySelectedKeyboardInputSourceChanged` (hex, zed ed8dc1b,  
+    n2ray/xdesk 1f9a0cf, qingjian).  
+    The constants are `CFStringRef` data symbols, the others functions; the stub lists both kinds the same way.  
+  - Event handlers and hot keys: `RegisterEventHotKey`, `UnregisterEventHotKey`, `InstallEventHandler`, `RemoveEventHandler`,  
+    `GetApplicationEventTarget`, `GetEventParameter` (neovide 95c913b, `src/window/application/macos/hotkey.rs`),  
+    `GetEventKind` (acsandmann/rift 2d28eac, `src/sys/carbon.rs`; hex).  
+    Apple's page of the Carbon Event Manager guide (`developer.apple.com/library/archive/documentation/Carbon/Conceptual/Carbon_Event_Manager/Tasks/CarbonEventsTasks.html`)  
+    names `InstallEventHandler`, `RemoveEventHandler`, `GetApplicationEventTarget`, `GetEventKind` and `GetEventParameter` too.
+  - Which of them HIToolbox exports on its own and which Carbon re-exports is not known from an open source: all are in the stub  
+    of Carbon, as the projects link them with `-framework Carbon`.  
   Apple's documentation puts `UCKeyTranslate` in Core Services (the stub of CoreServices has it too);  
   winit links it with `-framework Carbon`, so it is in the stub of Carbon,  
   as there is no re-export of CoreServices by Carbon in an open source.  
