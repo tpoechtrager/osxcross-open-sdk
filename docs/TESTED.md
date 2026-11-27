@@ -21,6 +21,7 @@ projects were also built with the stable flavor (cctools/ld64).
 - **File system events:** the `git` fsmonitor daemon, `fswatch`
 - **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`hidtest`),  
   `libusb` (`listdevs`, `testlibusb` and its tests `set_option`, `init_context`)
+- **Games (OpenGL):** `Cube 2: Sauerbraten` (with the SDL2 frameworks of SDL's releases; shows its menu and plays a map)
 - **Rust crates** (Rust 1.100, OSXCross as the linker; the crates declare what they use of the frameworks):
   - `winit` (opens a window)
   - `core-graphics`, `core-text`
