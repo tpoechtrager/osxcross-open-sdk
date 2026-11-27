@@ -41,6 +41,8 @@ projects were also built with the stable flavor (cctools/ld64).
   - `LLVM/Clang` (the compiler works on macOS)
   - `cctools-port` (builds, and its tools work on macOS)
   - `compiler-rt` (builds, and its runtimes work on macOS)
+- **Swift** (6.4.3 with the Swift add-on, SwiftPM with OSXCross's Swift SDK, deployment target 14.0):  
+  `swift-collections`, `swift-algorithms`, `swift-numerics`, `swift-atomics` (a program uses their libraries)
 
 **Not covered**
 

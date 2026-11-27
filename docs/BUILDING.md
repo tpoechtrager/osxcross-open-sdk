@@ -117,7 +117,9 @@ the logs are in the work directory.
 **Swift add-on** (not a default step): adds stubs of the Swift runtime, made from the dylibs  
 of the swift.org package (Apache 2.0; the script has no checksum for it) and needs bsdtar.  
 Swift 6.4.3 was tested with the full SDK and deployment target 14.0 (the lowest that works):  
-`import Swift` and `import CoreFoundation` work.
+`import Swift` and `import CoreFoundation` work.  
+SwiftPM packages that need neither `Foundation` nor `import Darwin` build (`swift-collections`, `swift-algorithms`,  
+`swift-numerics`, `swift-atomics`); `swift-system` needs `Darwin`, `swift-argument-parser` needs `Foundation`.
 
 ```sh
 OPEN_SDK_SWIFT_PKG=swift-<version>-RELEASE-osx.pkg ./make-open-sdk.sh -s swift
