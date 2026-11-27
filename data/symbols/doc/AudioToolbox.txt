@@ -219,8 +219,10 @@ _AudioServicesGetProperty                              func 10.5  audiotoolbox/a
 _AudioServicesGetPropertyInfo                          func 10.5  audiotoolbox/audioservicesgetpropertyinfo(_:_:_:_:_:)
 _AudioServicesPlayAlertSound                           func 10.5  audiotoolbox/audioservicesplayalertsound(_:)
 _AudioServicesPlayAlertSoundWithCompletion             func 10.11 audiotoolbox/audioservicesplayalertsoundwithcompletion(_:_:)
+_AudioServicesPlayAlertSoundWithDetails                func 26.0  audiotoolbox/audioservicesplayalertsoundwithdetails
 _AudioServicesPlaySystemSound                          func 10.5  audiotoolbox/audioservicesplaysystemsound(_:)
 _AudioServicesPlaySystemSoundWithCompletion            func 10.11 audiotoolbox/audioservicesplaysystemsoundwithcompletion(_:_:)
+_AudioServicesPlaySystemSoundWithDetails               func 26.0  audiotoolbox/audioservicesplaysystemsoundwithdetails
 _AudioServicesRemoveSystemSoundCompletion              func 10.5  audiotoolbox/audioservicesremovesystemsoundcompletion(_:)
 _AudioServicesSetProperty                              func 10.5  audiotoolbox/audioservicessetproperty(_:_:_:_:_:)
 _AudioUnitAddPropertyListener                          func 10.0  audiotoolbox/audiounitaddpropertylistener(_:_:_:_:)
@@ -380,3 +382,4 @@ _NumBytesToNumAudioFileMarkers                         func -     audiotoolbox/n
 _SetAudioUnitParameterDisplayType                      func -     audiotoolbox/setaudiounitparameterdisplaytype(_:_:)
 _kAudioComponentInstanceInvalidationNotification       data 10.11 audiotoolbox/kaudiocomponentinstanceinvalidationnotification
 _kAudioComponentRegistrationsChangedNotification       data 10.11 audiotoolbox/kaudiocomponentregistrationschangednotification
+_kAudioServicesDetailIntendedSpatialExperience         data 26.0  audiotoolbox/kaudioservicesdetailintendedspatialexperience

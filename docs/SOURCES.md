@@ -563,6 +563,9 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   (`_CTFontCreateWithName` on the page of `CTFont.init(_:size:)`, for example).
 - The pages: the Swift pages of the framework and the pages they refer to; some symbols have only an  
   Objective-C page (`developer.apple.com/documentation/appkit/nsbeep`, for example).
+  A page whose `metadata.platforms` is missing or does not name macOS counts if the platforms of its declaration  
+  name macOS (`CGDisplayStreamCreate`, `CGWindowListCreateImage`, `AudioServicesPlaySystemSoundWithDetails`);  
+  it has no release then ("-": in every SDK), or that of the other platforms from 26.0 on, which share the number.
 - The framework of a symbol is the module that its page names. The Swift pages list constants that other  
   frameworks define under Foundation (members of `NSNotification.Name`, `NSAttributedString.Key`, ...);  
   for them the Objective-C page (`developer.apple.com/documentation/appkit/<name>`) names the framework.
@@ -570,6 +573,9 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   (github.com/gnustep/libs-base, `Headers/Foundation`, and github.com/gnustep/libs-gui, `Headers/AppKit`, LGPL;  
   names only; the commits are in the lists). A constant under Foundation that only `libs-gui` declares goes to AppKit;  
   a member of an extension that neither declares is left out.
+- Very old symbols stay in the lists as long as the page names macOS: the File Manager of CoreServices (`FSGetCatalogInfo`,  
+  `PBGetCatalogInfoSync`, ... of 10.0 to 10.5), the Web Services constants `kWS...` (10.2) and `pi` (10.0); the page says  
+  deprecated, not removed, and no open source says which release still exports them.  
 - The documentation does not say which symbols exist on only one architecture, or which functions are not  
   exported (inline): every symbol is in the stub for x86_64 and arm64. A symbol that a release of macOS does  
   not export links, but the program stops at start with "symbol not found".

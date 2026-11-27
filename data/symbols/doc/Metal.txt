@@ -57,6 +57,7 @@ _MTLLibraryErrorDomain                                data 10.11 metal/mtllibrar
 _MTLLogStateErrorDomain                               data 15.0  metal/mtllogstateerrordomain
 _MTLOriginMake                                        func -     metal/mtloriginmake(_:_:_:)
 _MTLPackedFloat3Make                                  func -     metal/mtlpackedfloat3make(_:_:_:)
+_MTLPackedFloatQuaternionMake                         func -     metal/mtlpackedfloatquaternionmake
 _MTLRegionMake1D                                      func -     metal/mtlregionmake1d(_:_:)
 _MTLRegionMake2D                                      func -     metal/mtlregionmake2d(_:_:_:_:)
 _MTLRegionMake3D                                      func -     metal/mtlregionmake3d(_:_:_:_:_:_:)
