@@ -109,6 +109,7 @@ arc         arc.m         objc -fobjc-arc                 -lobjc                
 foundation  foundation.c  c    -                          -framework,Foundation                 full
 fw_cf       fw_cf.c       c    -                          -framework,CoreFoundation             full
 fw_cf_new   fw_cf_new.c   c    -                          -framework,CoreFoundation             full
+fw_doc_new  fw_doc_new.c  c    -                          -framework,CoreFoundation,-framework,CoreGraphics,-framework,CoreServices,-framework,AudioToolbox full
 fw_misc     fw_misc.c     c    -                          -framework,CoreFoundation,-framework,DiskArbitration,-framework,SystemConfiguration,-framework,IOKit full
 fw_sec      fw_sec.c      c    -                          -framework,CoreFoundation,-framework,Security full
 fw_objc     fw_objc.m     objc -                          -framework,CoreFoundation,-lobjc      full
