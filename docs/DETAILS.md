@@ -18,6 +18,8 @@ At run time macOS loads its own libraries.
 - **`libc++.1.tbd`, `libc++abi.tbd`**: LLVM's ABI lists of the release.
 - **The other libraries and frameworks**: the declarations in their headers and the export lists  
   of their projects.
+- **`CoreFoundation.tbd`**: the declarations in its headers, and the symbols of newer APIs that Apple's documentation lists for macOS  
+  and no header names (`data/symbols/doc/CoreFoundation.txt`), without their headers (`CFStringTokenizer`, `CFURLEnumerator`, ...).
 - **`Foundation.tbd`, `CoreGraphics.tbd`, `AppKit.tbd`, `CoreText.tbd`, `CoreVideo.tbd`, `QuartzCore.tbd`, `Metal.tbd`,  
   `CoreAudio.tbd`, `AudioToolbox.tbd`, `ApplicationServices.tbd`, `Carbon.tbd`** (no headers): the C functions and global data that  
   Apple's documentation lists for macOS up to the release of the SDK (`data/symbols/doc/`, made by  

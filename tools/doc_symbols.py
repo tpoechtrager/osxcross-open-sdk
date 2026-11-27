@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""doc_symbols.py [--docs DIR]... [--gnustep-base DIR] [--gnustep-gui DIR] [--out DIR] FRAMEWORK...
+"""doc_symbols.py [--docs DIR]... [--gnustep-base DIR] [--gnustep-gui DIR] [--headers DIR] [--out DIR] FRAMEWORK...
 
 Writes data/symbols/doc/FRAMEWORK.txt: the C functions and global data of a
 framework without open source that Apple's documentation lists for macOS.
@@ -37,6 +37,13 @@ declare it: one that gnustep-gui declares goes to AppKit; a member of an
 extension that neither declares is left out (its framework is not known).
 Foundation and AppKit need --gnustep-base and --gnustep-gui.
 
+CoreFoundation has headers (CF and swift-corelibs-foundation) that give most of
+its symbols to the .tbd, so its list has only the symbols that no header names:
+--headers DIR (the Headers of CoreFoundation.framework of a built SDK) is
+needed for it.  A name that a header mentions is left out: either the header
+declares it and the generator takes it from there, or it is an inline function
+or an enumerator, which the library does not export.
+
 Maintenance tool, not run by the generator; run it again for a newer
 documentation (the lists name the days of the pages).
 """
@@ -53,6 +60,7 @@ FRAMEWORKS = {
     "ApplicationServices": ["Application Services", "ColorSync"],
     "AudioToolbox": ["Audio Toolbox"],
     "CoreAudio": ["Core Audio", "Core Audio Types"],
+    "CoreFoundation": ["Core Foundation"],
     "CoreGraphics": ["Core Graphics"],
     "CoreServices": ["Core Services"],
     "CoreText": ["Core Text"],
@@ -84,6 +92,16 @@ def gnustep_names(root, sub, macro):
                 m2 = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\s*(\[[^\]]*\]\s*)?$", decl.strip())
             if m2:
                 names.add(m2.group(1))
+    return names
+
+
+def header_names(d):
+    """the identifiers that the headers of directory d use (comments included)"""
+    names = set()
+    for fn in sorted(os.listdir(d)):
+        if fn.endswith(".h"):
+            with open(os.path.join(d, fn), errors="replace") as f:
+                names.update(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", f.read()))
     return names
 
 
@@ -176,8 +194,7 @@ def assign(recs, frameworks, gs):
 
 HEADER = """\
 # The C functions and global data of {fw} that Apple's documentation lists
-# for macOS: the symbols of {fw}.tbd of the full SDK (a link stub without
-# headers; {fw} has no open source release).
+# for macOS: the symbols of {fw}.tbd of the full SDK ({what}).
 # Made by tools/doc_symbols.py (do not edit) from the pages of
 # developer.apple.com/documentation{days}.{gs}
 #
@@ -188,6 +205,8 @@ HEADER = """\
 # The documentation does not say which symbols exist only on one architecture:
 # every symbol is for x86_64 and arm64.
 """
+WHAT = "a link stub without headers; {fw} has no open source release"
+WHAT_CF = "those that no header names; the headers give the rest"
 NOTE_DOC = """
 #   gnustep-gui  the page lists it under Foundation, the headers of GNUstep
 #                place it in AppKit"""
@@ -197,6 +216,7 @@ def main(argv):
     ap = argparse.ArgumentParser(prog="doc_symbols.py", description=__doc__.split("\n\n")[1])
     ap.add_argument("--docs", action="append", required=True, metavar="DIR", help="a directory of JSON pages")
     ap.add_argument("frameworks", nargs="+", metavar="FRAMEWORK", help=", ".join(sorted(FRAMEWORKS)))
+    ap.add_argument("--headers", metavar="DIR", help="CoreFoundation.framework/Headers of a built SDK (for CoreFoundation)")
     ap.add_argument("--gnustep-base", metavar="DIR", help="a clone of github.com/gnustep/libs-base")
     ap.add_argument("--gnustep-gui", metavar="DIR", help="a clone of github.com/gnustep/libs-gui")
     ap.add_argument("--out", metavar="DIR", help="the output directory (default: data/symbols/doc)")
@@ -217,6 +237,11 @@ def main(argv):
     out_dir = a.out or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "symbols", "doc")
     recs = [r for d in a.docs for r in read_pages(d)]
     lists = assign(recs, a.frameworks, gs)
+    if "CoreFoundation" in a.frameworks:
+        if not a.headers:
+            ap.error("CoreFoundation needs --headers")
+        mentioned = header_names(a.headers)
+        lists["CoreFoundation"] = {n: v for n, v in lists["CoreFoundation"].items() if n not in mentioned}
     os.makedirs(out_dir, exist_ok=True)
     for fw in a.frameworks:
         syms = lists[fw]
@@ -230,7 +255,7 @@ def main(argv):
         w = max(len(r[0]) for r in rows)
         with open(os.path.join(out_dir, fw + ".txt"), "w") as f:
             ns = fw in NS_FRAMEWORKS
-            f.write(HEADER.format(fw=fw, days=days_s, gs=gs_line if ns else "",
+            f.write(HEADER.format(fw=fw, what=(WHAT_CF if fw == "CoreFoundation" else WHAT).format(fw=fw), days=days_s, gs=gs_line if ns else "",
                                   note=" [gnustep-gui]" if fw == "AppKit" else "",
                                   note_doc=NOTE_DOC if fw == "AppKit" else ""))
             for r in rows:

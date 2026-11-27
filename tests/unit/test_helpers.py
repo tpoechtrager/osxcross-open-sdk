@@ -564,6 +564,21 @@ class DocSymbols(Tmp):
                                           ["_NSFontName", "data", "10.0", "foundation/nskey/font", "gnustep-gui"],
                                           ["_NSLangAttribute", "data", "10.13", "appkit/nslangattribute"]])
 
+    def test_core_foundation_leaves_out_names_that_headers_mention(self):
+        self.page("corefoundation/cffoo(_:)", "c:@F@CFFoo", ["Core Foundation"], "10.5")
+        self.page("corefoundation/cfinline(_:)", "c:@F@CFInline", ["Core Foundation"])
+        self.page("corefoundation/kcfdeclared", "c:@kCFDeclared", ["Core Foundation"], kind="var")
+        self.page("corefoundation/kcfincomment", "c:@kCFInComment", ["Core Foundation"], kind="var")
+        self.write("hdr/CFX.h", "/* a name in a comment counts as mentioned: kCFInComment */\nCF_INLINE int CFInline(void) { return 0; }\nextern int kCFDeclared;\n")
+        rc, out, err = run("tools/doc_symbols.py", "--docs", self.path("docs/data"), "--out", self.path("out"),
+                           "CoreFoundation")
+        self.assertEqual(rc, 2, out + err)  # --headers is needed
+        rc, out, err = run("tools/doc_symbols.py", "--docs", self.path("docs/data"), "--out", self.path("out"),
+                           "--headers", self.path("hdr"), "CoreFoundation")
+        self.assertEqual(rc, 0, out + err)
+        rows = [l.split() for l in read(self.path("out/CoreFoundation.txt")).splitlines() if l and not l.startswith("#")]
+        self.assertEqual(rows, [["_CFFoo", "func", "10.5", "corefoundation/cffoo(_:)"]])
+
 
 class ApplyDiff(Tmp):
     PATCH = "--- a/x.h\n+++ b/x.h\n@@ -3,3 +3,4 @@\n c\n d\n+new\n e\n"

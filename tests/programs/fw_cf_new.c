@@ -1,8 +1,17 @@
-/* CoreFoundation declarations that CF-1153.18 lacks (data/CF) */
+/* CoreFoundation declarations that CF-1153.18 lacks (data/CF, data/symbols/doc/CoreFoundation.txt) */
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/machine.h>
 #include <stdio.h>
 #include <string.h>
+
+/* names with no header in the SDK: a program declares them itself */
+extern CFTypeID CFStringTokenizerGetTypeID(void);
+extern CFTypeID CFFileDescriptorGetTypeID(void);
+extern CFTypeID CFFileSecurityGetTypeID(void);
+extern CFTypeID CFURLEnumeratorGetTypeID(void);
+extern CFTypeRef CFURLEnumeratorCreateForDirectoryURL(CFAllocatorRef, CFURLRef, CFOptionFlags, CFArrayRef);
+extern CFIndex CFURLEnumeratorGetNextURL(CFTypeRef, CFURLRef *, CFErrorRef *);
+extern const CFStringRef kCFStreamPropertySOCKSProxy;
 
 static int got;
 static void note_cb(CFNotificationCenterRef c, void *observer, CFNotificationName name, const void *object, CFDictionaryRef info) {
@@ -60,6 +69,14 @@ int main(void) {
   printf("kCFURLIsApplicationKey of /: %s\n", isapp == kCFBooleanFalse ? "false" : "not false"); bad += isapp != kCFBooleanFalse;
   CFShow(kCFErrorLocalizedFailureKey); CFShow(kCFUserNotificationAlertTopMostKey);
 
+  printf("type IDs: tokenizer %d, file descriptor %d, file security %d, url enumerator %d\n", CFStringTokenizerGetTypeID() != 0,
+         CFFileDescriptorGetTypeID() != 0, CFFileSecurityGetTypeID() != 0, CFURLEnumeratorGetTypeID() != 0);
+  bad += !CFStringTokenizerGetTypeID() || !CFFileDescriptorGetTypeID() || !CFFileSecurityGetTypeID() || !CFURLEnumeratorGetTypeID();
+  CFURLRef sys = CFURLCreateWithFileSystemPath(NULL, CFSTR("/System"), kCFURLPOSIXPathStyle, true);
+  CFTypeRef en2 = CFURLEnumeratorCreateForDirectoryURL(NULL, sys, 0, NULL);
+  CFURLRef next = NULL; CFIndex res = en2 ? CFURLEnumeratorGetNextURL(en2, &next, NULL) : -1;
+  printf("URL enumerator of /System: first result %ld (1 is success)\n", (long)res); bad += res != 1;
+  printf("kCFStreamPropertySOCKSProxy is %s\n", kCFStreamPropertySOCKSProxy ? "there" : "missing"); bad += !kCFStreamPropertySOCKSProxy;
   printf("version number of 10.11 %.0f\n", kCFCoreFoundationVersionNumber10_11_Max + 0.0);
   return bad ? 1 : 0;
 }

@@ -166,3 +166,5 @@ to `data/availability-extra.dsl`, build, check with `tests/sdk-check.sh` and `te
 and update the docs.  
 The lists of `data/symbols/doc/` come from Apple's documentation: `tools/doc_symbols.py --help` says  
 how to make them again from newer pages.
+The list of CoreFoundation needs the `Headers` of a built SDK (`--headers`): it has only the names that no header mentions,  
+so make it again after a change of those headers.

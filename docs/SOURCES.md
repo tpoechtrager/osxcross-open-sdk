@@ -29,7 +29,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `os/signpost.h`, `os/activity.h`, `os/trace.h` | Swift 5.2.5, Security, xnu; some own values ([details](#ossignposth-osactivityh-ostraceh)) |
 | `xpc/xpc.h` and its symbols | Apple's XPC documentation, WebKit `XPCSPI.h` ([details](#xpcxpch-and-its-symbols)) |
 | `CoreFoundation.modulemap`, `CFCompat.h.in` | swift-corelibs-foundation, AvailabilityVersions, Clang's documentation ([details](#corefoundationmodulemap-cfcompathin)) |
-| Newer `CoreFoundation` declarations | swift-corelibs-foundation, Apple's documentation for the names and releases ([details](#newer-corefoundation-declarations)) |
+| Newer `CoreFoundation` declarations and symbols | swift-corelibs-foundation, Apple's documentation ([details](#newer-corefoundation-declarations-and-symbols)) |
 | `SDKSettings.json`, `SDKSettings.plist` | The keys that Clang and OSXCross read ([details](#sdksettingsjson-sdksettingsplist)) |
 | `SystemVersion.plist`, the releases | AppleDB for the build number of each release ([details](#systemversionplist-the-releases)) |
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
@@ -411,9 +411,10 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 ---
 
-### Newer CoreFoundation declarations
+### Newer CoreFoundation declarations and symbols
 
-**Files:** `data/CF/`, `helpers/apply_diff.py`, `data/licenses/swift-corelibs-foundation-LICENSE.txt`, `lib/frameworks.sh`
+**Files:** `data/CF/`, `helpers/apply_diff.py`, `data/symbols/doc/CoreFoundation.txt`, `tools/doc_symbols.py`,  
+`data/licenses/swift-corelibs-foundation-LICENSE.txt`, `lib/frameworks.sh`
 
 - The base is CF-1153.18 (apple-oss-distributions/CF, `data/manifests/`), which has none of the APIs that came after 2018.
 - The declarations: github.com/swiftlang/swift-corelibs-foundation, tag swift-6.4.3-RELEASE (8ddfb630bbb5),  
@@ -444,8 +445,15 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   releases but no values, so the values of the added enumerators have the project as their only source;  
   one of them can be checked in open code: `kCFBundleExecutableArchitectureARM64` is `CPU_TYPE_ARM64`  
   (xnu `osfmk/mach/machine.h`).
-- The symbols of `CoreFoundation.tbd` come from the headers, so the added declarations are exported  
-  (the newest of them is from 11.3, so every full SDK has them all).
+- The symbols of `CoreFoundation.tbd` come from the headers as before. `data/symbols/doc/CoreFoundation.txt` adds  
+  the C functions and global data that the documentation lists for macOS and that no header of the SDK names  
+  (made by `tools/doc_symbols.py --headers <Headers of a built SDK> CoreFoundation`; the list says  
+  which day the pages were fetched, and the release of each name, which the generator applies:  
+  the SDK of 14.3 has none of 15.0 or later). Functions that headers define inline (`CFSwapInt32`, ...) and  
+  `kCFNotFound` are in the documentation too and are not exported; the headers name them, so the list leaves them out.
+- The stream constants (`kCFStreamPropertySOCKSProxy`, `kCFStreamSocketSecurityLevel...`, `kCFStreamErrorDomainSSL`, ...)  
+  are in the list although no header of the SDK declares them: the documentation names the module "Core Foundation",  
+  and CF-1153.18's own `CFSocketStream.c` defines them (`CONST_STRING_DECL`).
 - `CoreFoundation.tbd`'s `current-version` stays 1153.18 (the version of the source of the library, not of the headers).
 
 ---

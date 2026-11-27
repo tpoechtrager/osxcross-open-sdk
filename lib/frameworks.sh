@@ -14,7 +14,7 @@
 # ---------------------------------------------------------------------------
 # fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/):
 # the symbols that HEADERs declare, without those of data/symbols/NAME-exclude.txt, and
-# with those of data/symbols/NAME-extra.txt
+# with those of data/symbols/NAME-extra.txt and, if there is a list, those of data/symbols/doc/NAME.txt
 fw_tbd() {
   local name=$1; shift
   local args="" h; for h in "$@"; do args="$args $name/$h"; done
@@ -28,6 +28,12 @@ fw_tbd() {
   fi
   if [ -f "$DATA/symbols/$name-extra.txt" ]; then
     syms_for_archs "$DATA/symbols/$name-extra.txt" >> "$STAGE_WORK/fw-$name.syms"
+  fi
+  if [ -f "$DATA/symbols/doc/$name.txt" ]; then
+    # the symbols of the documentation that no header names (tools/doc_symbols.py --headers)
+    doc_symbols "$DATA/symbols/doc/$name.txt" > "$STAGE_WORK/fw-$name.doclist" ||
+      die "data/symbols/doc/$name.txt has bad lines"
+    syms_for_archs "$STAGE_WORK/fw-$name.doclist" >> "$STAGE_WORK/fw-$name.syms"
   fi
   mk_lib_tbd "$name" "$STAGE_FW/$name.framework/$name.tbd" "$STAGE_WORK/fw-$name.syms"
 }
