@@ -43,7 +43,7 @@ install name and version. A real SDK was used only to test a result, never as a 
   `hidsystem`, `graphics`, `i2c`, `ndrvsupport` and `usb`).
 - XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - File System Events (`<CoreServices/CoreServices.h>`, only this part of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
-- Link stubs without headers of `Foundation`, `CoreGraphics`, `AppKit` and `CoreText`: the C functions and constants  
+- Link stubs without headers of `Foundation`, `CoreGraphics`, `AppKit`, `CoreText` and `CoreVideo`: the C functions and constants  
   of Apple's documentation, for languages and crates that declare what they use themselves (Rust),  
   see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd).
 - The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `tsan`, `rtsan`, `tysan`.
@@ -157,7 +157,7 @@ A project without a license file gets the notice block of its headers, or the pu
   the open sources mention it. Some are not defined in the libSystem of every macOS release;  
   a program that uses one links but stops at start with "symbol not found".
 - **Versions.** Stubs without a public version source (`sqlite3`, `liblzma`, `Foundation`, `CoreServices`,  
-  `CoreGraphics`, `AppKit`, `CoreText`)  
+  `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`)  
   have the lowest compatibility version.
 - **`CoreFoundation`** is CF-1153.18 (2018), the last one Apple published: newer CF APIs are missing.
 - **arm64e and x86_64h.** The stubs give arm64e the symbols of arm64. x86_64h is not listed:  

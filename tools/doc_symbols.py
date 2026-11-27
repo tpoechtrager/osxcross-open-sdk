@@ -52,6 +52,7 @@ FRAMEWORKS = {
     "AppKit": ["AppKit"],
     "CoreGraphics": ["Core Graphics"],
     "CoreText": ["Core Text"],
+    "CoreVideo": ["Core Video"],
     "Foundation": ["Foundation"],
 }
 NS_FRAMEWORKS = ("Foundation", "AppKit")
