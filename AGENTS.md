@@ -24,6 +24,17 @@ from them goes into the repository, and no value is found by trying on a
 real macOS. If there is no public source for a value, choose the
 conservative value and say so in `docs/SOURCES.md`.
 
+Pages of Apple's online documentation that were read for this project may be cached locally in
+`~/dev/apple-docs` (its `README.md` says when they were fetched):
+- The cache holds only pages downloaded directly from developer.apple.com, unchanged. A name or value may be
+  taken from it or from the online page.
+- Never name the cache as a source. Name the page of Apple's online documentation
+  (`developer.apple.com/documentation/...`) and, for a list made from the cache, when it was downloaded.
+- Nothing of it (JSON, text of the documentation) goes into the repository or an SDK; only facts
+  (names, signatures, values), in own wording.
+- The documentation has no values for most macros and enumerators and no fields of structs; those need
+  another public source.
+
 ## Layout
 
 | Path | Purpose |
