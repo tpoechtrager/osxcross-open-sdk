@@ -4,12 +4,17 @@
 # Build the test programs of tests/programs with an SDK of make-open-sdk.sh, for
 # x86_64 and arm64, and (if asked) run them on a Mac.
 #
-#   tests/run.sh --osxcross TARGET_DIR [--llvm LLVM_BIN_DIR] [options]
-#       with the compilers of an OSXCross that was built with the SDK (the triple
-#       and the SDK come from TARGET_DIR/bin/osxcross-conf, not from the PATH); the
-#       wrapper needs a clang: the one in LLVM_BIN_DIR, or the one in the PATH
-#   tests/run.sh --sdk SDK_DIR --llvm LLVM_BIN_DIR [options]
-#       with clang and ld64.lld of LLVM directly, without OSXCross
+#   tests/run.sh --osxcross DIR [--sdk SDK] [--llvm LLVM_BIN_DIR] [options]
+#       with the compilers of OSXCross (the triple comes from its osxcross-conf, not from the PATH).
+#       DIR is an OSXCross target, or a checkout of OSXCross (e.g. ~/dev/osxcross) whose target/ is used
+#       if it is built; else a target is built from `git archive` of the checkout (needs --sdk TARBALL).
+#       SDK, a tarball of make-open-sdk.sh or an SDK directory, is selected with SDKROOT; without --sdk
+#       the SDK of the target is used. The wrapper needs a clang: the one in LLVM_BIN_DIR or in the PATH.
+#   tests/run.sh --sdk SDK_TARBALL [--llvm LLVM_BIN_DIR] [options]
+#       as above, with OSXCross cloned (OSXCROSS_GIT, OSXCROSS_REF: github.com/tpoechtrager/osxcross,
+#       master) and built. A built target is kept in build/osxcross of this repository for the next run.
+#   tests/run.sh --without-osxcross --sdk SDK --llvm LLVM_BIN_DIR [options]
+#       with clang and ld64.lld of LLVM directly
 # Options:
 #   --out DIR       where the programs go (default: a new directory in $TMPDIR; deleted at the end
 #                   unless --keep)
@@ -18,19 +23,26 @@
 #   --arch "A B"    architectures (default: x86_64 arm64)
 #   --ssh HOST      copy the programs of the architecture of HOST to ~/open-sdk-tests/tests.PID there,
 #                   run them, and delete the directory (the host is a Mac; it needs nothing installed)
-#   --gcc           also build with the GCC of the OSXCross (--osxcross only; C and C++ programs)
+#   --flavor NAME   build OSXCross with this flavor, llvm or stable, also if the checkout has a target
+#   --gcc           also build with the GCC of the OSXCross (not --without-osxcross; C and C++ programs)
 #
+# The deployment target is 11.0 (as for the projects of docs/TESTED.md).
 # The exit status is 0 if every program built (and ran, with --ssh; then at least one must run and
 # the connection must work).
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
+REPO=$(cd "$HERE/.." && pwd)
 PROG=$HERE/programs
-MODE=; TARGET_DIR=; SDK=; LLVM=; OUT=; KEEP=0; CORE=0; ARCHS="x86_64 arm64"; SSH=; GCC=0
+# shellcheck source=tests/lib/osxcross.sh
+. "$HERE/lib/osxcross.sh"
+MODE=osxcross; TARGET_DIR=; SDKARG=; LLVM=; OUT=; KEEP=0; CORE=0; ARCHS="x86_64 arm64"; SSH=; GCC=0; FLAVOR=
 
 while [ $# -gt 0 ]; do
   case $1 in
-    --osxcross) MODE=osxcross; TARGET_DIR=$2; shift 2;;
-    --sdk) MODE=llvm; SDK=$2; shift 2;;
+    --osxcross) TARGET_DIR=$2; shift 2;;
+    --without-osxcross) MODE=llvm; shift;;
+    --sdk) SDKARG=$2; shift 2;;
+    --flavor) FLAVOR=$2; shift 2;;
     --llvm) LLVM=$2; shift 2;;
     --out) OUT=$2; shift 2;;
     --keep) KEEP=1; shift;;
@@ -38,11 +50,17 @@ while [ $# -gt 0 ]; do
     --arch) ARCHS=$2; shift 2;;
     --ssh) SSH=$2; shift 2;;
     --gcc) GCC=1; shift;;
-    -h|--help) sed -n '3,25p' "$0" | sed 's/^# \{0,1\}//'; exit 0;;
+    -h|--help) awk 'NR >= 3 { if ($0 !~ /^#/) exit; sub(/^# ?/, ""); print }' "$0"; exit 0;;
     *) echo "run.sh: unknown option $1" >&2; exit 2;;
   esac
 done
-[ -n "$MODE" ] || { echo "run.sh: give --osxcross TARGET_DIR or --sdk SDK_DIR --llvm DIR (see --help)" >&2; exit 2; }
+if [ "$MODE" = llvm ]; then
+  [ -z "$TARGET_DIR" ] || { echo "run.sh: --osxcross and --without-osxcross exclude each other" >&2; exit 2; }
+  [ -n "$SDKARG" ] && [ -n "$LLVM" ] || { echo "run.sh: --without-osxcross needs --sdk and --llvm" >&2; exit 2; }
+else
+  [ -n "$TARGET_DIR" ] || [ -n "$SDKARG" ] || { echo "run.sh: give --osxcross DIR or --sdk SDK_TARBALL (see --help)" >&2; exit 2; }
+fi
+case $FLAVOR in ''|llvm|stable) ;; *) echo "run.sh: --flavor is llvm or stable" >&2; exit 2;; esac
 
 if [ -z "$OUT" ]; then
   OUT=$(mktemp -d "${TMPDIR:-/tmp}/open-sdk-programs.XXXXXX") || exit 2
@@ -51,24 +69,48 @@ else
   mkdir -p "$OUT"
 fi
 
-SDKVER=
+SDKVER=; SDKROOT_ENV=
 if [ "$MODE" = osxcross ]; then
-  TARGET_DIR=$(cd "$TARGET_DIR" && pwd) || exit 2
   if [ -z "$LLVM" ]; then
     c=$(command -v clang) && LLVM=$(dirname "$c")
   fi
   [ -n "$LLVM" ] || { echo "run.sh: no clang in the PATH; give --llvm" >&2; exit 2; }
+  LLVM=$(cd "$LLVM" && pwd) || exit 2
+  # the target: the one of --osxcross, or one built from the checkout of --osxcross or from a clone
+  if [ -n "$TARGET_DIR" ] && [ -z "$FLAVOR" ] && t=$(osxcross_target "$TARGET_DIR"); then
+    TARGET_DIR=$t
+  else
+    src=
+    if [ -n "$TARGET_DIR" ]; then
+      [ -f "$TARGET_DIR/build.sh" ] || { echo "run.sh: $TARGET_DIR is neither an OSXCross target nor a checkout" >&2; exit 2; }
+      src=$(cd "$TARGET_DIR" && pwd)
+    fi
+    echo "building OSXCross (log $OUT/osxcross.log)"
+    TARGET_DIR=$(osxcross_build "$src" "$REPO/build/osxcross" "$SDKARG" "${FLAVOR:-llvm}" "$LLVM" "$OUT/osxcross.log") || exit 2
+  fi
   # the configuration of this OSXCross; a clean environment, so that an OSXCross of the PATH does not matter
-  eval "$(env -i PATH="$TARGET_DIR/bin:/usr/bin:/bin" "$TARGET_DIR/bin/osxcross-conf")" || exit 2
+  osxcross_conf "$TARGET_DIR" || exit 2
   DARWIN=$OSXCROSS_TARGET
-  SDKDIR=$OSXCROSS_SDK
-  SDKVER=$OSXCROSS_SDK_VERSION
-  [ -f "$SDKDIR/OpenSDK.json" ] || echo "run.sh: note: $SDKDIR has no OpenSDK.json: this is not an SDK of make-open-sdk.sh"
+  if [ -n "$SDKARG" ]; then
+    # the SDK of --sdk, selected with SDKROOT (OSXCross takes it before the SDK of the target)
+    sdk_select "$SDKARG" "$OUT/sdk" || exit 2
+    SDKDIR=$SDK; SDKROOT_ENV="SDKROOT=$SDK"
+  else
+    SDKDIR=$OSXCROSS_SDK
+    SDKVER=$OSXCROSS_SDK_VERSION
+    [ -f "$SDKDIR/OpenSDK.json" ] || echo "run.sh: note: $SDKDIR has no OpenSDK.json: this is not an SDK of make-open-sdk.sh"
+  fi
+  echo "OSXCross: $TARGET_DIR; SDK: $SDKDIR"
 else
-  [ -d "$SDK" ] && [ -d "$LLVM" ] || { echo "run.sh: --sdk and --llvm must be directories" >&2; exit 2; }
-  SDKDIR=$(cd "$SDK" && pwd)
+  [ -d "$LLVM" ] || { echo "run.sh: --llvm must be a directory" >&2; exit 2; }
   LLVM=$(cd "$LLVM" && pwd)
-  SDKVER=$(sed -n 's/.*"Version": "\([^"]*\)".*/\1/p' "$SDKDIR/SDKSettings.json" | head -n 1)
+  if [ -d "$SDKARG" ]; then
+    SDKDIR=$(cd "$SDKARG" && pwd)
+    SDKVER=$(sed -n 's/.*"Version": "\([^"]*\)".*/\1/p' "$SDKDIR/SDKSettings.json" | head -n 1)
+  else
+    sdk_select "$SDKARG" "$OUT/sdk" || exit 2
+    SDKDIR=$SDK
+  fi
 fi
 [ -f "$SDKDIR/OpenSDK.json" ] && grep -q '"variant": "core"' "$SDKDIR/OpenSDK.json" && CORE=1
 
@@ -81,11 +123,11 @@ build() {
       c++) cc=$arch-apple-$DARWIN-clang++;;
     esac
     # shellcheck disable=SC2086
-    env -i HOME="$HOME" PATH="$TARGET_DIR/bin:$LLVM:/usr/bin:/bin" "$cc" $flags -O1 -w -o "$out" "$src" $libs
+    env -i HOME="$HOME" PATH="$TARGET_DIR/bin:$LLVM:/usr/bin:/bin" MACOSX_DEPLOYMENT_TARGET=11.0 $SDKROOT_ENV "$cc" $flags -O1 -w -o "$out" "$src" $libs
   else
     case $lang in c++) cc=$LLVM/clang++;; *) cc=$LLVM/clang;; esac
     # shellcheck disable=SC2086
-    env -i HOME="$HOME" PATH="$LLVM:/usr/bin:/bin" "$cc" -target "$arch-apple-macos${MINOS:-11.0}" -isysroot "$SDKDIR" \
+    env -i HOME="$HOME" PATH="$LLVM:/usr/bin:/bin" "$cc" -target "$arch-apple-macos11.0" -isysroot "$SDKDIR" \
       -fuse-ld=lld $flags -O1 -w -o "$out" "$src" $libs
   fi
 }
@@ -148,7 +190,7 @@ for arch in $ARCHS; do
       g=$arch-apple-$DARWIN-gcc; [ "$lang" = "c++" ] && g=$arch-apple-$DARWIN-g++
       total=$((total + 1))
       # shellcheck disable=SC2086
-      if env -i HOME="$HOME" PATH="$TARGET_DIR/bin:$LLVM:/usr/bin:/bin" "$g" $flags -O1 -w -o "$OUT/$name-$arch-gcc" "$PROG/$file" $libs > "$OUT/$name-$arch-gcc.log" 2>&1; then
+      if env -i HOME="$HOME" PATH="$TARGET_DIR/bin:$LLVM:/usr/bin:/bin" MACOSX_DEPLOYMENT_TARGET=11.0 $SDKROOT_ENV "$g" $flags -O1 -w -o "$OUT/$name-$arch-gcc" "$PROG/$file" $libs > "$OUT/$name-$arch-gcc.log" 2>&1; then
         echo "build ok    $name $arch (GCC)"
       else
         echo "build FAIL  $name $arch (GCC)"; head -n 3 "$OUT/$name-$arch-gcc.log" | sed 's/^/    /'; failed=$((failed + 1))

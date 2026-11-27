@@ -129,7 +129,7 @@ OPEN_SDK_SWIFT_PKG=swift-<version>-RELEASE-osx.pkg ./make-open-sdk.sh -s swift
 tests/lint.sh                                     # bash -n, shellcheck, Python syntax
 tests/unit/run.sh                                 # helpers, data files, options and shell functions
 tests/sdk-check.sh out/MacOSX26.5-open-sdk-<hash>.tar.xz # every header alone
-tests/run.sh --osxcross /path/to/osxcross/target  # the test programs
+tests/run.sh --osxcross ~/dev/osxcross --sdk out/MacOSX26.5-open-sdk-<hash>.tar.xz      # the test programs
 tests/projects.sh --osxcross ~/dev/osxcross --sdk out/MacOSX26.5-open-sdk-<hash>.tar.xz # the projects of TESTED.md
 ```
 
@@ -138,7 +138,7 @@ tests/projects.sh --osxcross ~/dev/osxcross --sdk out/MacOSX26.5-open-sdk-<hash>
 on a Mac with `--ssh HOST`. Last result: all 11 SDKs (7 core, 4 full) pass both checks,  
 and their x86_64 programs ran on macOS 26.0.
 
-**OSXCross of `tests/projects.sh`:**
+**OSXCross of the tests** (`tests/run.sh`, `tests/projects.sh`):
 - `--osxcross DIR`: an OSXCross target, or a checkout whose `target/` is used if it is built;  
   otherwise a target is built from `git archive` of the checkout (the checkout is never written).
 - Without `--osxcross`, OSXCross is cloned (`OSXCROSS_GIT`, `OSXCROSS_REF`; default: master of  
@@ -146,6 +146,7 @@ and their x86_64 programs ran on macOS 26.0.
 - A built target is kept in `build/osxcross` for the next run; `--flavor llvm|stable` builds one also  
   if the checkout has a target.
 - The SDK of `--sdk` is selected with `SDKROOT`, so one target builds with every SDK.
+- `tests/run.sh --without-osxcross --sdk SDK --llvm DIR` uses clang and `ld64.lld` directly.
 
 **`tests/projects.sh`** builds the projects of [TESTED.md](TESTED.md) for x86_64 and arm64 and, with  
 `--ssh HOST`, runs the x86_64 programs and tests of the projects on a Mac.
