@@ -50,6 +50,7 @@ import sys
 # framework: the modules of the documentation (metadata.modules) whose symbols it exports
 FRAMEWORKS = {
     "AppKit": ["AppKit"],
+    "CoreAudio": ["Core Audio", "Core Audio Types"],
     "CoreGraphics": ["Core Graphics"],
     "CoreText": ["Core Text"],
     "CoreVideo": ["Core Video"],

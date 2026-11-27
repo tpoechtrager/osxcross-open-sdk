@@ -1,0 +1,71 @@
+# The C functions and global data of CoreAudio that Apple's documentation lists
+# for macOS: the symbols of CoreAudio.tbd of the full SDK (a link stub without
+# headers; CoreAudio has no open source release).
+# Made by tools/doc_symbols.py (do not edit) from the pages of
+# developer.apple.com/documentation, fetched 2026-11-26 to 2026-11-27.
+#
+# <symbol> <kind> <macOS> <page>
+#   kind    func (a function) or data (a variable or constant)
+#   macOS   the release that brought it, as the page gives it; - if it gives none
+#   page    the page of the symbol, developer.apple.com/documentation/<page>
+# The documentation does not say which symbols exist only on one architecture:
+# every symbol is for x86_64 and arm64.
+_AudioChannelLayoutTag_GetNumberOfChannels func 10.11 coreaudiotypes/audiochannellayouttag_getnumberofchannels(_:)
+_AudioConvertHostTimeToNanos               func 10.0  coreaudio/audioconverthosttimetonanos(_:)
+_AudioConvertNanosToHostTime               func 10.0  coreaudio/audioconvertnanostohosttime(_:)
+_AudioDeviceAddIOProc                      func 10.0  coreaudio/audiodeviceaddioproc
+_AudioDeviceAddPropertyListener            func 10.0  coreaudio/audiodeviceaddpropertylistener
+_AudioDeviceCreateIOProcID                 func 10.5  coreaudio/audiodevicecreateioprocid(_:_:_:_:)
+_AudioDeviceCreateIOProcIDWithBlock        func 10.7  coreaudio/audiodevicecreateioprocidwithblock(_:_:_:_:)
+_AudioDeviceDestroyIOProcID                func 10.5  coreaudio/audiodevicedestroyioprocid(_:_:)
+_AudioDeviceGetCurrentTime                 func 10.0  coreaudio/audiodevicegetcurrenttime(_:_:)
+_AudioDeviceGetNearestStartTime            func 10.3  coreaudio/audiodevicegetneareststarttime(_:_:_:)
+_AudioDeviceGetProperty                    func 10.0  coreaudio/audiodevicegetproperty
+_AudioDeviceGetPropertyInfo                func 10.0  coreaudio/audiodevicegetpropertyinfo
+_AudioDeviceRead                           func 10.1  coreaudio/audiodeviceread
+_AudioDeviceRemoveIOProc                   func 10.0  coreaudio/audiodeviceremoveioproc
+_AudioDeviceRemovePropertyListener         func 10.0  coreaudio/audiodeviceremovepropertylistener
+_AudioDeviceSetProperty                    func 10.0  coreaudio/audiodevicesetproperty
+_AudioDeviceStart                          func 10.0  coreaudio/audiodevicestart(_:_:)
+_AudioDeviceStartAtTime                    func 10.3  coreaudio/audiodevicestartattime(_:_:_:_:)
+_AudioDeviceStop                           func 10.0  coreaudio/audiodevicestop(_:_:)
+_AudioDeviceTranslateTime                  func 10.0  coreaudio/audiodevicetranslatetime(_:_:_:)
+_AudioDriverPlugInClose                    func -     coreaudio/audiodriverpluginclose
+_AudioDriverPlugInDeviceGetProperty        func -     coreaudio/audiodriverplugindevicegetproperty
+_AudioDriverPlugInDeviceGetPropertyInfo    func -     coreaudio/audiodriverplugindevicegetpropertyinfo
+_AudioDriverPlugInDeviceSetProperty        func -     coreaudio/audiodriverplugindevicesetproperty
+_AudioDriverPlugInOpen                     func -     coreaudio/audiodriverpluginopen
+_AudioDriverPlugInStreamGetProperty        func -     coreaudio/audiodriverpluginstreamgetproperty
+_AudioDriverPlugInStreamGetPropertyInfo    func -     coreaudio/audiodriverpluginstreamgetpropertyinfo
+_AudioDriverPlugInStreamSetProperty        func -     coreaudio/audiodriverpluginstreamsetproperty
+_AudioGetCurrentHostTime                   func 10.0  coreaudio/audiogetcurrenthosttime()
+_AudioGetHostClockFrequency                func 10.0  coreaudio/audiogethostclockfrequency()
+_AudioGetHostClockMinimumTimeDelta         func 10.0  coreaudio/audiogethostclockminimumtimedelta()
+_AudioHardwareAddPropertyListener          func 10.0  coreaudio/audiohardwareaddpropertylistener
+_AudioHardwareAddRunLoopSource             func 10.3  coreaudio/audiohardwareaddrunloopsource
+_AudioHardwareCreateAggregateDevice        func 10.9  coreaudio/audiohardwarecreateaggregatedevice(_:_:)
+_AudioHardwareCreateProcessTap             func 14.2  coreaudio/audiohardwarecreateprocesstap(_:_:)
+_AudioHardwareDestroyAggregateDevice       func 10.9  coreaudio/audiohardwaredestroyaggregatedevice(_:)
+_AudioHardwareDestroyProcessTap            func 14.2  coreaudio/audiohardwaredestroyprocesstap(_:)
+_AudioHardwareGetProperty                  func 10.0  coreaudio/audiohardwaregetproperty
+_AudioHardwareGetPropertyInfo              func 10.0  coreaudio/audiohardwaregetpropertyinfo
+_AudioHardwareRemovePropertyListener       func 10.0  coreaudio/audiohardwareremovepropertylistener
+_AudioHardwareRemoveRunLoopSource          func 10.3  coreaudio/audiohardwareremoverunloopsource
+_AudioHardwareSetProperty                  func 10.0  coreaudio/audiohardwaresetproperty
+_AudioHardwareUnload                       func 10.1  coreaudio/audiohardwareunload()
+_AudioObjectAddPropertyListener            func 10.4  coreaudio/audioobjectaddpropertylistener(_:_:_:_:)
+_AudioObjectAddPropertyListenerBlock       func 10.7  coreaudio/audioobjectaddpropertylistenerblock(_:_:_:_:)
+_AudioObjectGetPropertyData                func 10.4  coreaudio/audioobjectgetpropertydata(_:_:_:_:_:_:)
+_AudioObjectGetPropertyDataSize            func 10.4  coreaudio/audioobjectgetpropertydatasize(_:_:_:_:_:)
+_AudioObjectHasProperty                    func 10.4  coreaudio/audioobjecthasproperty(_:_:)
+_AudioObjectIsPropertySettable             func 10.4  coreaudio/audioobjectispropertysettable(_:_:_:)
+_AudioObjectRemovePropertyListener         func 10.4  coreaudio/audioobjectremovepropertylistener(_:_:_:_:)
+_AudioObjectRemovePropertyListenerBlock    func 10.7  coreaudio/audioobjectremovepropertylistenerblock(_:_:_:_:)
+_AudioObjectSetPropertyData                func 10.4  coreaudio/audioobjectsetpropertydata(_:_:_:_:_:_:)
+_AudioObjectShow                           func 10.4  coreaudio/audioobjectshow(_:)
+_AudioStreamAddPropertyListener            func 10.1  coreaudio/audiostreamaddpropertylistener
+_AudioStreamGetProperty                    func 10.1  coreaudio/audiostreamgetproperty
+_AudioStreamGetPropertyInfo                func 10.1  coreaudio/audiostreamgetpropertyinfo
+_AudioStreamRemovePropertyListener         func 10.1  coreaudio/audiostreamremovepropertylistener
+_AudioStreamSetProperty                    func 10.1  coreaudio/audiostreamsetproperty
+_kAudioStreamAnyRate                       data 10.11 coreaudiotypes/kaudiostreamanyrate
