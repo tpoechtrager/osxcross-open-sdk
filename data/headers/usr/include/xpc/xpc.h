@@ -16,10 +16,18 @@
  *     states and the variables behind XPC_TYPE_*, XPC_ERROR_* and
  *     XPC_ERROR_KEY_DESCRIPTION: WebKit, Source/WTF/wtf/spi/darwin/XPCSPI.h
  *     (BSD-2-Clause), which declares them for builds without this header.
+ *   - xpc_session, xpc_listener and xpc_rich_error: the same documentation
+ *     (macOS 13.0 and 14.0); the types of the block parameters from the
+ *     Swift declarations of the same pages.  The documentation names the
+ *     flags (none, inactive, privileged; none, inactive) but gives no
+ *     value and no C name that a public source confirms, so the flag types
+ *     are plain 64-bit integers (a bit pattern that is wider than the
+ *     real one is passed correctly), no flag is declared, and 0 is the
+ *     value of "none" only by the convention of such flags: the functions
+ *     create a session or listener that is active.
  * A type or value that neither names (the other XPC_TYPE_* macros,
  * XPC_BOOL_TRUE, XPC_CONNECTION_MACH_SERVICE_PRIVILEGED, ...) is left out,
- * and so are xpc_session, xpc_listener, xpc_rich_error and the peer
- * requirements.
+ * and so are the peer requirements and the flags.
  *
  * In Objective-C the objects are Objective-C objects (OS_OBJECT_USE_OBJC),
  * like those of libdispatch; elsewhere xpc_object_t is a void pointer.
@@ -53,18 +61,33 @@ typedef void *xpc_object_t;
 #define XPC_GLOBAL_OBJECT(object) (&(object))
 #endif
 
+#if OS_OBJECT_USE_OBJC
+OS_OBJECT_DECL_SUBCLASS(xpc_session, xpc_object);
+OS_OBJECT_DECL_SUBCLASS(xpc_listener, xpc_object);
+#else
+typedef xpc_object_t xpc_session_t;
+typedef xpc_object_t xpc_listener_t;
+#endif
+
 typedef xpc_object_t xpc_connection_t;
 typedef xpc_object_t xpc_endpoint_t;
 typedef xpc_object_t xpc_activity_t;
+typedef xpc_object_t xpc_rich_error_t;
 typedef const struct _xpc_type_s *xpc_type_t;
 
 typedef void (*xpc_connection_handler_t)(xpc_connection_t connection);
 typedef void (*xpc_finalizer_t)(void *value);
+typedef uint64_t xpc_session_create_flags_t;
+typedef uint64_t xpc_listener_create_flags_t;
 #ifdef __BLOCKS__
 typedef void (^xpc_handler_t)(xpc_object_t object);
 typedef bool (^xpc_array_applier_t)(size_t index, xpc_object_t value);
 typedef bool (^xpc_dictionary_applier_t)(const char *key, xpc_object_t value);
 typedef void (^xpc_activity_handler_t)(xpc_activity_t activity);
+typedef void (^xpc_session_incoming_message_handler_t)(xpc_object_t message);
+typedef void (^xpc_session_cancel_handler_t)(xpc_rich_error_t error);
+typedef void (^xpc_session_reply_handler_t)(xpc_object_t reply, xpc_rich_error_t error);
+typedef void (^xpc_listener_incoming_session_handler_t)(xpc_session_t peer);
 #endif
 
 /* the variables behind the type and error macros */
@@ -436,6 +459,56 @@ API_AVAILABLE(macos(10.9))
 bool xpc_activity_should_defer(xpc_activity_t activity);
 API_AVAILABLE(macos(10.9))
 void xpc_activity_unregister(const char *identifier);
+
+/* Sessions, listeners and rich errors */
+
+/* the results of the functions that create are released with xpc_release */
+API_AVAILABLE(macos(13.0)) OS_OBJECT_RETURNS_RETAINED
+xpc_session_t xpc_session_create_mach_service(const char *mach_service, dispatch_queue_t target_queue,
+    xpc_session_create_flags_t flags, xpc_rich_error_t *error_out);
+API_AVAILABLE(macos(13.0)) OS_OBJECT_RETURNS_RETAINED
+xpc_session_t xpc_session_create_xpc_service(const char *name, dispatch_queue_t target_queue,
+    xpc_session_create_flags_t flags, xpc_rich_error_t *error_out);
+API_AVAILABLE(macos(13.0))
+bool xpc_session_activate(xpc_session_t session, xpc_rich_error_t *error_out);
+API_AVAILABLE(macos(13.0))
+void xpc_session_cancel(xpc_session_t session);
+API_AVAILABLE(macos(13.0))
+xpc_rich_error_t xpc_session_send_message(xpc_session_t session, xpc_object_t message);
+API_AVAILABLE(macos(13.0))
+xpc_object_t xpc_session_send_message_with_reply_sync(xpc_session_t session, xpc_object_t message,
+    xpc_rich_error_t *error_out);
+#ifdef __BLOCKS__
+API_AVAILABLE(macos(13.0))
+void xpc_session_send_message_with_reply_async(xpc_session_t session, xpc_object_t message,
+    xpc_session_reply_handler_t reply_handler);
+API_AVAILABLE(macos(13.0))
+void xpc_session_set_incoming_message_handler(xpc_session_t session, xpc_session_incoming_message_handler_t handler);
+API_AVAILABLE(macos(13.0))
+void xpc_session_set_cancel_handler(xpc_session_t session, xpc_session_cancel_handler_t cancel_handler);
+#endif
+API_AVAILABLE(macos(14.0))
+void xpc_session_set_target_queue(xpc_session_t session, dispatch_queue_t target_queue);
+/* the result is freed with free() */
+API_AVAILABLE(macos(13.0))
+char *xpc_session_copy_description(xpc_session_t session);
+
+#ifdef __BLOCKS__
+API_AVAILABLE(macos(14.0)) OS_OBJECT_RETURNS_RETAINED
+xpc_listener_t xpc_listener_create(const char *service, dispatch_queue_t target_queue,
+    xpc_listener_create_flags_t flags, xpc_listener_incoming_session_handler_t incoming_session_handler,
+    xpc_rich_error_t *error_out);
+#endif
+API_AVAILABLE(macos(14.0))
+bool xpc_listener_activate(xpc_listener_t listener, xpc_rich_error_t *error_out);
+API_AVAILABLE(macos(14.0))
+void xpc_listener_cancel(xpc_listener_t listener);
+
+/* no release is named for these two: the later one, that of XPC_TYPE_RICH_ERROR */
+API_AVAILABLE(macos(14.0))
+bool xpc_rich_error_can_retry(xpc_rich_error_t error);
+API_AVAILABLE(macos(14.0))
+char *xpc_rich_error_copy_description(xpc_rich_error_t error);
 
 __END_DECLS
 

@@ -41,7 +41,7 @@ install name and version. A real SDK was used only to test a result, never as a 
 - The frameworks `CoreFoundation`, `DiskArbitration`, `SystemConfiguration`, `Security` (including `SecureTransport`)  
   and `IOKit` (`IOKitLib`, power sources, power management and the device families `storage`, `hid`,  
   `hidsystem`, `graphics`, `i2c`, `ndrvsupport` and `usb`).
-- XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
+- XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0 and sessions, listeners and rich errors (13.0, 14.0), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - File System Events (`<CoreServices/CoreServices.h>`, the only headers of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - Link stubs without headers of `Foundation`, `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`,  
   `CoreAudio`, `AudioToolbox`, `ApplicationServices` (with `ColorSync`) and `Carbon`: the C functions and constants  
@@ -69,7 +69,7 @@ install name and version. A real SDK was used only to test a result, never as a 
 - `libbsm`, the other `IOKit` device families (`storage/ata`, `network`, ...) and the headers of `CoreServices` except File System Events.
 - `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h`: no open source defines their functions  
   (see [docs/SOURCES.md](docs/SOURCES.md#iokit-device-families)).
-- XPC sessions and listeners (`xpc_session`, `xpc_listener`) and the parts of XPC that have no public value  
+- The flags of XPC sessions and listeners, the peer requirements (14.4) and the parts of XPC that have no public value  
   (see [docs/SOURCES.md](docs/SOURCES.md#xpcxpch-and-its-symbols)).
 
 ### Variants

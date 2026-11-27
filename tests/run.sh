@@ -163,6 +163,7 @@ oslog       oslog.c       c    -                          -                     
 oslogcxx    oslog.c       c++  -xc++                      -                                     core
 commoncrypto commoncrypto.c c  -                          -                                     full
 launchd     launchd.c     c    -                          -                                     full
+xpc_session  xpc_session.c c   -                          -                                     full
 readline    readline.c    c    -                          -lreadline                            full
 iopm        iopm.c        c    -                          -framework,CoreFoundation,-framework,IOKit full
 iokit_families iokit_families.c c -                       -framework,CoreFoundation,-framework,IOKit full

@@ -6,7 +6,8 @@
 #
 # <symbol> <macOS> <source>
 #   macOS   the release that brought it, as the documentation gives it
-#           (- if it names none)
+#           (- if it names none; the two xpc_rich_error functions name none:
+#           they have 14.0, that of XPC_TYPE_RICH_ERROR)
 #   source  doc:    Apple's documentation of XPC, the page of the name
 #                   (developer.apple.com/documentation/xpc), which shows
 #                   its C declaration and availability
@@ -179,3 +180,19 @@ _xpc_activity_get_state                            10.9  doc
 _xpc_activity_set_state                            10.9  doc
 _xpc_activity_should_defer                         10.9  doc
 _xpc_activity_unregister                           10.9  doc
+_xpc_session_create_mach_service                   13.0  doc
+_xpc_session_create_xpc_service                    13.0  doc
+_xpc_session_activate                              13.0  doc
+_xpc_session_cancel                                13.0  doc
+_xpc_session_send_message                          13.0  doc
+_xpc_session_send_message_with_reply_sync          13.0  doc
+_xpc_session_send_message_with_reply_async         13.0  doc
+_xpc_session_set_incoming_message_handler          13.0  doc
+_xpc_session_set_cancel_handler                    13.0  doc
+_xpc_session_set_target_queue                      14.0  doc
+_xpc_session_copy_description                      13.0  doc
+_xpc_listener_create                               14.0  doc
+_xpc_listener_activate                             14.0  doc
+_xpc_listener_cancel                               14.0  doc
+_xpc_rich_error_can_retry                          14.0  doc
+_xpc_rich_error_copy_description                   14.0  doc

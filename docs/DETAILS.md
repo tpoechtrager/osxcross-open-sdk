@@ -59,9 +59,12 @@ the generator wrote, and `data/headers/` has these headers by their path in the 
 - `os/signpost.h`, `os/activity.h`, `os/trace.h`: stand-ins. A program that uses them builds, links and runs,  
   but nothing is recorded. The system's interface for them has no public source, so it is not used.
 - `xpc/xpc.h` (full SDK): the documented C interface of XPC up to macOS 12.0: objects, arrays, dictionaries,  
-  connections, endpoints, `xpc_main`, transactions, event streams and activities. In Objective-C the objects are  
-  Objective-C objects, as with `libdispatch`. A message with reply over an anonymous connection ran on macOS 26.0 (x86_64).  
-  Not there: `xpc_session`, `xpc_listener`, the peer requirements,  
+  connections, endpoints, `xpc_main`, transactions, event streams and activities; also `xpc_session` (13.0, 14.0),  
+  `xpc_listener` and `xpc_rich_error` (14.0). In Objective-C the objects are  
+  Objective-C objects, as with `libdispatch`. A message with reply over an anonymous connection ran on macOS 26.0 (x86_64);  
+  a session to a Mach service that does not exist ended with an error that `xpc_rich_error_copy_description` describes.  
+  The flags of sessions and listeners have no public value: the flag types are 64-bit integers and pass 0.  
+  Not there: the peer requirements (14.4),  
   and `XPC_TYPE_*` for the types other than array, bool, connection, dictionary, endpoint, error and string  
   (use `xpc_type_get_name`), see [SOURCES.md](SOURCES.md#xpcxpch-and-its-symbols).
 - `CoreServices/FSEvents.h` (full SDK): File System Events, the documented C interface; `CoreServices/CoreServices.h`  

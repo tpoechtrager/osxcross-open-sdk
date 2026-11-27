@@ -345,18 +345,31 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   `Libsystem/requiredlibs` lists `xpc`, and `Libsystem/xcodescripts/linker_arguments.sh` links each of them with `-Wl,-reexport-l<lib>`.
 - The functions and variables, their parameters and the release that brought each one:  
   Apple's XPC documentation (developer.apple.com/documentation/xpc), the C declaration on the page of each name.  
-  152 names, all from macOS 12.0 or earlier, so every release of the full SDK has them; each has `API_AVAILABLE` with that release.
+  152 names from macOS 12.0 or earlier and 16 of sessions, listeners and rich errors (13.0 and 14.0), all in the full SDK of 14.3 and later; each has `API_AVAILABLE` with its release.
 - The object and block types, `XPC_GLOBAL_OBJECT`, `XPC_ARRAY_APPEND`, `XPC_CONNECTION_MACH_SERVICE_LISTENER` (`1 << 0`),  
   the order of the activity states and the 11 variables behind `XPC_TYPE_*`, `XPC_ERROR_*` and `XPC_ERROR_KEY_DESCRIPTION`:  
   WebKit `Source/WTF/wtf/spi/darwin/XPCSPI.h` (BSD-2-Clause; facts only, no text).
 - Which functions return an object that the caller releases (`OS_OBJECT_RETURNS_RETAINED`): the names with create or copy,  
   and `xpc_connection_send_message_with_reply_sync`, whose page says so.
+- The session, listener and rich error functions (macOS 13.0 and 14.0): the Objective-C pages of  
+  developer.apple.com/documentation/xpc (fetched 2026-11-27) give the C declarations and the releases.  
+  The types of the blocks and the types `xpc_session_t` (`OS_xpc_session`) and `xpc_listener_t` (`OS_xpc_listener`):  
+  the Swift pages of the same names.  
+  The `create` functions return a retained object (their pages say to call `xpc_release`); the other results are not annotated  
+  (a result that the caller releases but the header does not say leaks under ARC; the opposite crashes).
+- `xpc_rich_error_can_retry` and `xpc_rich_error_copy_description` have no release on their pages;  
+  they get 14.0, that of `XPC_TYPE_RICH_ERROR` (the sessions of 13.0 return rich errors, so 13.0 is possible).
+- The flags: the pages name `none`, `inactive`, `privileged` (session) and `none`, `inactive` (listener) in Swift and  
+  `XPC_SESSION_CREATE_INACTIVE`, `XPC_LISTENER_CREATE_INACTIVE` in the text, but give no value, no C type and no other C name.  
+  The open projects that name values (rama, objc2, pyobjc) take them from Apple's headers, so they are no source.  
+  Left out: the flags; the types `xpc_session_create_flags_t` and `xpc_listener_create_flags_t` are `uint64_t`,  
+  wide enough for any enumeration, so that a call with 0 or any value of the real type passes it correctly.
 - `data/symbols/libsystem-xpc.txt` names the source and release of every symbol; the step stubs stops if the declarations  
   of the header differ from the list.
 - **Left out, no public value:** `XPC_TYPE_*` of the other types (the documentation names the macros, not their variables),  
   `XPC_BOOL_TRUE`/`FALSE`, `XPC_CONNECTION_MACH_SERVICE_PRIVILEGED`, `XPC_EVENT_KEY_NAME`.  
   Also left out: the functions of macOS 14.4 and later (peer requirements; the full SDK of 14.3 must not have them),  
-  `xpc_session`, `xpc_listener` and `xpc_rich_error`.
+  `XPC_TYPE_SESSION`, `XPC_TYPE_LISTENER`, `XPC_TYPE_RICH_ERROR` (no public variable behind them).
 
 ---
 
