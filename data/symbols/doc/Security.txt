@@ -1,0 +1,17 @@
+# Variables of Security.framework that its open source release (Security-61901.120.67,
+# macOS 26.5) does not have and that Apple's documentation lists.  Written by hand, not
+# by tools/doc_symbols.py (Security has headers; this list only adds to the .tbd).
+#
+# The pages say macOS 10.0 for them, which is no release (the same pages say iOS 2.0
+# and visionOS 1.0).  The Security open source release of macOS 26.5 does not declare or
+# define them, so they are newer: the conservative release is the next one, 27.0.
+# The generator has no SDK of 27.0: no .tbd has them yet.
+#
+# <symbol> <kind> <macOS> <page>
+#   kind    data (a variable or constant)
+#   macOS   the release that brought it (see above)
+#   page    the page of the symbol, developer.apple.com/documentation/<page>
+_kSecCFErrorDetachedCertificates data 27.0 security/kseccferrordetachedcertificates
+_kSecCodeInfoChosenSignature     data 27.0 security/kseccodeinfochosensignature
+_kSecCodeInfoSignerInfoSKID      data 27.0 security/kseccodeinfosignerinfoskid
+_kSecCodeInfoTotalSignatures     data 27.0 security/kseccodeinfototalsignatures

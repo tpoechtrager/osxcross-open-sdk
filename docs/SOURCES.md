@@ -34,6 +34,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `SystemVersion.plist`, the releases | AppleDB for the build number of each release ([details](#systemversionplist-the-releases)) |
 | `availability-extra.dsl` | AvailabilityVersions, release notes, LLVM ([details](#availability-extradsl)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
+| `Security` names of macOS 27.0 | Apple's documentation, Security 61901.120.67 ([details](#security-names-of-macos-270)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
 | Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | `OpenGL.framework` (headers, link stub) | Khronos OpenGL Registry (`gl.xml`), open projects that declare CGL ([details](#openglframework)) |
@@ -499,6 +500,24 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 
 - See the comment of the file: the DSL of AvailabilityVersions-138.7 behind `__OPENSOURCE__`,  
   public release notes and version lists, the year-based version rule in LLVM's `Triple.cpp`.
+
+---
+
+### Security names of macOS 27.0
+
+**Files:** `data/symbols/doc/Security.txt`, `lib/frameworks.sh` (`fw_tbd`)
+
+- The names that Apple's documentation lists for Security and that the open source release of macOS 26.5 (Security-61901.120.67) lacks:  
+  four variables (`kSecCFErrorDetachedCertificates`, `kSecCodeInfoChosenSignature`, `kSecCodeInfoSignerInfoSKID`, `kSecCodeInfoTotalSignatures`),  
+  five `errSecCS*` enumerators, `kSecCSMaxSignatures` and the enumerators of `SecQWACTLSBindingError`  
+  (developer.apple.com/documentation/security, fetched 2026-11-27).
+- Their pages say macOS 10.0, which is no release (the same pages say iOS 2.0 and visionOS 1.0).  
+  The open source release of 26.5 ends at `errSecCSRemoteSignerFailed` (-66990) and has none of them,  
+  so they are newer than 26.5: the conservative release is 27.0. The values of the enumerators have no public source.
+- The generator has no SDK of 27.0, so no `.tbd` has the variables yet (`data/symbols/doc/Security.txt` names the release)  
+  and the headers do not declare the enumerators; they come with such an SDK.
+- Not gaps: `SecTransformCustomGetAttribute` is exported as `_SecTranformCustomGetAttribute` (the `__asm__` name in `SecCustomTransform.h`),  
+  and `sec_object_t` is declared by `SecProtocolObject.h`.
 
 ---
 
