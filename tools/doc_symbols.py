@@ -51,6 +51,7 @@ import sys
 FRAMEWORKS = {
     "AppKit": ["AppKit"],
     "CoreGraphics": ["Core Graphics"],
+    "CoreText": ["Core Text"],
     "Foundation": ["Foundation"],
 }
 NS_FRAMEWORKS = ("Foundation", "AppKit")
