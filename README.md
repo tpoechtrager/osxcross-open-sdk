@@ -45,14 +45,16 @@ install name and version. A real SDK was used only to test a result, never as a 
 - File System Events (`<CoreServices/CoreServices.h>`, the only headers of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - Link stubs without headers of `Foundation`, `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`,  
   `CoreAudio`, `AudioToolbox`, `ApplicationServices` (with `ColorSync`) and `Carbon`: the C functions and constants  
-  of Apple's documentation, for languages and crates that declare what they use themselves (Rust),  
-  see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd).
+  of Apple's documentation, for languages and crates that declare what they use themselves  
+  (Rust: `winit`, `wgpu`, `cpal`), see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd) and [docs/TESTED.md](docs/TESTED.md).
 - The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `tsan`, `rtsan`, `tysan`.
 
 ### What does not work
 
 - **`Foundation`, `AppKit`** and all other frameworks: there is no public source for their headers;  
   `#import <Foundation/Foundation.h>` fails. Objective-C classes are not in the stubs.
+- Rust crates that compile C or Objective-C against the headers of these frameworks, and frameworks  
+  without a stub (`OpenGL`, `AVFoundation`, `WebKit`, ...).
 - Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
 - `libbsm`, the other `IOKit` device families (`storage/ata`, `network`, ...) and the headers of `CoreServices` except File System Events.
 - `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h`: no open source defines their functions  

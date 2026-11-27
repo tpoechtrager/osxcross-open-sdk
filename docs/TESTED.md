@@ -19,13 +19,20 @@ projects were also built with the stable flavor (cctools/ld64).
 - **Version control:** `git`, `libgit2` (also with SecureTransport)
 - **File system events:** the `git` fsmonitor daemon, `fswatch`
 - **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`mac/hid.c` and `hidtest`), `libusb` (`listdevs`)
-- **Compilers and tools:** `LLVM/Clang` (the compiler works on macOS), `cctools-port` (builds, and its tools work on macOS),  
-  `compiler-rt` (builds, and its runtimes work on macOS)
+- **Rust crates** (Rust 1.100, OSXCross as the linker; the crates declare what they use of the frameworks):
+  - `winit` (opens a window)
+  - `core-graphics`, `core-text`
+  - `cpal` (lists the audio devices)
+  - `wgpu` and `eframe` were built, but not tested
+- **Compilers and tools:**
+  - `LLVM/Clang` (the compiler works on macOS)
+  - `cctools-port` (builds, and its tools work on macOS)
+  - `compiler-rt` (builds, and its runtimes work on macOS)
 
 **Not covered**
 
-- The Xcode generator of `cmake` is switched off: it needs `ApplicationServices`.
-- Projects that need `Foundation`, `AppKit` or `Metal` were not tried.
+- The Xcode generator of `cmake` is switched off: it needs the headers of `ApplicationServices`.
+- C and Objective-C code that includes the headers of `Foundation`, `AppKit` or `Metal` (the SDK has only their link stubs).
 
 **What the builds showed**
 
