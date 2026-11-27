@@ -45,7 +45,7 @@ install name and version. A real SDK was used only to test a result, never as a 
 - File System Events (`<CoreServices/CoreServices.h>`, the only headers of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - Link stubs without headers of `Foundation`, `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`,  
   `CoreAudio`, `AudioToolbox`, `ApplicationServices` (with `ColorSync`), `Carbon`, `WebKit`,  
-  `UniformTypeIdentifiers` and `OpenDirectory`: the C functions and constants  
+  `UniformTypeIdentifiers`, `OpenDirectory`, `AVFoundation` and `CoreMedia`: the C functions and constants  
   of Apple's documentation, for languages and crates that declare what they use themselves  
   (Rust: `winit`, `wgpu`, `cpal`, `enigo`, `global-hotkey`), see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd) and [docs/TESTED.md](docs/TESTED.md).
 - `Cocoa.framework`: the umbrella, a stub that re-exports `AppKit` and `Foundation` (`-framework Cocoa`; no headers, no `CoreData`).
@@ -172,7 +172,8 @@ A project without a license file gets the notice block of its headers, or the pu
   a program that uses one links but stops at start with "symbol not found".
 - **Versions.** Stubs without a public version source (`sqlite3`, `liblzma`, `Foundation`, `CoreServices`,  
   `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`, `CoreAudio`, `AudioToolbox`,  
-  `ApplicationServices`, `Carbon`, `OpenGL`, `WebKit`, `UniformTypeIdentifiers`, `OpenDirectory`)  
+  `ApplicationServices`, `Carbon`, `OpenGL`, `WebKit`, `UniformTypeIdentifiers`, `OpenDirectory`,  
+  `AVFoundation`, `CoreMedia`)  
   have the lowest compatibility version.
 - **`CoreFoundation`** is CF-1153.18 (2018), the last one Apple published, with the newer public declarations  
   that swift-corelibs-foundation has (`CFNotificationCenter`, `CFAttributedString`, ISO 8601 date formatters,  

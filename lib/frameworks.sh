@@ -10,7 +10,7 @@
 # own headers (File System Events only) and the symbols of Apple's documentation;
 # Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio,
 # AudioToolbox, ApplicationServices, Carbon, WebKit, UniformTypeIdentifiers,
-# OpenDirectory: only the .tbd, with the symbols of Apple's documentation (fw_doc).
+# OpenDirectory, AVFoundation, CoreMedia: only the .tbd, with the symbols of Apple's documentation (fw_doc).
 # ---------------------------------------------------------------------------
 # fw_tbd NAME HEADER... (a framework of data/libraries.txt; headers relative to Headers/):
 # the symbols that HEADERs declare, without those of data/symbols/NAME-exclude.txt, and
@@ -242,12 +242,12 @@ step_frameworks() {
 
   # Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio,
   # AudioToolbox, ApplicationServices, Carbon, WebKit, UniformTypeIdentifiers,
-  # OpenDirectory: link stubs without headers (fw_doc).  Foundation
+  # OpenDirectory, AVFoundation, CoreMedia: link stubs without headers (fw_doc).  Foundation
   # also lets `-framework Foundation` link (Clang adds it for -fobjc-arc, and build systems
   # pass it without using Foundation).  A program loads the system's frameworks at run time.
   local fw
   for fw in Foundation CoreGraphics AppKit CoreText CoreVideo QuartzCore Metal CoreAudio AudioToolbox ApplicationServices \
-    Carbon WebKit UniformTypeIdentifiers OpenDirectory; do
+    Carbon WebKit UniformTypeIdentifiers OpenDirectory AVFoundation CoreMedia; do
     echo "$fw"
     fw_doc "$fw"
   done

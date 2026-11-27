@@ -36,7 +36,7 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `Security` names of macOS 27.0 | Apple's documentation, Security 61901.120.67 ([details](#security-names-of-macos-270)) |
 | `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
-| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon, WebKit, UniformTypeIdentifiers, OpenDirectory | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
+| Link stubs of Foundation, CoreGraphics, AppKit, CoreText, CoreVideo, QuartzCore, Metal, CoreAudio, AudioToolbox, ApplicationServices, Carbon, WebKit, UniformTypeIdentifiers, OpenDirectory, AVFoundation, CoreMedia | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | `OpenGL.framework` (headers, link stub) | Khronos OpenGL Registry (`gl.xml`), open projects that declare CGL ([details](#openglframework)) |
 | Install names of Foundation, CoreServices | dyld, CF and Security sources ([details](#install-names-of-foundation-coreservices)) |
 | Layout of the frameworks, `Cocoa.framework` | Apple's documentation of framework bundles and of Cocoa, python-build-standalone ([details](#framework-layout-and-cocoaframework)) |
@@ -645,6 +645,16 @@ real SDK or a real macOS is a test result (it works or it does not), never a sou
   Its symbols are those of the documentation modules "Core Audio" and "Core Audio Types".
 - AudioToolbox's install name (`Versions/A`) has one source: the list of michidk/maiko f984528, `crates/patcher/src/macos.rs` (MIT).  
   Its symbols are those of the documentation module "Audio Toolbox".
+- AVFoundation's install name: odvcencio/tymbal 9184eeb, `internal/coreaudio/permission_darwin.go` (MIT;  
+  `/System/Library/Frameworks/AVFoundation.framework/Versions/A/AVFoundation`, the library that a Go program imports  
+  `AVMakeRectWithAspectRatioInsideRect` from). Its symbols are those of the documentation module "AVFoundation", which has the  
+  `AVMediaType...` and `AVCaptureSessionPreset...` constants, the notification names and the `AVMake...` functions;  
+  the Objective-C classes are not in the stub. The documentation pages of the notification names and a few more  
+  (213 pages) were fetched on 2026-11-27 because the pages that refer to them were not cached.
+- CoreMedia's install name: wireshark/wireshark f09629a, `CMakeLists.txt` (GPL-2.0; a dyld message in a comment  
+  that names `/System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia`). Its symbols are those of the documentation module  
+  "Core Media". The stub also has functions that the headers define inline; whether a release exports them is not known  
+  from an open source (as for the other stubs).
 - ApplicationServices' install name (`Versions/A`): the same two lists (python-build-standalone 139273f, `src/validation.rs`;  
   maiko f984528, `crates/patcher/src/macos.rs`).  
   Its symbols are those of the documentation modules "Application Services" and "ColorSync", in one list:  
