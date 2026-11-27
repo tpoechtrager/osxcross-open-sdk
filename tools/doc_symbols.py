@@ -17,8 +17,8 @@ text of the documentation.
 A page is a symbol of the list if its metadata names it as a C function
 (externalID c:@F@<name>) or a global variable or constant (c:@<name>, not a
 type alias), names macOS as a platform, and one of the modules of FRAMEWORKS
-as its module.  A page without metadata.platforms has the platforms of its
-declarations (they have no releases: "-").  The tool warns about the pages
+as its module.  A page that names macOS only in the platforms of its
+declarations counts too (release "-", or that of the other platforms from 26.0 on).  The tool warns about the pages
 that the symbol references of the pages of these frameworks name and that
 the directory lacks (neither <page>.json nor <page>.json.404 for a page that
 answered 404): fetch them, or the list lacks the symbols of the Objective-C
@@ -118,17 +118,22 @@ def git_commit(root):
 
 
 def mac_release(m, d):
-    """the release of macOS that a page names: the introducedAt of metadata.platforms, or "-" if that list
-    names macOS without one; a page without metadata.platforms has the platforms of its declarations
-    (primaryContentSections of the kind declarations), which have no releases.  None: not for macOS"""
-    if "platforms" in m:
-        mac = [p for p in m["platforms"] if p.get("name") == "macOS"]
-        return mac[0].get("introducedAt", "-") if mac else None
+    """the release of macOS that a page names: the introducedAt of metadata.platforms, or "-" if that
+    list names macOS without one.  A page that names macOS only in the platforms of its declarations
+    (primaryContentSections of the kind declarations) has "-", or, if metadata.platforms names
+    other platforms from 26.0 on, the earliest of their releases: since 2025 all platforms
+    have the same release numbers.  None: not for macOS"""
+    plats = m.get("platforms")
+    if plats:
+        mac = [p for p in plats if p.get("name") == "macOS"]
+        if mac:
+            return mac[0].get("introducedAt", "-")
     for sec in d.get("primaryContentSections") or []:
         if sec.get("kind") == "declarations":
             for decl in sec.get("declarations") or []:
                 if "macOS" in (decl.get("platforms") or []):
-                    return "-"
+                    rel = [p["introducedAt"] for p in plats or [] if re.match(r"^(2[6-9]|[3-9][0-9])(\.[0-9]+)*$", p.get("introducedAt", ""))]
+                    return min(rel, key=lambda r: [int(x) for x in r.split(".")]) if rel else "-"
     return None
 
 

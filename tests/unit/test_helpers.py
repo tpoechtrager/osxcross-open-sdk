@@ -503,8 +503,9 @@ class CheckLibraries(Tmp):
 
 
 class DocSymbols(Tmp):
-    def page(self, path, eid, mods, mac="10.0", kind="func", ext=None, objc=False, decl=None, refs=()):
-        """decl: no metadata.platforms, the platforms of the declaration instead; refs: pages that it names"""
+    def page(self, path, eid, mods, mac="10.0", kind="func", ext=None, objc=False, decl=None, refs=(), other=None):
+        """decl: the platforms of the declaration, and no metadata.platforms (or other: these); refs: pages that
+        it names"""
         m = {"externalID": eid, "modules": [{"name": x} for x in mods], "symbolKind": kind,
              "platforms": [{"name": "iOS", "introducedAt": "2.0"}] + ([{"name": "macOS", "introducedAt": mac}] if mac else [])}
         if ext:
@@ -512,7 +513,9 @@ class DocSymbols(Tmp):
         page = {"metadata": m, "abstract": [{"text": "not copied"}],
                 "identifier": {"interfaceLanguage": "occ" if objc else "swift"}}
         if decl is not None:
-            del m["platforms"]
+            m["platforms"] = other
+            if other is None:
+                del m["platforms"]
             page["primaryContentSections"] = [{"kind": "content", "content": []},
                                               {"kind": "declarations", "declarations": [{"platforms": decl}]}]
         page["references"] = {"doc://x/" + r: {"kind": "symbol", "url": "/documentation/" + r,
@@ -575,13 +578,23 @@ class DocSymbols(Tmp):
         self.page("coregraphics/cgstream", "c:@F@CGStream", ["Core Graphics"], decl=["Mac Catalyst", "macOS"])
         self.page("coregraphics/kcgstream", "c:@kCGStream", ["Core Graphics"], kind="var", decl=["macOS"])
         self.page("coregraphics/cgcatalyst", "c:@F@CGCatalyst", ["Core Graphics"], decl=["iOS", "Mac Catalyst"])
+        # metadata.platforms of other platforms: their releases count from 26.0 on
+        self.page("audiotoolbox/atnew", "c:@F@ATNew", ["Audio Toolbox"], decl=["iOS", "macOS"],
+                  other=[{"name": "visionOS", "introducedAt": "26.1"}, {"name": "iOS", "introducedAt": "26.0"}])
+        self.page("audiotoolbox/atold", "c:@F@ATOld", ["Audio Toolbox"], decl=["iOS", "macOS"],
+                  other=[{"name": "iOS", "introducedAt": "17.0"}])
+        self.page("audiotoolbox/atios", "c:@F@ATiOS", ["Audio Toolbox"], decl=["iOS"],
+                  other=[{"name": "iOS", "introducedAt": "26.0"}])
         self.page("coregraphics/cgnodecl", "c:@F@CGNoDecl", ["Core Graphics"], decl=[])
         rc, out, err = run("tools/doc_symbols.py", "--docs", self.path("docs/data"), "--out", self.path("out"),
-                           "CoreGraphics")
+                           "CoreGraphics", "AudioToolbox")
         self.assertEqual(rc, 0, out + err)
         rows = [l.split() for l in read(self.path("out/CoreGraphics.txt")).splitlines() if l and not l.startswith("#")]
         self.assertEqual(rows, [["_CGStream", "func", "-", "coregraphics/cgstream"],
                                 ["_kCGStream", "data", "-", "coregraphics/kcgstream"]])
+        rows = [l.split() for l in read(self.path("out/AudioToolbox.txt")).splitlines() if l and not l.startswith("#")]
+        self.assertEqual(rows, [["_ATNew", "func", "26.0", "audiotoolbox/atnew"],
+                                ["_ATOld", "func", "-", "audiotoolbox/atold"]])
 
     def test_warns_of_pages_that_are_referred_to_and_missing(self):
         self.page("coregraphics/cgfoo(_:)", "c:@F@CGFoo", ["Core Graphics"],
