@@ -154,6 +154,7 @@ libcbor        main       -        -                       -
 libfido2       main       -        libcbor,libressl        zlib,IOKit
 vim            main       -        ncurses                 -
 tcpdump        main       -        -                       libpcap
+libserialport  main       -        -                       IOKit
 llvm           compilers  -        -                       -
 compiler-rt    compilers  llvm     -                       -
 cctools-port   compilers  -        -                       -
@@ -351,6 +352,7 @@ libcbor 0.12.0 https://github.com/PJK/libcbor/archive/refs/tags/v0.12.0.tar.gz 5
 libfido2 1.15.0 https://developers.yubico.com/libfido2/Releases/libfido2-1.15.0.tar.gz abaab1318d21d262ece416fb8a7132fa9374bda89f6fa52b86a98a2f5712b61e
 vim 9.1.1500 https://github.com/vim/vim/archive/refs/tags/v9.1.1500.tar.gz 70f0e75bf77af00b870a967fcb325031f0a32d787bc3cacc1ca1729727d0bbc7
 tcpdump 4.99.5 https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz 8c75856e00addeeadf70dad67c9ff3dd368536b2b8563abf6854d7c764cd3adb
+libserialport 0.1.2 https://sigrok.org/download/source/libserialport/libserialport-0.1.2.tar.gz 5deb92b5ca72c0347b07b786848350deca2dcfd975ce613b8e0e1d947a4b4ca9
 llvm 23.1.6 https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.6/llvm-project-23.1.6.src.tar.xz d3b86ab29cfb4445a6652e5c2642ccc75e04e38084dde3701d323320f35a31da
 cctools-port 986-ld64-711 https://github.com/tpoechtrager/cctools-port/archive/c78fd67397591cd47aecde7dd162c89a4a7faae5.tar.gz 4e7b8904e9419737a2d5c578454e0ce86c184d6721b6f214d63409f2c63dfe5b
 sauerbraten 2020_12_29 https://downloads.sourceforge.net/project/sauerbraten/sauerbraten/2020_11_29/sauerbraten_2020_12_29_linux.tar.bz2 cdba7c4a47cefd30d0afdd6a912199a1384319cf1619923cb7189e72e468be70
@@ -1185,6 +1187,16 @@ build_tcpdump() {
   configure_install --without-crypto --without-smi --without-cap-ng ac_cv_path_PCAP_CONFIG= ac_cv_path_ac_pt_PCAP_CONFIG=
 }
 test_tcpdump() { run_mac 'bin/tcpdump --version 2>&1 | grep -q "tcpdump version 4.99.5" && bin/tcpdump -D | grep -q "^1\."'; }
+
+build_libserialport() {
+  # the serial ports of IOKit (IOKit/serial); its example list_ports lists them
+  configure_install --disable-shared
+  mkdir -p "$B/stage"
+  "$CC" -O2 -I"$PREFIX/include" examples/list_ports.c "$PREFIX/lib/libserialport.a" -framework IOKit -framework CoreFoundation \
+    -o "$B/stage/list_ports"
+  stage "$B/stage"
+}
+test_libserialport() { run_mac './list_ports | grep -q "^Found [0-9]* ports\."'; }
 
 # --- C++
 build_fmt() {

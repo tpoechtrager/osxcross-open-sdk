@@ -21,7 +21,8 @@ with the test suite of the project where it could be built, otherwise with a smo
 - **File system events:** the `git` fsmonitor daemon, `fswatch`, `efsw` (a program watches a directory)
 - **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`hidtest`),  
   `libusb` (`listdevs`, `testlibusb` and its tests `set_option`, `init_context`), `dfu-util`,  
-  `libfido2` (`fido2-token`; IOKit HID), `osx-cpu-temp` (SMC)
+  `libfido2` (`fido2-token`; IOKit HID), `osx-cpu-temp` (SMC),  
+  `libserialport` (`list_ports`; IOKit serial)
 - **OpenGL:** `glew` (a program makes a context with the software renderer and calls `glewInit`)
 - **Games (OpenGL):** `Cube 2: Sauerbraten` (with the SDL2 frameworks of SDL's releases; shows its menu and plays a map)
 - **Rust crates** (Rust 1.100, OSXCross as the linker; the crates declare what they use of the frameworks):

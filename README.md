@@ -41,7 +41,7 @@ install name and version. A real SDK was used only to test a result, never as a 
   Signposts, activities and `os_trace` compile and run but record nothing.
 - The frameworks `CoreFoundation`, `DiskArbitration`, `SystemConfiguration`, `Security` (including `SecureTransport`)  
   and `IOKit` (`IOKitLib`, power sources, power management and the device families `storage`, `hid`,  
-  `hidsystem`, `graphics`, `i2c`, `ndrvsupport` and `usb`).
+  `hidsystem`, `graphics`, `i2c`, `ndrvsupport`, `serial` and `usb`).
 - XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0 and sessions, listeners and rich errors (13.0, 14.0), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - File System Events (`<CoreServices/CoreServices.h>`, the only headers of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
 - Link stubs without headers of `Foundation`, `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`,  

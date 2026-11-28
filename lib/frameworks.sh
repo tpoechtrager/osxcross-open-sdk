@@ -61,7 +61,7 @@ fw_doc() {
 }
 
 # iokit_families HEADERS: the headers of the IOKit device families storage, hid,
-# hidsystem, graphics, i2c, ndrvsupport and usb (the modules of these names in
+# hidsystem, graphics, i2c, ndrvsupport, serial and usb (the modules of these names in
 # IOKitUser's Modules/IOKit.modulemap, without storage/ata) in HEADERS/<dir>.
 # Each list is the one that the project's Xcode project copies to
 # IOKit.framework/Versions/A/Headers/<dir> (its PBXCopyFilesBuildPhase); the
@@ -72,10 +72,12 @@ fw_doc() {
 # IOFireWireSerialBusProtocolTransport and is not installed here.
 # usb: the four headers that IOUSBFamily's CopyFiles phase installs in
 # IOKit.framework/Headers/usb (the other headers go to Kernel.framework); they are
-# copied as they are: their kernel parts are under #if KERNEL.
+# copied as they are: their kernel parts are under #if KERNEL.  serial: the two
+# headers of IOSerialFamily's copy phases with that destination, as they are
+# (the project has no unifdef phase).
 iokit_families() {
   local H=$1 h
-  mkdir -p "$H/storage" "$H/hid" "$H/hidsystem" "$H/graphics" "$H/i2c" "$H/ndrvsupport" "$H/usb"
+  mkdir -p "$H/storage" "$H/hid" "$H/hidsystem" "$H/graphics" "$H/i2c" "$H/ndrvsupport" "$H/serial" "$H/usb"
   for h in IOAppleLabelScheme IOApplePartitionScheme IOBlockStorageDevice IOBlockStorageDriver \
            IOFDiskPartitionScheme IOFilterScheme IOGUIDPartitionScheme IOMedia IOMediaBSDClient \
            IOPartitionScheme IOStorage IOStorageCardCharacteristics IOStorageControllerCharacteristics \
@@ -107,10 +109,12 @@ iokit_families() {
   cp "$SRC"/IOGraphics/IONDRVSupport/IOKit/ndrvsupport/{IOMacOSTypes,IOMacOSVideo}.h "$H/ndrvsupport/"
   # IOUSBFamily: the phase "CopyFiles" of the target that has the destination IOKit.framework/Versions/A/Headers/usb
   cp "$SRC"/IOUSBFamily/IOUSBFamily/Headers/{USB,USBSpec,IOUSBLib}.h "$SRC/IOUSBFamily/IOUSBUserClient/Headers/IOUSBUserClient.h" "$H/usb/"
+  # IOSerialFamily: the CopyFiles phases with the destination IOKit.framework/Versions/A/Headers/serial
+  cp "$SRC"/IOSerialFamily/IOSerialFamily.kmodproj/{IOSerialKeys,ioss}.h "$H/serial/"
   # constants of the speeds, the re-enumerate options, the hubs and the notifications that the open headers lack (libusb uses some)
   cat "$DATA/USBCompat.h.in" >> "$H/usb/USB.h"
   add_notice "$H/usb/USB.h" "constants of the device speeds, of USBReEnumerateOptions and of the hubs and notifications added at the end"
-  IOKIT_FAMILY_SCAN=$(cd "$H" && ls storage/*.h hid/*.h hidsystem/*.h graphics/*.h i2c/*.h ndrvsupport/*.h usb/*.h | tr '\n' ' ')
+  IOKIT_FAMILY_SCAN=$(cd "$H" && ls storage/*.h hid/*.h hidsystem/*.h graphics/*.h i2c/*.h ndrvsupport/*.h serial/*.h usb/*.h | tr '\n' ' ')
 }
 
 step_frameworks() {

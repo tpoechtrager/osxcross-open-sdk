@@ -34,6 +34,7 @@ IOBDStorageFamily IOBDStorageFamily-22 65a15588aa441ed56e6ad2a421288c07f0c49444 
 IOHIDFamily IOHIDFamily-2008.80.3.0.1 c20cfda6df3d63b8240b93562bbdf4b053ef8018 release
 IOGraphics IOGraphics-598 1f7f460675c1ec815d5d6fda92c35dccbf6e9ff3 release
 IOUSBFamily IOUSBFamily-560.4.2 aa1bde6708ab287ab8d5098287a957f5d34df372 fixed
+IOSerialFamily IOSerialFamily-93.200.2 94490b5d7710a383a086b512bab597ce3b257bcc fixed
 Security Security-61040.80.10.0.1 233d4fec5e465fb09c39ef72e1b3513bb16838c4 release
 ncurses ncurses-71.60.3 6b87b62abc23e5b41179a4322509a7255f1cdeca release
 libutil libutil-72 f18a440e0e66f955c9e7b55eb7c07437cc99a3b3 release

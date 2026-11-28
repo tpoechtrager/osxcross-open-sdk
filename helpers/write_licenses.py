@@ -90,6 +90,7 @@ P = [
  ("IOHIDFamily", "IOHIDFamily", "APSL 2.0 (file notices)", "IOKit.framework/Headers/hid (keys, types, usage tables), hidsystem (IOHIDTypes, IOLLEvent, ...)", "frameworks", [], "IOHIDFamily/IOHIDKeys.h"),
  ("IOGraphics", "IOGraphics", "APSL 2.0 (APPLE_LICENSE), APSL 1.1 (file notices of the headers)", "IOKit.framework/Headers/graphics (all but IOGraphicsLib.h), i2c, ndrvsupport", "frameworks", ["../Libinfo/APPLE_LICENSE=APPLE_LICENSE-1.1 (APSL 1.1, from Libinfo)"]),
  ("IOUSBFamily", "IOUSBFamily", "APSL 2.0", "IOKit.framework/Headers/usb (USB.h, USBSpec.h, IOUSBLib.h, IOUSBUserClient.h)", "frameworks"),
+ ("IOSerialFamily", "IOSerialFamily", "APSL 1.1", "IOKit.framework/Headers/serial (IOSerialKeys.h, ioss.h)", "frameworks"),
  ("OpenGL Registry", None, "Apache License 2.0 (gl.xml); the CGL headers are 0BSD", "OpenGL.framework/Headers gl.h, gl3.h, glext.h, gl3ext.h, gltypes.h (written from gl.xml), OpenGL.tbd symbol names; OpenGL.h and the CGL*.h headers are written from data/opengl/ (0BSD)", "frameworks"),
  ("sqlite", None, "Public domain (SQLite blessing)", "sqlite3.h, sqlite3ext.h (upstream amalgamation {version}), libsqlite3.tbd", "libs"),
  ("Swift runtime stubs", None, "Apache 2.0 with Runtime Library Exception", "usr/lib/swift/*.tbd generated from the Swift runtime dylibs of swift.org's macOS package", "swift"),

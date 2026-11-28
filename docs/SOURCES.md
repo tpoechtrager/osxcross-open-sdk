@@ -54,7 +54,7 @@ Projects that only Apple has (xnu, dyld, Libsystem, IOKitUser, AvailabilityVersi
 | Newer `CoreFoundation` declarations and symbols | swift-corelibs-foundation, Apple's documentation ([details](#newer-corefoundation-declarations-and-symbols)) |
 | `CoreServices/FSEvents.h` and its symbols | Apple's documentation, fsevent-sys, dotnet/macios ([details](#coreservicesfseventsh-and-its-symbols)) |
 | `Security` names of macOS 27.0 | Apple's documentation, apple-oss Security 61901.120.67 ([details](#security-names-of-macos-270)) |
-| `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, Apple documentation ([details](#iokit-device-families)) |
+| `IOKit` device families | IOKitUser's module map, the Xcode projects of the families, IOUSBFamily 560.4.2, IOSerialFamily 93.200.2, Apple documentation ([details](#iokit-device-families)) |
 | Link stubs of 20 frameworks without headers in the Open SDK (Foundation, AppKit, CoreGraphics, ...) | Apple's documentation, GNUstep, open projects ([details](#link-stubs-from-apples-documentation)) |
 | `OpenGL.framework` (headers, link stub) | Khronos OpenGL Registry (`gl.xml`), open projects that declare CGL ([details](#openglframework)) |
 | Install names of Foundation, CoreServices | dyld and the apple-oss projects CF and Security ([details](#install-names-of-foundation-coreservices)) |
@@ -940,6 +940,7 @@ if the declarations of the header differ from the list.
 - the Xcode projects of [IOStorageFamily](https://github.com/apple-oss-distributions/IOStorageFamily/tree/IOStorageFamily-337.100.1), [IOCDStorageFamily](https://github.com/apple-oss-distributions/IOCDStorageFamily/tree/IOCDStorageFamily-62), [IODVDStorageFamily](https://github.com/apple-oss-distributions/IODVDStorageFamily/tree/IODVDStorageFamily-46), [IOBDStorageFamily](https://github.com/apple-oss-distributions/IOBDStorageFamily/tree/IOBDStorageFamily-26), [IOHIDFamily](https://github.com/apple-oss-distributions/IOHIDFamily/tree/IOHIDFamily-2238.120.5), [IOGraphics](https://github.com/apple-oss-distributions/IOGraphics/tree/IOGraphics-600)
 - [IOUSBFamily](https://github.com/apple-oss-distributions/IOUSBFamily/tree/IOUSBFamily-560.4.2) 560.4.2 (headers); [630.4.5](https://github.com/apple-oss-distributions/IOUSBFamily/tree/IOUSBFamily-630.4.5) (compared; [`Headers/USBHub.h`](https://github.com/apple-oss-distributions/IOUSBFamily/blob/IOUSBFamily-630.4.5/IOUSBFamily/Headers/USBHub.h), [`Classes/AppleUSBOHCI_RootHub.cpp`](https://github.com/apple-oss-distributions/IOUSBFamily/blob/IOUSBFamily-630.4.5/AppleUSBOHCI/Classes/AppleUSBOHCI_RootHub.cpp),  
   [`Classes/AppleUSBUHCI_RootHub.cpp`](https://github.com/apple-oss-distributions/IOUSBFamily/blob/IOUSBFamily-630.4.5/AppleUSBUHCI/Classes/AppleUSBUHCI_RootHub.cpp), [`Classes/AppleUSBEHCIHubInfo.cpp`](https://github.com/apple-oss-distributions/IOUSBFamily/blob/IOUSBFamily-630.4.5/AppleUSBEHCI/Classes/AppleUSBEHCIHubInfo.cpp), [`PortStatusGatherer.m`](https://github.com/apple-oss-distributions/IOUSBFamily/blob/IOUSBFamily-630.4.5/USBProberV2/PortStatusGatherer.m))
+- [IOSerialFamily](https://github.com/apple-oss-distributions/IOSerialFamily/tree/IOSerialFamily-93.200.2) 93.200.2: [`IOSerialFamily.xcodeproj`](https://github.com/apple-oss-distributions/IOSerialFamily/blob/IOSerialFamily-93.200.2/IOSerialFamily.xcodeproj/project.pbxproj), [`APPLE_LICENSE`](https://github.com/apple-oss-distributions/IOSerialFamily/blob/IOSerialFamily-93.200.2/APPLE_LICENSE) (APSL 1.1)
 - [xnu](https://github.com/apple-oss-distributions/xnu/tree/xnu-12377.121.6): [`iokit/IOKit/Makefile`](https://github.com/apple-oss-distributions/xnu/blob/xnu-12377.121.6/iokit/IOKit/Makefile)
 - Apple's documentation of the kernel ([developer.apple.com/documentation/kernel](https://developer.apple.com/documentation/kernel), pages downloaded 2026-11-26/27)
 - [libusb](https://github.com/libusb/libusb/tree/v1.0.30) 1.0.30: [`os/darwin_usb.c`](https://github.com/libusb/libusb/blob/v1.0.30/libusb/os/darwin_usb.c)
@@ -949,11 +950,12 @@ if the declarations of the header differ from the list.
 **Details:**
 
 The headers of `IOKit.framework` for storage, HID (keyboards, mice, game controllers), graphics, I²C and USB devices  
-(`IOKit/hid/IOHIDManager.h`, `IOKit/usb/IOUSBLib.h`, ...), which libusb, hidapi and SDL include.
+(`IOKit/hid/IOHIDManager.h`, `IOKit/usb/IOUSBLib.h`, ...), which libusb, hidapi and SDL include, and of serial ports  
+(`IOKit/serial/IOSerialKeys.h`, `ioss.h`), which libserialport includes.
 
 #### The headers
 
-- The families: the modules `storage` (without `storage/ata`), `hid`, `hidsystem`, `graphics`, `i2c`, `ndrvsupport` and `usb`  
+- The families: the modules `storage` (without `storage/ata`), `hid`, `hidsystem`, `graphics`, `i2c`, `ndrvsupport`, `serial` and `usb`  
   of IOKitUser's `Modules/IOKit.modulemap`.
 - The headers of each directory: the `PBXCopyFilesBuildPhase` of the Xcode project that copies  
   them to `IOKit.framework/Versions/A/Headers/<dir>`:
@@ -965,6 +967,9 @@ The headers of `IOKit.framework` for storage, HID (keyboards, mice, game control
   - IOUSBFamily (the `CopyFiles` phase with the destination `IOKit.framework/Versions/A/Headers/usb`): `usb/`,  
     `USB.h`, `USBSpec.h`, `IOUSBLib.h` and `IOUSBUserClient.h`, copied as they are (their kernel parts are under `#if KERNEL`).  
     The other headers of the project go to `Kernel.framework` and are not installed.
+  - IOSerialFamily (the two `CopyFiles` phases with the destination `IOKit.framework/Versions/A/Headers/serial`): `serial/`,  
+    `IOSerialKeys.h` and `ioss.h`, copied as they are (the project has no `unifdef` phase; the kernel part of `IOSerialKeys.h`  
+    is under `#if KERNEL`).
 - IOUSBFamily 560.4.2 and not the last tag, 630.4.5: `USB.h` of 630.4.5 is an empty file (as are many other headers of that tag),  
   and `IOUSBLib.h` needs its types; 560.4.2 is the newest tag that has it. The two tags differ in the userspace headers  
   in one comment of `IOUSBLib.h` and four constants of `USBSpec.h` (`kUSBFunctionRemoteWakeCapableBit` and three more).
@@ -991,9 +996,11 @@ The declarations of these headers (as for the other frameworks), defined in IOKi
 #### Licenses and tags
 
 - Licenses: APSL 2.0; the headers of IOGraphics carry the APSL 1.1 notice, its text is the `APPLE_LICENSE` of Libinfo.  
+  IOSerialFamily: APSL 1.1, its own `APPLE_LICENSE`.  
   IOHIDFamily has no license file (the notice of `IOHIDKeys.h` and the APSL 2.0 text of xnu).
 - Tags: `release.json` of distribution-macOS for 14.3, 15.5, 26.0 and 26.5 (see [Manifests](#manifests)), except IOUSBFamily:  
-  `release.json` does not list it, its manifest lines are `fixed` with the tag 560.4.2;  
+  `release.json` does not list it, its manifest lines are `fixed` with the tag 560.4.2; nor IOSerialFamily: `fixed` with its newest tag,  
+  93.200.2 (its two headers are the same as in 93);  
   the core-only releases do not have these projects.
 
 #### Not in the Open SDK
