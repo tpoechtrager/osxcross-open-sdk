@@ -337,6 +337,10 @@ narrowed to the project's export list where it has one. Per library:
   With it `curses.h` declares each function a second time with the `$NCURSES60` name (`ifTAPI` in `curses.head`);  
   programs that use the 15.0 ABI (`NCURSES_EXPORT_ABI60` in the same header) reference these names.
 - libffi: `ffi.h` and `tramp.h` (a Public header in `libffi.xcodeproj`).
+- libpcap: `pcap.h`, `pcap-namedb.h` and the headers of `pcap/` that they include with functions, `pcap/pcap.h`,  
+  `pcap/bpf.h` and `pcap/namedb.h`. The functions of the last two are built into the library: `bpf_dump.c`, `bpf_filter.c`,  
+  `bpf_image.c`, `etherent.c` and `nametoaddr.c` are in the sources of the target of [`libpcap.xcodeproj`](https://github.com/apple-oss-distributions/libpcap/blob/libpcap-146/libpcap.xcodeproj/project.pbxproj)  
+  and in `COMMON_C_SRC` of [`libpcap/Makefile`](https://github.com/apple-oss-distributions/libpcap/blob/libpcap-146/libpcap/Makefile).
 - libresolv: the headers of the project and its `installapi.h`, as the project's own build does (`libresolv.xcconfig`,  
   with `-D__BIND_INSTALLAPI`), and the Private header `dns_private.h` (`libresolv.xcodeproj`; not installed in the Open SDK).
 

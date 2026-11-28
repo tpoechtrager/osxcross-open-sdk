@@ -10,7 +10,7 @@ with the test suite of the project where it could be built, otherwise with a smo
   `sqlite`, `pcre2`, `oniguruma`, `nlohmann-json`
 - **Network and crypto:** `curl` (also with SecureTransport), `c-ares`, `nghttp2`, `libssh2`, `mbedtls`,  
   `libressl`, `libsodium`, `libevent`, `libuv`, `openssh`, `rsync`, `openvpn`, `aria2` (SecureTransport),  
-  `libzip` (CommonCrypto), `sudo` (OpenPAM; `visudo` runs)
+  `libzip` (CommonCrypto), `sudo` (OpenPAM; `visudo` runs), `tcpdump` (libpcap)
 - **C++:** `fmt`, `spdlog`, `googletest`
 - **Build tools:** `cmake`, `ninja`, `gnumake`, `pkgconf`
 - **Images and fonts:** `libpng`, `libjpeg-turbo`, `libtiff`, `freetype`

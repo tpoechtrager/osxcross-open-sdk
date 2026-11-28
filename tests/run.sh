@@ -145,6 +145,7 @@ resolv      resolv.c      c    -                          -lresolv              
 ext         ext.c         c    -                          -lz,-lbz2,-lexpat,-lffi,-ledit,-lxml2 full
 ext2        ext2.c        c    -                          -lutil,-lpcap,-larchive,-lpam,-lxslt,-lexslt,-lcurl,-lxml2 full
 ext3        ext3.c        c    -                          -lncurses,-lpanel,-lform,-lmenu,-lsqlite3 full
+pcap        pcap.c        c    -                          -lpcap                                full
 lzma        lzma.c        c    -                          -llzma                                full
 objc        objc.m        objc -                          -lobjc                                full
 arc         arc.m         objc -fobjc-arc                 -lobjc                                full

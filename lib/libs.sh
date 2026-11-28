@@ -128,7 +128,7 @@ libs_libpcap() {
   mkdir -p "$STAGE_INC/pcap"
   cp "$SRC/libpcap/libpcap/pcap.h" "$SRC/libpcap/libpcap/pcap-bpf.h" "$SRC/libpcap/libpcap/pcap-namedb.h" "$STAGE_INC/"
   cp "$SRC"/libpcap/libpcap/pcap/*.h "$STAGE_INC/pcap/"; rm -f "$STAGE_INC/pcap/pcap-ng.h"
-  ext_tbd libpcap.A "" - pcap.h pcap-namedb.h
+  ext_tbd libpcap.A "" - pcap.h pcap-namedb.h pcap/bpf.h pcap/namedb.h
   ln -sf libpcap.A.tbd "$STAGE_LIB/libpcap.tbd"
 }
 

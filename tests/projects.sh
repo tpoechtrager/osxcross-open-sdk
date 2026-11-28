@@ -153,6 +153,7 @@ aria2          main       -        -                       zlib,Security
 libcbor        main       -        -                       -
 libfido2       main       -        libcbor,libressl        zlib,IOKit
 vim            main       -        ncurses                 -
+tcpdump        main       -        -                       libpcap
 llvm           compilers  -        -                       -
 compiler-rt    compilers  llvm     -                       -
 cctools-port   compilers  -        -                       -
@@ -349,6 +350,7 @@ aria2 1.37.0 https://github.com/aria2/aria2/releases/download/release-1.37.0/ari
 libcbor 0.12.0 https://github.com/PJK/libcbor/archive/refs/tags/v0.12.0.tar.gz 5368add109db559f546d7ed10f440f39a273b073daa8da4abffc83815069fa7f
 libfido2 1.15.0 https://developers.yubico.com/libfido2/Releases/libfido2-1.15.0.tar.gz abaab1318d21d262ece416fb8a7132fa9374bda89f6fa52b86a98a2f5712b61e
 vim 9.1.1500 https://github.com/vim/vim/archive/refs/tags/v9.1.1500.tar.gz 70f0e75bf77af00b870a967fcb325031f0a32d787bc3cacc1ca1729727d0bbc7
+tcpdump 4.99.5 https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz 8c75856e00addeeadf70dad67c9ff3dd368536b2b8563abf6854d7c764cd3adb
 llvm 23.1.6 https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.6/llvm-project-23.1.6.src.tar.xz d3b86ab29cfb4445a6652e5c2642ccc75e04e38084dde3701d323320f35a31da
 cctools-port 986-ld64-711 https://github.com/tpoechtrager/cctools-port/archive/c78fd67397591cd47aecde7dd162c89a4a7faae5.tar.gz 4e7b8904e9419737a2d5c578454e0ce86c184d6721b6f214d63409f2c63dfe5b
 sauerbraten 2020_12_29 https://downloads.sourceforge.net/project/sauerbraten/sauerbraten/2020_11_29/sauerbraten_2020_12_29_linux.tar.bz2 cdba7c4a47cefd30d0afdd6a912199a1384319cf1619923cb7189e72e468be70
@@ -1177,6 +1179,12 @@ test_vim() {
   run_mac 'bin/vim --version | grep -q "VIM - Vi IMproved 9.1" && bin/vim -es -u NONE -c "call writefile([string(6*7)], \"o\")" -c q &&
     grep -qx 42 o'
 }
+
+build_tcpdump() {
+  # the libpcap of the SDK; configure would run the pcap-config of the build host (-I/usr/include), so it finds none
+  configure_install --without-crypto --without-smi --without-cap-ng ac_cv_path_PCAP_CONFIG= ac_cv_path_ac_pt_PCAP_CONFIG=
+}
+test_tcpdump() { run_mac 'bin/tcpdump --version 2>&1 | grep -q "tcpdump version 4.99.5" && bin/tcpdump -D | grep -q "^1\."'; }
 
 # --- C++
 build_fmt() {
