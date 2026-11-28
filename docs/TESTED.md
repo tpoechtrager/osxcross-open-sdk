@@ -44,7 +44,7 @@ with the test suite of the project where it could be built, otherwise with a smo
   - `LLVM/Clang` (the compiler works on macOS)
   - `cctools-port` (builds, and its tools work on macOS)
   - `compiler-rt` (builds, and its runtimes work on macOS)
-- **Swift** (6.4.3 with the Swift add-on, SwiftPM with OSXCross's Swift SDK, deployment target 14.0):  
+- **Swift** (6.4.3 with the Swift add-on and SwiftPM, deployment target 14.0):  
   `swift-collections`, `swift-algorithms`, `swift-numerics`, `swift-atomics` (a program uses their libraries)
 
 **Not covered**
