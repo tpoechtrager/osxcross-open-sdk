@@ -6,14 +6,15 @@
 # the recipes (with the reason of every workaround) and the tests are all in this script.
 #
 #   tests/projects.sh --sdk SDK_TARBALL [--osxcross DIR] [options]
-#       DIR is an OSXCross target, or a checkout of OSXCross (e.g. ~/dev/osxcross) whose target/ is used if it
-#       is built; else a target is built from `git archive` of the checkout. Without --osxcross, OSXCross is
-#       cloned (OSXCROSS_GIT, OSXCROSS_REF: github.com/tpoechtrager/osxcross, master) and built. A built target
-#       is kept in build/osxcross of this repository for the next run; a checkout is never written.
+#       SDK_TARBALL (MacOSX<VER>-open-sdk-<hash>.tar.xz, or -open-core-sdk-: then the projects that need
+#       frameworks are skipped) is always the SDK that is tested: it is unpacked into the work directory
+#       and selected with SDKROOT, so one target builds with every SDK.
+#       Without --osxcross, OSXCross is cloned (OSXCROSS_GIT, OSXCROSS_REF: github.com/tpoechtrager/osxcross,
+#       master) and built; the target is kept in build/osxcross of this repository for the next run.
+#       With --osxcross, DIR is an OSXCross target, or a checkout of OSXCross (e.g. ~/dev/osxcross) whose
+#       target/ is used if it is built; else a target is built from `git archive` of the checkout
+#       (the checkout is never written).
 # Options:
-#   --sdk TARBALL     the SDK tarball (MacOSX<VER>-open-sdk-<hash>.tar.xz, or -open-core-sdk-: then the projects
-#                     that need frameworks are skipped); it is unpacked into the work directory and selected
-#                     with SDKROOT, so one target builds with every SDK
 #   --flavor NAME     build OSXCross with this flavor, llvm or stable, also if the checkout has a target
 #   --llvm DIR        bin directory of the clang that the wrappers of OSXCross run, also to build OSXCross
 #                     (default: the one of the PATH)
@@ -201,7 +202,7 @@ while [ $# -gt 0 ]; do
     *) die "unknown option $1 (see --help)";;
   esac
 done
-[ -f "$SDKTAR" ] || die "give --sdk TARBALL (see --help)"
+[ -f "$SDKTAR" ] || die "--sdk SDK_TARBALL is needed: the SDK to test (see --help)"
 SDKTAR=$(cd "$(dirname "$SDKTAR")" && pwd)/$(basename "$SDKTAR")
 case $FLAVOR in ''|llvm|stable) ;; *) die "--flavor is llvm or stable";; esac
 for a in $ARCHS; do case $a in x86_64|arm64) ;; *) die "unknown architecture $a";; esac; done

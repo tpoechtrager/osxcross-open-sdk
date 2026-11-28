@@ -4,15 +4,15 @@
 # Build the test programs of tests/programs with an SDK of make-open-sdk.sh, for
 # x86_64 and arm64, and (if asked) run them on a Mac.
 #
-#   tests/run.sh --osxcross DIR [--sdk SDK] [--llvm LLVM_BIN_DIR] [options]
-#       with the compilers of OSXCross (the triple comes from its osxcross-conf, not from the PATH).
-#       DIR is an OSXCross target, or a checkout of OSXCross (e.g. ~/dev/osxcross) whose target/ is used
-#       if it is built; else a target is built from `git archive` of the checkout (needs --sdk TARBALL).
-#       SDK, a tarball of make-open-sdk.sh or an SDK directory, is selected with SDKROOT; without --sdk
-#       the SDK of the target is used. The wrapper needs a clang: the one in LLVM_BIN_DIR or in the PATH.
-#   tests/run.sh --sdk SDK_TARBALL [--llvm LLVM_BIN_DIR] [options]
-#       as above, with OSXCross cloned (OSXCROSS_GIT, OSXCROSS_REF: github.com/tpoechtrager/osxcross,
-#       master) and built. A built target is kept in build/osxcross of this repository for the next run.
+#   tests/run.sh --sdk SDK [--osxcross DIR] [--llvm LLVM_BIN_DIR] [options]
+#       with the compilers of OSXCross. SDK (a tarball of make-open-sdk.sh or an SDK directory) is always
+#       the SDK that is tested; it is selected with SDKROOT.
+#       Without --osxcross, OSXCross is cloned (OSXCROSS_GIT, OSXCROSS_REF: github.com/tpoechtrager/osxcross,
+#       master) and built; the target is kept in build/osxcross of this repository for the next run.
+#       With --osxcross, DIR is an OSXCross target, or a checkout of OSXCross (e.g. ~/dev/osxcross) whose
+#       target/ is used if it is built; else a target is built from `git archive` of the checkout.
+#       The triple comes from the osxcross-conf of the target, not from the PATH. The wrapper needs a clang:
+#       the one in LLVM_BIN_DIR or in the PATH.
 #   tests/run.sh --without-osxcross --sdk SDK --llvm LLVM_BIN_DIR [options]
 #       with clang and ld64.lld of LLVM directly
 # Options:
@@ -58,7 +58,7 @@ if [ "$MODE" = llvm ]; then
   [ -z "$TARGET_DIR" ] || { echo "run.sh: --osxcross and --without-osxcross exclude each other" >&2; exit 2; }
   [ -n "$SDKARG" ] && [ -n "$LLVM" ] || { echo "run.sh: --without-osxcross needs --sdk and --llvm" >&2; exit 2; }
 else
-  [ -n "$TARGET_DIR" ] || [ -n "$SDKARG" ] || { echo "run.sh: give --osxcross DIR or --sdk SDK_TARBALL (see --help)" >&2; exit 2; }
+  [ -n "$SDKARG" ] || { echo "run.sh: --sdk SDK is needed: the SDK to test (see --help)" >&2; exit 2; }
 fi
 case $FLAVOR in ''|llvm|stable) ;; *) echo "run.sh: --flavor is llvm or stable" >&2; exit 2;; esac
 
@@ -91,27 +91,21 @@ if [ "$MODE" = osxcross ]; then
   # the configuration of this OSXCross; a clean environment, so that an OSXCross of the PATH does not matter
   osxcross_conf "$TARGET_DIR" || exit 2
   DARWIN=$OSXCROSS_TARGET
-  if [ -n "$SDKARG" ]; then
-    # the SDK of --sdk, selected with SDKROOT (OSXCross takes it before the SDK of the target)
-    sdk_select "$SDKARG" "$OUT/sdk" || exit 2
-    SDKDIR=$SDK; SDKROOT_ENV="SDKROOT=$SDK"
-  else
-    SDKDIR=$OSXCROSS_SDK
-    SDKVER=$OSXCROSS_SDK_VERSION
-    [ -f "$SDKDIR/OpenSDK.json" ] || echo "run.sh: note: $SDKDIR has no OpenSDK.json: this is not an SDK of make-open-sdk.sh"
-  fi
+  # the SDK of --sdk, selected with SDKROOT (OSXCross takes it before the SDK of the target)
+  sdk_select "$SDKARG" "$OUT/sdk" || exit 2
+  SDKDIR=$SDK; SDKROOT_ENV="SDKROOT=$SDK"
   echo "OSXCross: $TARGET_DIR; SDK: $SDKDIR"
 else
   [ -d "$LLVM" ] || { echo "run.sh: --llvm must be a directory" >&2; exit 2; }
   LLVM=$(cd "$LLVM" && pwd)
   if [ -d "$SDKARG" ]; then
     SDKDIR=$(cd "$SDKARG" && pwd)
-    SDKVER=$(sed -n 's/.*"Version": "\([^"]*\)".*/\1/p' "$SDKDIR/SDKSettings.json" | head -n 1)
   else
     sdk_select "$SDKARG" "$OUT/sdk" || exit 2
     SDKDIR=$SDK
   fi
 fi
+SDKVER=$(sed -n 's/.*"Version": "\([^"]*\)".*/\1/p' "$SDKDIR/SDKSettings.json" | head -n 1)
 [ -f "$SDKDIR/OpenSDK.json" ] && grep -q '"variant": "core"' "$SDKDIR/OpenSDK.json" && CORE=1
 
 # cc ARCH LANG(c|c++|objc) FLAGS... -- SOURCE OUTPUT LIBS...  (compile and link one program)
@@ -187,7 +181,8 @@ for arch in $ARCHS; do
     [ -n "$name" ] || continue
     [ "$variant" = full ] && [ "$CORE" = 1 ] && continue
     # __MAC_16_0 and __IPHONE_19_0 are in the headers of macOS 26 and later
-    if [ "$name" = avail2 ] && [ "${SDKVER%%.*}" -lt 26 ] 2>/dev/null; then continue; fi
+    # fw_doc_new links names of the documentation that macOS 26.0 added
+    case $name in avail2|fw_doc_new) [ "${SDKVER%%.*}" -lt 26 ] 2>/dev/null && continue;; esac
     [ "$flags" = - ] && flags=
     [ "$libs" = - ] && libs=
     libs=${libs//,/ }

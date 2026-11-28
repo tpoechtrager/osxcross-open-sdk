@@ -147,7 +147,7 @@ and their x86_64 programs ran on macOS 26.0.
   github.com/tpoechtrager/osxcross) and built.
 - A built target is kept in `build/osxcross` for the next run; `--flavor llvm|stable` builds one also  
   if the checkout has a target.
-- The SDK of `--sdk` is selected with `SDKROOT`, so one target builds with every SDK.
+- `--sdk` is needed: it is always the SDK that is tested, selected with `SDKROOT`, so one target builds with every SDK.
 - `tests/run.sh --without-osxcross --sdk SDK --llvm DIR` uses clang and `ld64.lld` directly.
 
 **`tests/projects.sh`** builds the projects of [TESTED.md](TESTED.md) for x86_64 and arm64 and, with  

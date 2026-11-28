@@ -113,7 +113,7 @@ tests/unit/run.sh
 ```
 
 For changes of headers or stubs also the full SDK, `tests/sdk-check.sh` on
-it and `tests/run.sh --osxcross <target>` (both architectures); a run on a
+it and `tests/run.sh --sdk <tarball> --osxcross <target>` (both architectures); a run on a
 Mac with `--ssh HOST` where possible.
 
 ## Releases
