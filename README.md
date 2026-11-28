@@ -3,78 +3,46 @@
 A macOS SDK for [OSXCross](https://github.com/tpoechtrager/osxcross) and other toolchains, built from open source only.
 
 - [What it is](#what-it-is)
-- [Download](#download)
-- [Use of Open SDK in OSXCross](#use-of-open-sdk-in-osxcross)
-- [Building the SDK](#building-the-sdk)
-- [Licenses](#licenses)
+- [Documentation](#documentation)
+- [Variants](#variants)
+- [Getting the Open SDK](#getting-the-open-sdk)
+- [What works](#what-works)
+- [What does not work](#what-does-not-work)
 - [Known limits](#known-limits)
-- [More documentation](#more-documentation)
+- [Possible additions](#possible-additions)
+- [Licenses](#licenses)
 
 ---
 
 ## What it is
 
-osxcross-open-sdk is an open macOS SDK. It contains **nothing proprietary of Apple's**: no file, header text  
-or symbol list is taken from an SDK or a program made by Apple. `make-open-sdk.sh` builds it from public  
-sources only, so it can be shared, for example in public container images and in CI jobs.  
+The Open SDK is a macOS SDK built from open source only (by `make-open-sdk.sh`).  
+It contains **nothing proprietary of Apple's**: no file, header text or symbol list is taken from an SDK  
+or a program made by Apple, so it can be shared, for example in public container images and in CI jobs.  
 Every file comes from one of these:
 
 - Apple's open source releases ([apple-oss-distributions](https://github.com/apple-oss-distributions),  
   APSL 2.0 and the licenses of the single projects), at the tags of a macOS release;
 - LLVM (`libc++` and `libc++abi`);
 - other open source projects (`sqlite3`, liblzma of `xz`; the Swift runtime of swift.org for the optional Swift add-on);
-- files written for this SDK (0BSD): a few headers and the `.tbd` stubs, with names, signatures and values from open  
+- files written for the Open SDK (0BSD): a few headers and the `.tbd` stubs, with names, signatures and values from open  
   source projects and from Apple's public documentation.
 
 [docs/SOURCES.md](docs/SOURCES.md) names the public source of every header, symbol list,  
 install name and version. A real SDK was used only to test a result, never as a source.
 
-### What works
+## Documentation
 
-- C, C++ (libc++), Objective-C without Foundation and Swift without Foundation, for x86_64 and arm64.
-- **GCC** (OSXCross `build_gcc.sh`): C, C++ and Fortran, for x86_64 and arm64.
-- The C library, POSIX, Mach, `pthreads`, `libdispatch`, blocks.
-- Libraries of `/usr/lib`: `zlib`, `bzip2`, `expat`, `libffi`, `libedit` (with the readline layer),  
-  `libxml2`, `libxslt`, `sqlite3`, `liblzma` (stub only, without `lzma.h`), `libcurl`, `libarchive`, `libpcap`,  
-  `OpenPAM`, `ncurses`, `libiconv`, `libresolv`, `CommonCrypto`, the launchd API, `dns_sd`.
-- `os_log` (`<os/log.h>`): the messages appear in the unified log of macOS, see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).  
-  Signposts, activities and `os_trace` compile and run but record nothing.
-- The frameworks `CoreFoundation`, `DiskArbitration`, `SystemConfiguration`, `Security` (including `SecureTransport`)  
-  and `IOKit` (`IOKitLib`, power sources, power management and the device families `storage`, `hid`,  
-  `hidsystem`, `graphics`, `i2c`, `ndrvsupport`, `serial` and `usb`).
-- XPC (`<xpc/xpc.h>`): the documented C interface up to macOS 12.0 and sessions, listeners and rich errors (13.0, 14.0), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
-- File System Events (`<CoreServices/CoreServices.h>`, the only headers of `CoreServices`), see [docs/DETAILS.md](docs/DETAILS.md#headers-written-for-this-sdk).
-- Link stubs without headers of `Foundation`, `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`,  
-  `CoreAudio`, `AudioToolbox`, `ApplicationServices` (with `ColorSync`), `Carbon`, `WebKit`,  
-  `UniformTypeIdentifiers`, `OpenDirectory`, `AVFoundation`, `CoreMedia`, `ImageIO`, `Vision` and `MetalKit`:  
-  the C functions and constants of Apple's documentation, for languages and crates that declare what they use themselves  
-  (Rust: `winit`, `wgpu`, `cpal`, `enigo`, `global-hotkey`, `xcap`, `nokhwa`, `macroquad`), see [docs/DETAILS.md](docs/DETAILS.md#stub-libraries-tbd) and [docs/TESTED.md](docs/TESTED.md).
-- `Cocoa.framework`: the umbrella, a stub that re-exports `AppKit` and `Foundation` (`-framework Cocoa`; no headers, no `CoreData`).
-- Every framework has the layout of a framework bundle: `Name.framework/Versions/<V>/Name.tbd` (the path of its install name),  
-  `Versions/Current` and links `Name.tbd`, `Headers` and `Modules` at the top.
-- `OpenGL.framework`: the headers `gl.h` (legacy, up to 2.1), `gl3.h` (core, 3.2 to 4.1), `glext.h`, `gl3ext.h`, `gltypes.h` and the CGL headers  
-  (`OpenGL.h`, `CGLTypes.h`, `CGLCurrent.h`, `CGLDevice.h`, `CGLIOSurface.h`, `CGLRenderers.h`), and the link stub.  
-  The OpenGL part is made from the Khronos Registry's `gl.xml`; the CGL part from open projects that declare it.  
-  A program makes a CGL context without a window, draws into a framebuffer object and reads the pixels back  
-  (see [docs/DETAILS.md](docs/DETAILS.md#opengl-framework) and [docs/TESTED.md](docs/TESTED.md)).
-- The sanitizer runtimes of compiler-rt build against the full SDK: `asan`, `ubsan`, `lsan`, `tsan`, `rtsan`, `tysan`.
+| File | Content |
+|---|---|
+| [docs/FEATURES.md](docs/FEATURES.md) | What works, what does not, known limits |
+| [docs/TESTED.md](docs/TESTED.md) | The projects that were built with the Open SDK |
+| [docs/BUILDING.md](docs/BUILDING.md) | Dependencies, options, tests, reproducible builds, new macOS releases |
+| [docs/SOURCES.md](docs/SOURCES.md) | The public source of every value |
+| [docs/DETAILS.md](docs/DETAILS.md) | Stub libraries, the headers written for the Open SDK, changes to the sources, licenses |
+| [docs/LIBCXX.md](docs/LIBCXX.md) | libc++, availability, the (optional) static libc++ |
 
-### What does not work
-
-- **`Foundation`, `AppKit`** and all other frameworks: there is no public source for their headers;  
-  `#import <Foundation/Foundation.h>` fails. Objective-C classes are not in the stubs.
-- Rust crates that compile C or Objective-C against the headers of these frameworks, and frameworks  
-  without a stub (`AVFoundation`, `WebKit`, ...).
-- `OpenGL.framework`: no GLU (`glu.h`), no extensions except those that Apple's guide for Mac names (`docs/SOURCES.md`),  
-  no renderer IDs except the software renderer, no `NSOpenGL*` (AppKit).
-- Swift with `Foundation`, `import Darwin` (no module maps except the one of `CoreFoundation`).
-- `libbsm`, the other `IOKit` device families (`storage/ata`, `network`, ...) and the headers of `CoreServices` except File System Events.
-- `IOKit/hidsystem/IOHIDEventSystemClient.h` and `IOHIDServiceClient.h`: no open source defines their functions  
-  (see [docs/SOURCES.md](docs/SOURCES.md#iokit-device-families)).
-- The flags of XPC sessions and listeners, the peer requirements (14.4) and the parts of XPC that have no public value  
-  (see [docs/SOURCES.md](docs/SOURCES.md#xpcxpch-and-its-symbols)).
-
-### Variants
+## Variants
 
 | Variant | macOS releases | Architectures | Size (26.5) |
 |---|---|---|---|
@@ -86,111 +54,100 @@ install name and version. A real SDK was used only to test a result, never as a 
   `libresolv`, `libc++`, `libc++abi` and `libiconv`. It is meant for code that needs only the C and C++ library:  
   GCC with `libstdc++`, and small CI jobs.
 
-### Tested projects
+## Getting the Open SDK
 
-Open source projects built with the full Open SDK of macOS 26.5 for x86_64 and arm64 include  
-`zlib`, `curl`, `git`, `cmake`, `sqlite`, `bash`, `coreutils`, `fmt`, `redis`, `LLVM/Clang` and `cctools-port`.
+### Download
 
-The x86_64 builds ran on macOS 26.0. The full list, what each build needed and what does not build  
-is in [docs/TESTED.md](docs/TESTED.md).
+The [GitHub releases](../../releases) of this repository have the tarballs of every macOS release  
+(see [Variants](#variants)), with `SHA256SUMS`:
 
----
+- `MacOSX<VER>-open-sdk-<hash>.tar.xz`: the full Open SDK
+- `MacOSX<VER>-open-core-sdk-<hash>.tar.xz`: the core Open SDK
 
-## Download
+`<VER>` is the macOS release, `<hash>` the commit of this repository that built it  
+(see [Identifying an SDK](docs/BUILDING.md#identifying-an-sdk)).
 
-The tarballs are attached to the [GitHub releases](../../releases) of this repository:
-
-| File | SDK |
-|---|---|
-| `MacOSX<VER>-open-sdk-<hash>.tar.xz` | full |
-| `MacOSX<VER>-open-core-sdk-<hash>.tar.xz` | core |
-| `SHA256SUMS` | SHA-256 of the tarballs |
-
-`<VER>` is the macOS release (see [Variants](#variants)), `<hash>` the first 7 characters of the git commit hash  
-of this repository that built the SDK.
-
-**Identifying an SDK.** Every SDK contains files that say which build it is:
-
-- `OpenSDK.json` in its root: the generator commit hash, the macOS release, the variant, the libc++ release, and  
-  the tag and commit hash of every project.
-- `SDKSettings.json` and `SDKSettings.plist`: the generator commit hash (key `OpenSDKGeneratorCommit`).
-
-The hash is `unknown` if the generator is not a git checkout, and ends with `-modified` if tracked files  
-are changed; the script warns in both cases.  
-With `unknown`, the notices in the changed headers carry the day of the build instead of the date of the commit,  
-and the SDK is not reproducible; the script warns about that too.
-
-**Reproducible.** Two builds give the same file tree if they use
-
-- the same commit of this repository, and
-- the same macOS release and the same options (`--core`, `--libcxx`, `--min-deployment-target`).
-
-The compiler does not matter (tested: Clang 11 to 23). The `.tar.xz` files themselves can still differ,  
-depending on the versions of `tar` and `xz`. `make-open-sdk.sh --tree-hash` prints a hash of the file tree  
-instead: two builds that match in the points above print the same hash.
-
-## Use of Open SDK in OSXCross
-
-Put the tarball into the `tarballs/` directory of OSXCross and build as usual; the names of the tarballs  
-have the form `MacOSX<VER>-open-sdk-<hash>.tar.xz` and `MacOSX<VER>-open-core-sdk-<hash>.tar.xz`:
+### Use in OSXCross
 
 ```sh
 cp MacOSX26.5-open-sdk-<hash>.tar.xz osxcross/tarballs/
 cd osxcross && ./build.sh
 ```
 
-The directory inside the tarball is `MacOSX26.5.sdk`, as OSXCross expects. The lowest deployment target  
-that the SDK names is 11.0 (`--min-deployment-target` changes it, see [Options](docs/BUILDING.md#options-make-open-sdksh)).
+The tarball contains `MacOSX26.5.sdk`, as OSXCross expects. The lowest deployment target that the Open SDK names  
+is 11.0 (`--min-deployment-target` changes it, see [Options](docs/BUILDING.md#options-make-open-sdksh)).
 
----
+### Build it yourself
 
-## Building the SDK
+```sh
+./make-open-sdk.sh                    # the full Open SDK of macOS 26.5, into out/
+./make-open-sdk.sh --core --macos 14.3  # the core Open SDK of macOS 14.3
+```
 
-`make-open-sdk.sh` builds the SDK from the public sources;  
-`--macos 14.3,26.5` or `--macos all` builds several, `--release` all of them with `SHA256SUMS`.  
-The full guide, with dependencies, options, steps and tests, is in [docs/BUILDING.md](docs/BUILDING.md).
+Dependencies, options and reproducible builds: [docs/BUILDING.md](docs/BUILDING.md).
 
----
+## What works
+
+- C, C++ (libc++), Objective-C without Foundation and Swift without Foundation, for x86_64 and arm64.
+- **GCC**: OSXCross `build_gcc.sh` builds with it, with C, C++ and Fortran for x86_64 and arm64.
+- The C library, POSIX, Mach, `pthreads`, `libdispatch`, blocks, `os_log`, XPC, and the libraries of `/usr/lib`  
+  (`zlib`, `libxml2`, `sqlite3`, `libcurl`, `libpcap`, `ncurses`, ...).
+- The frameworks `CoreFoundation`, `Security`, `SystemConfiguration`, `DiskArbitration`, `OpenGL`, File System Events  
+  and `IOKit` with its device families (`storage`, `hid`, `usb`, `serial`, ...).
+- Link stubs without headers of `Foundation`, `AppKit`, `Metal`, `QuartzCore`, `WebKit` and other frameworks,  
+  for languages that declare what they use themselves (Rust: `winit`, `wgpu`, ...).
+- Open source projects such as `curl`, `git`, `cmake`, `tcpdump`, `vim` and `LLVM/Clang` build with it;  
+  their x86_64 builds ran on macOS 26.0 ([docs/TESTED.md](docs/TESTED.md)).
+
+Details: [docs/FEATURES.md](docs/FEATURES.md#what-works).
+
+## What does not work
+
+- **`Foundation`, `AppKit`** and the other frameworks without public source: no headers,  
+  so `#import <Foundation/Foundation.h>` fails.
+- Swift with `Foundation`, `import Darwin`.
+- Frameworks without a stub (`CoreData`, `GameController`, `IOSurface`, ...) and some `IOKit` device families.
+
+Details: [docs/FEATURES.md](docs/FEATURES.md#what-does-not-work).
+
+## Known limits
+
+- The Open SDK can list a few functions that not every macOS release has. A program that calls one links,  
+  and only stops at start with "symbol not found"; with Apple's SDK it would not link.  
+  Code that already builds with Apple's SDK is not affected.
+- The headers of `CoreFoundation` are from 2018, the last release Apple published, with newer declarations  
+  from swift-corelibs-foundation. Some newer functions can be linked, but you have to declare them yourself.
+
+Details: [docs/FEATURES.md](docs/FEATURES.md#known-limits).
+
+## Possible additions
+
+The Open SDK covers most of what open sources allow under the rules of this repository  
+([AGENTS.md](AGENTS.md#the-rule-that-matters-most): nothing comes from an SDK or a binary of Apple's).  
+
+What could still be added:
+
+- What [metal-cpp](https://github.com/apple/metal-cpp) needs (`CoreGraphics/CGGeometry.h`, `IOSurface/IOSurfaceRef.h`  
+  and three `Foundation` constants), so that Metal programs in C++ build.
+- The C API of JavaScriptCore (`JavaScriptCore/JavaScript.h`), from WebKit's open source.
+- Link stubs of more frameworks, and the Objective-C class names in the link stubs, from Apple's documentation.
+- More `IOKit` device families (`network`, `storage/ata`, ...) and module maps for `import Darwin`.
+- A core Open SDK of macOS 10.13 with i386.
+
+What is not possible:
+
+Headers of `Foundation`, `AppKit` and the other frameworks without public source.  
+Apple's documentation names their functions, classes and types, which is enough for a stub, but not for a header:  
+it has no macros, no values of the enumerations, no layouts of the structures and no inline functions,  
+and no other public source has them all. Wrong values would only fail at run time.
 
 ## Licenses
 
 - The generator: GPL-2.0-only ([LICENSE](LICENSE)), including `data/` and `tests/`.
-- Files written for the SDK (listed in `data/own-files.txt`: `TargetConditionals.h`, `os/log.h`, `xpc/xpc.h`,  
-  `CoreServices/FSEvents.h`, the `.tbd` stubs, the settings, ...): 0BSD, so programs that include them are not affected.
-- Apple's open source projects: mostly APSL 2.0; `libdispatch`, `launchd` and `mDNSResponder` Apache 2.0;  
-  others BSD, MIT or zlib (parts of `Libc`, `libarchive`, `libpcap`, OpenPAM, `expat`, `libffi`, `libxml2`, `curl`, `zlib`).
-- `libc++` and `libunwind`: Apache 2.0 with LLVM exceptions; `sqlite3`, `liblzma`: public domain.
+- Files written for the Open SDK (`data/own-files.txt`): 0BSD, so programs that include them are not affected.
+- Everything else keeps the license of its project: mostly APSL 2.0 (Apple's open source), Apache 2.0 with  
+  LLVM exceptions (`libc++`), BSD, MIT, zlib or public domain.
 
-Every SDK carries the full license texts of each project in `usr/share/licenses/open-sdk/<project>/`,  
-with `LICENSES.md`, which names project, tag, license and the SDK files that come from it.  
-A project without a license file gets the notice block of its headers, or the published text of its license  
-(`launchd`: the Apache License 2.0 of apache.org). This is a description of the facts, not legal advice.
-
-## Known limits
-
-- **Symbols that macOS does not export.** A symbol is in a `.tbd` if a header declares it and  
-  the open sources mention it. Some are not defined in the libSystem of every macOS release;  
-  a program that uses one links but stops at start with "symbol not found".
-- **Versions.** Stubs without a public version source (`sqlite3`, `liblzma`, `Foundation`, `CoreServices`,  
-  `CoreGraphics`, `AppKit`, `CoreText`, `CoreVideo`, `QuartzCore`, `Metal`, `CoreAudio`, `AudioToolbox`,  
-  `ApplicationServices`, `Carbon`, `OpenGL`, `WebKit`, `UniformTypeIdentifiers`, `OpenDirectory`,  
-  `AVFoundation`, `CoreMedia`, `ImageIO`, `Vision`, `MetalKit`)  
-  have the lowest compatibility version.
-- **`CoreFoundation`** is CF-1153.18 (2018), the last one Apple published, with the newer public declarations  
-  that swift-corelibs-foundation has (`CFNotificationCenter`, `CFAttributedString`, ISO 8601 date formatters,  
-  newer URL resource keys, ...) and its typed string aliases (`CFLocaleKey`, `CFRunLoopMode`, ...),  
-  `CFRunLoopRunResult` and nullability. `CoreFoundation.tbd` also has the symbols of newer APIs that Apple's documentation  
-  lists for macOS but no open header declares (`CFStringTokenizer`, `CFURLEnumerator`, `CFFileDescriptor`, `CFFileSecurity`,  
-  the typed allocator functions, ...): declare them yourself. The `.tbd` is not the 1153.18 library's; its version stays 1153.18.
-- **arm64e and x86_64h.** The stubs give arm64e the symbols of arm64. x86_64h is not listed:  
-  the linker uses the x86_64 symbols for it.
-
----
-
-## More documentation
-
-- [docs/BUILDING.md](docs/BUILDING.md): dependencies, options, steps, tests, new macOS releases
-- [docs/TESTED.md](docs/TESTED.md): the projects that were built with the SDK
-- [docs/LIBCXX.md](docs/LIBCXX.md): libc++, availability, the static libc++
-- [docs/DETAILS.md](docs/DETAILS.md): stub libraries, the headers written for this SDK, changes to the sources, sources
-- [docs/SOURCES.md](docs/SOURCES.md): the public source of every value
+Every Open SDK carries the full license texts in `usr/share/licenses/open-sdk/<project>/`, and `LICENSES.md`  
+names the project, tag and license of every file ([details](docs/DETAILS.md#licenses-in-the-sdk)).  
+This is a description of the facts, not legal advice.

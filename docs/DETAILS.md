@@ -12,7 +12,12 @@ At run time macOS loads its own libraries.
   - the alias lists of `Libc`, `libpthread`, `libplatform` and `libdispatch`,
   - the system call stubs that xnu's `create-syscalls.pl` makes,
   - the export lists of `Libm`, `CommonCrypto` and `launchd`,
-  - for x86_64 the legacy names (`_select`, `_opendir`, ...).
+  - for x86_64 the legacy names (`_select`, `_opendir`, ...),
+  - the builtins of compiler-rt that macOS exports from libSystem
+    ([SOURCES.md](SOURCES.md#compiler-rt-builtins-in-libsystembtbd)),
+  - the private functions that the sanitizer runtimes of compiler-rt call
+    ([SOURCES.md](SOURCES.md#private-symbols-for-the-sanitizers)),
+  - the functions of libunwind without a header ([SOURCES.md](SOURCES.md#functions-of-libunwind-without-a-header)).
 
   Extra and excluded symbols are in `data/symbols/`, each with its source.
 - **`libc++.1.tbd`, `libc++abi.tbd`**: LLVM's ABI lists of the release.
@@ -40,7 +45,9 @@ At run time macOS loads its own libraries.
   (`data/symbols/Carbon-extra.txt`; `Carbon` has nothing else).  
   No Objective-C classes (`_OBJC_CLASS_$_...`): the crates that were tested look them up at run time.
 - **`OpenGL.tbd`**: the commands of OpenGL 1.0 to 4.1 in `gl.xml`, the CGL functions and the extension functions of  
-  `data/opengl/` (see [OpenGL.framework](#opengl-framework)).
+  `data/opengl/` (see [OpenGL.framework](#openglframework)).
+- **`usr/lib/swift/*.tbd`** (optional Swift add-on, `OPEN_SDK_SWIFT_PKG`): the symbols and install names of the Swift runtime  
+  libraries of swift.org's macOS package ([SOURCES.md](SOURCES.md#swift-runtime-stubs)).
 - **Install names and versions** are in `data/libraries.txt`, with the project file that states each value;  
   `tools/check_libraries.py` checks them. A value without a public source is the lowest possible one.
 
@@ -69,6 +76,10 @@ the generator wrote, and `data/headers/` has these headers by their path in the 
   Not there: the peer requirements (14.4),  
   and `XPC_TYPE_*` for the types other than array, bool, connection, dictionary, endpoint, error and string  
   (use `xpc_type_get_name`), see [SOURCES.md](SOURCES.md#xpcxpch-and-its-symbols).
+- `CoreFoundation.framework/Modules/module.modulemap` (full SDK): the module map of `CoreFoundation`,  
+  for `@import CoreFoundation` and Swift ([SOURCES.md](SOURCES.md#corefoundationmodulemap-cfcompathin)).
+- `libDER/DERItem.h` (full SDK, macOS releases before 26.5): only where xnu has no `EXTERNAL_HEADERS/libDER`  
+  ([SOURCES.md](SOURCES.md#libderderitemh-libderlibder_configh)).
 - `CoreServices/FSEvents.h` (full SDK): File System Events, the documented C interface; `CoreServices/CoreServices.h`  
   includes only it. The stub of `CoreServices` re-exports `CoreFoundation` (`reexported-libraries`):  
   a program that links only `-framework CoreServices` (`git`, `fswatch`) finds the CF functions too.  
@@ -91,7 +102,8 @@ The changes:
 - missing includes, a missing semicolon and `DYLD_EXCLAVEKIT_UNAVAILABLE`  
   in `mach-o/dyld.h`, `dyld_images.h`, `string_x86.h`;
 - Libm's ARM `math.h` and `complex.h` are used for arm64 too, with the condition of the Intel variant  
-  for `llrint` and `llround`; `__exp10` and `__exp10f` are declared (Clang emits calls to them);
+  for `llrint` and `llround`; `__exp10` and `__exp10f` are declared (Clang emits calls to them);  
+  `fenv.h` gets a branch for arm64 that includes `architecture/arm64/fenv.h`;
 - `mach/port.h` (macOS 26.4 and later) compiles with g++;
 - the platform `bridgeos` is removed from availability annotations (GCC does not know it), in `usr/include`  
   and in the `Headers` of the frameworks (`Security`, `SystemConfiguration`);
@@ -105,6 +117,8 @@ The changes:
   `CFNumberFormatter.h`, `CFURL.h`, `CFUserNotification.h`), and their typed string aliases (`CFLocaleKey`, `CFRunLoopMode`, ...),  
   `CFRunLoopRunResult`, typed anonymous enumerations and nullability (a second patch of 13 headers), each file marked;
 - CommonCrypto: `<availability.h>` is written `<Availability.h>`;
+- `IOKit/usb/USB.h`: the constants that the header of IOUSBFamily 560.4.2 lacks (device speeds, `USBReEnumerateOptions`,  
+  hubs and notifications) are appended from `data/USBCompat.h.in` (see [SOURCES.md](SOURCES.md#iokit-device-families));
 - the SDKs of macOS 14.3 and older (libc++ 16): `<format>` is no longer marked unavailable, so `<chrono>`  
   compiles with `-std=c++20`.
 
@@ -126,3 +140,15 @@ The changes:
 - A program that creates a context without a window uses `CGLChoosePixelFormat` with `kCGLPFAOpenGLProfile`  
   (`kCGLOGLPVersion_Legacy`, `_3_2_Core`, `_GL4_Core`), and for the software renderer `kCGLPFARendererID` with  
   `kCGLRendererGenericFloatID`; see `tests/programs/opengl.c`.
+
+## Licenses in the SDK
+
+- Apple's open source projects: mostly APSL 2.0; `libdispatch`, `launchd` and `mDNSResponder` Apache 2.0;  
+  others BSD, MIT or zlib (parts of `Libc`, `libarchive`, `libpcap`, OpenPAM, `expat`, `libffi`, `libxml2`, `curl`, `zlib`).
+- `libc++` and `libunwind`: Apache 2.0 with LLVM exceptions; `sqlite3`, `liblzma`: public domain.
+- Files written for the SDK (`data/own-files.txt`: `TargetConditionals.h`, `os/log.h`, `xpc/xpc.h`,  
+  `CoreServices/FSEvents.h`, the `.tbd` stubs, the settings, ...): 0BSD.
+
+`usr/share/licenses/open-sdk/<project>/` has the full license texts of each project, and `LICENSES.md` names  
+project, tag, license and the SDK files that come from it. A project without a license file gets the notice block  
+of its headers, or the published text of its license (`launchd`: the Apache License 2.0 of apache.org).

@@ -92,8 +92,8 @@ Relative paths are taken from the current directory. The script reads only its o
 The variables of OSXCross (`SDK_VERSION`, `TARBALL_DIR`, ...) have no effect.
 
 **Output:** `out/MacOSX<VER>-open-sdk-<hash>.tar.xz`, or `MacOSX<VER>-open-core-sdk-<hash>.tar.xz` with `--core`.  
-The `-open` keeps it apart from a tarball made from Apple's SDK. What `<hash>` is, and how an SDK names its  
-commit, is in the [README](../README.md#download).
+The `-open` keeps it apart from a tarball made from Apple's SDK. What `<hash>` is, is in the [README](../README.md#getting-the-open-sdk);  
+how an SDK names its commit, in [Identifying an SDK](#identifying-an-sdk).
 
 **Several SDKs.** With `--macos LIST` (or `all`) the script builds the SDKs one after the other, each by a run of itself  
 in `<work-dir>/<VERSION>` (`<VERSION>-core` with `--core`); a list of one release is a normal run.  
@@ -124,6 +124,30 @@ SwiftPM packages that need neither `Foundation` nor `import Darwin` build (`swif
 ```sh
 OPEN_SDK_SWIFT_PKG=swift-<version>-RELEASE-osx.pkg ./make-open-sdk.sh -s swift
 ```
+
+## Identifying an SDK
+
+Every SDK contains files that say which build it is:
+
+- `OpenSDK.json` in its root: the generator commit hash, the macOS release, the variant, the libc++ release, and  
+  the tag and commit hash of every project.
+- `SDKSettings.json` and `SDKSettings.plist`: the generator commit hash (key `OpenSDKGeneratorCommit`).
+
+The hash is `unknown` if the generator is not a git checkout, and ends with `-modified` if tracked files  
+are changed; the script warns in both cases.  
+With `unknown`, the notices in the changed headers carry the day of the build instead of the date of the commit,  
+and the SDK is not reproducible; the script warns about that too.
+
+## Reproducible builds
+
+Two builds give the same file tree if they use
+
+- the same commit of this repository, and
+- the same macOS release and the same options (`--core`, `--libcxx`, `--min-deployment-target`).
+
+The compiler does not matter (tested: Clang 11 to 23). The `.tar.xz` files themselves can still differ,  
+depending on the versions of `tar` and `xz`. `make-open-sdk.sh --tree-hash` prints a hash of the file tree  
+instead: two builds that match in the points above print the same hash.
 
 ## Tests
 

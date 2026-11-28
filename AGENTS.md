@@ -68,7 +68,7 @@ Pages of Apple's online documentation that were read for this project may be cac
 | `tools/*.py` | Maintenance tools that the generator does not run (`manifest.py`, `check_libraries.py`, `doc_symbols.py`). |
 | `data/manifests/` | Tags and commits of every project per macOS release. |
 | `README.md` | Overview, download, short build instructions, licenses, known limits. |
-| `docs/` | `SOURCES.md` (the public source of every value: headers, symbols, install names, versions, `SDKSettings.json` keys), `BUILDING.md` (dependencies, options, tests), `TESTED.md`, `LIBCXX.md`, `DETAILS.md`. |
+| `docs/` | `SOURCES.md` (the public source of every value: headers, symbols, install names, versions, `SDKSettings.json` keys), `FEATURES.md` (what works, what does not, known limits), `BUILDING.md` (dependencies, options, tests), `TESTED.md`, `LIBCXX.md`, `DETAILS.md`. |
 | `data/` | The releases (`releases.txt`), own files (`own-files.txt`; the copied ones in `headers/`, by their path in the SDK, 0BSD), symbol lists with their sources (`symbols/`), install names and versions (`libraries.txt`), `libcxx-versions.txt`, `availability-extra.dsl`, `CFCompat.h.in`, license texts (`licenses/`). |
 | `extras/` | Optional tools, e.g. `build-libcxx-static.sh`. |
 | `tests/` | Unit tests (`unit/`), the lint script (`lint.sh`), the header check (`sdk-check.sh` with `sdk-check.py`; its allow list is `tests/data/header-allow.txt`), the test programs (`programs/`, `run.sh`) and the open source projects of `docs/TESTED.md` (`projects.sh`). |
