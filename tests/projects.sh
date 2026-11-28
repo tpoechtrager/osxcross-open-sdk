@@ -142,6 +142,17 @@ fswatch        main       -        -                       CoreServices
 hidapi         main       -        -                       IOKit
 libusb         main       -        -                       IOKit
 libuv          main       -        -                       -
+libzip         main       -        -                       zlib,CommonCrypto
+openvpn        main       -        mbedtls,lz4             -
+sudo           main       -        -                       OpenPAM
+glew           main       -        -                       OpenGL
+dfu-util       main       -        libusb                  IOKit
+osx-cpu-temp   main       -        -                       IOKit
+efsw           main       -        -                       CoreServices
+aria2          main       -        -                       zlib,Security
+libcbor        main       -        -                       -
+libfido2       main       -        libcbor,libressl        zlib,IOKit
+vim            main       -        ncurses                 -
 llvm           compilers  -        -                       -
 compiler-rt    compilers  llvm     -                       -
 cctools-port   compilers  -        -                       -
@@ -327,6 +338,17 @@ lmdb 0.9.33 https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.33.tar.gz 9c
 fswatch 1.17.1 https://github.com/emcrisostomo/fswatch/releases/download/1.17.1/fswatch-1.17.1.tar.gz c38e341c567f5f16bfa64b72fc48bba5e93873d8572522e670e6f320bbc2122f
 hidapi 0.16.0 https://github.com/libusb/hidapi/archive/refs/tags/hidapi-0.16.0.tar.gz bc599d295792fe515778f19ce86a49760b0ea5fc114e5258245d470609632bbf
 libusb 1.0.30 https://github.com/libusb/libusb/releases/download/v1.0.30/libusb-1.0.30.tar.bz2 fea36f34f9156400209595e300840767ab1a385ede1dc7ee893015aea9c6dbaf
+libzip 1.11.4 https://github.com/nih-at/libzip/releases/download/v1.11.4/libzip-1.11.4.tar.xz 8a247f57d1e3e6f6d11413b12a6f28a9d388de110adc0ec608d893180ed7097b
+openvpn 2.6.14 https://swupdate.openvpn.net/community/releases/openvpn-2.6.14.tar.gz 9eb6a6618352f9e7b771a9d38ae1631b5edfeed6d40233e243e602ddf2195e7a
+sudo 1.9.17p1 https://www.sudo.ws/dist/sudo-1.9.17p1.tar.gz ff607ea717072197738a78f778692cd6df9a7e3e404565f51de063ca27455d32
+glew 2.2.0 https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz d4fc82893cfb00109578d0a1a2337fb8ca335b3ceccf97b97e5cc7f08e4353e1
+dfu-util 0.11 https://dfu-util.sourceforge.net/releases/dfu-util-0.11.tar.gz b4b53ba21a82ef7e3d4c47df2952adf5fa494f499b6b0b57c58c5d04ae8ff19e
+osx-cpu-temp 1.1.0 https://github.com/lavoiesl/osx-cpu-temp/archive/refs/tags/1.1.0.tar.gz 94b90ce9a1c7a428855453408708a5557bfdb76fa45eef2b8ded4686a1558363
+efsw 1.4.1 https://github.com/SpartanJ/efsw/archive/refs/tags/1.4.1.tar.gz f0ddee587928737c6a3dc92eb88266a804c77279cbdf29d47e5e6f6ad6c7fd9a
+aria2 1.37.0 https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0.tar.xz 60a420ad7085eb616cb6e2bdf0a7206d68ff3d37fb5a956dc44242eb2f79b66b
+libcbor 0.12.0 https://github.com/PJK/libcbor/archive/refs/tags/v0.12.0.tar.gz 5368add109db559f546d7ed10f440f39a273b073daa8da4abffc83815069fa7f
+libfido2 1.15.0 https://developers.yubico.com/libfido2/Releases/libfido2-1.15.0.tar.gz abaab1318d21d262ece416fb8a7132fa9374bda89f6fa52b86a98a2f5712b61e
+vim 9.1.1500 https://github.com/vim/vim/archive/refs/tags/v9.1.1500.tar.gz 70f0e75bf77af00b870a967fcb325031f0a32d787bc3cacc1ca1729727d0bbc7
 llvm 23.1.6 https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.6/llvm-project-23.1.6.src.tar.xz d3b86ab29cfb4445a6652e5c2642ccc75e04e38084dde3701d323320f35a31da
 cctools-port 986-ld64-711 https://github.com/tpoechtrager/cctools-port/archive/c78fd67397591cd47aecde7dd162c89a4a7faae5.tar.gz 4e7b8904e9419737a2d5c578454e0ce86c184d6721b6f214d63409f2c63dfe5b
 sauerbraten 2020_12_29 https://downloads.sourceforge.net/project/sauerbraten/sauerbraten/2020_11_29/sauerbraten_2020_12_29_linux.tar.bz2 cdba7c4a47cefd30d0afdd6a912199a1384319cf1619923cb7189e72e468be70
@@ -1014,6 +1036,146 @@ build_libusb() {
 test_libusb() {
   run_mac './listdevs >/dev/null && ./testlibusb >/dev/null &&
     for t in set_option init_context; do ./$t >/dev/null || { echo "FAIL $t"; exit 1; }; done'
+}
+
+build_libzip() {
+  # CommonCrypto for the AES encryption of the archives
+  cmake_install . -DENABLE_COMMONCRYPTO=ON -DENABLE_OPENSSL=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_BZIP2=OFF \
+    -DENABLE_LZMA=OFF -DENABLE_ZSTD=OFF -DBUILD_REGRESS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF -DBUILD_SHARED_LIBS=OFF
+}
+test_libzip() {
+  run_mac 'bin/ziptool -n t.zip add a hello set_file_encryption 0 AES-256 secret &&
+    test "$(bin/ziptool t.zip set_password secret cat 0)" = hello && bin/zipcmp t.zip t.zip'
+}
+
+build_openvpn() {
+  # mbedTLS and lz4 of the prefix; the plugins and DCO are Linux or PAM features
+  configure_install --with-crypto-library=mbedtls --enable-lz4 --disable-lzo --disable-plugin-auth-pam --disable-dco --disable-systemd \
+    --disable-unit-tests MBEDTLS_CFLAGS="-I$PFX/include" MBEDTLS_LIBS="-L$PFX/lib -lmbedtls -lmbedx509 -lmbedcrypto" \
+    LZ4_CFLAGS="-I$PFX/include" LZ4_LIBS="$PFX/lib/liblz4.a" IFCONFIG=/sbin/ifconfig ROUTE=/sbin/route NETSTAT=/usr/sbin/netstat
+}
+test_openvpn() { run_mac 'sbin/openvpn --version | grep -q "^OpenVPN 2.6.14" && sbin/openvpn --genkey secret k && test -s k'; }
+
+build_sudo() {
+  # make install changes the owner to root, which a build is not: it installs as the user, and its directories
+  # (/etc, /run, /var) are below the prefix; configure finds the systemd directory of the build host, which would be
+  # written to
+  configure_host --disable-tmpfiles.d --with-pam --disable-nls --without-sendmail --disable-shared --sysconfdir="$PREFIX/etc" \
+    --with-rundir="$PREFIX/run" --with-vardir="$PREFIX/var" --with-logpath="$PREFIX/var/log/sudo.log"
+  make_j
+  make_j install install_uid="$(id -u)" install_gid="$(id -g)"
+}
+test_sudo() {
+  # sudo itself refuses to start unless it is owned by root and setuid: visudo parses a sudoers file with the plugin code
+  run_mac 'sbin/visudo -V | grep -q "visudo version 1.9.17p1" && echo "root ALL=(ALL) ALL" > s && sbin/visudo -c -f s | grep -q "parsed OK"'
+}
+
+build_glew() {
+  # glewinfo asks for an accelerated renderer (kCGLPFAAccelerated), which a Mac without GPU has not: a program of
+  # our own makes a context with the software renderer and calls glewInit
+  cmake_install build/cmake -DBUILD_UTILS=ON -DGLEW_X11=OFF -DBUILD_SHARED_LIBS=OFF
+  mkdir -p "$B/stage"
+  # GLEW_NO_GLU: no GLU in the SDK
+  cat > "$B/t.c" <<'EOF'
+#include <GL/glew.h>
+#include <OpenGL/OpenGL.h>
+#include <OpenGL/CGLRenderers.h>
+#include <stdio.h>
+int main(void) {
+  CGLPixelFormatAttribute a[] = { kCGLPFARendererID, (CGLPixelFormatAttribute)kCGLRendererGenericFloatID, (CGLPixelFormatAttribute)0 };
+  CGLPixelFormatObj pf; CGLContextObj ctx; GLint n;
+  if (CGLChoosePixelFormat(a, &pf, &n) || CGLCreateContext(pf, NULL, &ctx) || CGLSetCurrentContext(ctx)) return 2;
+  if (glewInit() != GLEW_OK) return 3;
+  printf("GLEW %s, OpenGL 2.1 %d\n", glewGetString(GLEW_VERSION), GLEW_VERSION_2_1);
+  return GLEW_VERSION_2_1 ? 0 : 1;
+}
+EOF
+  "$CC" -O2 -DGLEW_STATIC -DGLEW_NO_GLU -I"$PREFIX/include" "$B/t.c" "$PREFIX"/lib/libGLEW.a -framework OpenGL -o "$B/stage/t"
+  stage "$B/stage"
+}
+test_glew() { run_mac './t | grep -q "^GLEW 2.2.0, OpenGL 2.1 1"'; }
+
+build_dfu_util() {
+  configure_install USB_CFLAGS="-I$PFX/include/libusb-1.0" USB_LIBS="$PFX/lib/libusb-1.0.a -framework IOKit -framework CoreFoundation -framework Security"
+}
+test_dfu_util() { run_mac 'bin/dfu-util --version | grep -q "dfu-util 0.11" && { bin/dfu-util -l >/dev/null; }'; }
+
+build_osx_cpu_temp() {
+  # SMC of IOKitLib (IOConnectCallStructMethod); the Makefile has no install directory
+  make_j CC="$CC" osx-cpu-temp
+  stage_files . osx-cpu-temp
+}
+test_osx_cpu_temp() { run_mac './osx-cpu-temp | grep -q "°C"'; }
+
+build_efsw() {
+  # FSEvents (CoreServices) and kqueue watchers; a program of our own watches a directory and creates a file in it
+  cmake_install . -DBUILD_SHARED_LIBS=OFF -DBUILD_TEST_APP=OFF -DBUILD_STATIC_LIBS=ON
+  mkdir -p "$B/stage"
+  cat > "$B/t.cpp" <<'EOF'
+#include <efsw/efsw.hpp>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string>
+struct L : efsw::FileWatchListener {
+  volatile bool got;
+  L() : got(false) {}
+  void handleFileAction(efsw::WatchID, const std::string&, const std::string& name, efsw::Action, std::string) { if (name == "x") got = true; }
+};
+int main() {
+  efsw::FileWatcher fw; L l;
+  if (fw.addWatch("w", &l, false) < 0) return 2;
+  fw.watch();
+  sleep(1);
+  close(open("w/x", O_CREAT | O_WRONLY, 0644));
+  for (int i = 0; i < 50 && !l.got; i++) usleep(100000);
+  return l.got ? 0 : 1;
+}
+EOF
+  "$CXX" -O2 -std=c++11 -I"$PREFIX/include" "$B/t.cpp" "$PREFIX"/lib/libefsw*.a -framework CoreServices -framework CoreFoundation \
+    -o "$B/stage/t"
+  stage "$B/stage"
+}
+test_efsw() { run_mac 'mkdir w && ./t'; }
+
+build_aria2() {
+  # TLS through the Security framework (AppleTLS), the XML parser of the SDK for Metalink; no libraries of the build host
+  configure_install --with-appletls --without-openssl --without-gnutls --without-libxml2 --with-libexpat --without-sqlite3 \
+    --without-libssh2 --without-libcares --without-libgmp --without-libgcrypt --without-libnettle --disable-nls \
+    EXPAT_CFLAGS="-I$PFX/include" EXPAT_LIBS=-lexpat
+}
+test_aria2() { run_mac 'bin/aria2c --version | grep -q "aria2 version 1.37.0" && bin/aria2c --version | grep -q "AppleTLS"'; }
+
+build_libcbor() {
+  # the project asks CMake for the archiver of the compiler (CMAKE_C_COMPILER_AR, the one of LTO), which the wrapper of
+  # OSXCross does not have: no interprocedural optimization
+  cmake_install . -DWITH_TESTS=OFF -DWITH_EXAMPLES=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
+}
+
+build_libfido2() {
+  # HID access of IOKit (hid_osx.c); libcbor and LibreSSL of the prefix. The toolchain file of OSXCross sets
+  # PKG_CONFIG_SYSROOT_DIR to its MacPorts directory, which pkg-config puts in front of the paths of the prefix: the
+  # include and library directory are given again. It finds zlib only through pkg-config, and macOS has no zlib.pc:
+  # one for the zlib of the SDK, in a prefix that pkg-config of CMake searches (CMAKE_PREFIX_PATH)
+  mkdir -p "$B/pc/lib/pkgconfig"
+  printf 'Name: zlib\nDescription: zlib of the SDK\nVersion: 1.2.12\nLibs: -lz\n' > "$B/pc/lib/pkgconfig/zlib.pc"
+  cmake_install . -DCMAKE_PREFIX_PATH="$PFX;$B/pc" -DCMAKE_C_FLAGS="-I$PFX/include" -DCMAKE_EXE_LINKER_FLAGS="-L$PFX/lib" -DBUILD_EXAMPLES=OFF -DBUILD_TOOLS=ON -DBUILD_TESTS=OFF -DBUILD_MANPAGES=OFF -DBUILD_STATIC_LIBS=ON \
+    -DBUILD_SHARED_LIBS=OFF -DUSE_HIDAPI=OFF
+}
+test_libfido2() { run_mac 'bin/fido2-token -V 2>&1 | grep -q "1.15.0" && bin/fido2-token -L >/dev/null'; }
+
+build_vim() {
+  # configure cannot run its test programs when cross compiling: the results of a Mac. No Darwin support: its part
+  # os_macosx.m is Objective-C with AppKit
+  configure_install --with-features=normal --without-x --disable-gui --disable-darwin --disable-nls --with-tlib="ncursesw -ltinfow" --disable-selinux \
+    --disable-gpm --disable-sysmouse --disable-netbeans --disable-channel --with-vim-name=vim \
+    vim_cv_toupper_broken=no vim_cv_terminfo=yes vim_cv_tgetent=zero vim_cv_getcwd_broken=no vim_cv_stat_ignores_slash=no \
+    vim_cv_memmove_handles_overlap=yes vim_cv_bcopy_handles_overlap=no vim_cv_memcpy_handles_overlap=no \
+    vim_cv_tty_group=world vim_cv_tty_mode=0620 ac_cv_sizeof_int=4 ac_cv_small_wchar_t=no vim_cv_timer_create=no \
+    vim_cv_timer_create_with_lrt=no vim_cv_uname_output=Darwin vim_cv_uname_r_output=25.0.0 vim_cv_uname_m_output="$ARCH" CPPFLAGS="-I$PFX/include -I$PFX/include/ncursesw"
+}
+test_vim() {
+  run_mac 'bin/vim --version | grep -q "VIM - Vi IMproved 9.1" && bin/vim -es -u NONE -c "call writefile([string(6*7)], \"o\")" -c q &&
+    grep -qx 42 o'
 }
 
 # --- C++

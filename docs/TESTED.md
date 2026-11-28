@@ -9,17 +9,20 @@ with the test suite of the project where it could be built, otherwise with a smo
 - **Data formats:** `expat`, `libxml2`, `libyaml`, `jansson`, `cJSON`, `json-c`, `jq`,  
   `sqlite`, `pcre2`, `oniguruma`, `nlohmann-json`
 - **Network and crypto:** `curl` (also with SecureTransport), `c-ares`, `nghttp2`, `libssh2`, `mbedtls`,  
-  `libressl`, `libsodium`, `libevent`, `libuv`, `openssh`, `rsync`
+  `libressl`, `libsodium`, `libevent`, `libuv`, `openssh`, `rsync`, `openvpn`, `aria2` (SecureTransport),  
+  `libzip` (CommonCrypto), `sudo` (OpenPAM; `visudo` runs)
 - **C++:** `fmt`, `spdlog`, `googletest`
 - **Build tools:** `cmake`, `ninja`, `gnumake`, `pkgconf`
 - **Images and fonts:** `libpng`, `libjpeg-turbo`, `libtiff`, `freetype`
-- **Shells and editors:** `bash`, `nano`, `less`, `tmux`, `lua`, `ncurses`, `readline`, `libedit`
+- **Shells and editors:** `bash`, `nano`, `less`, `tmux`, `vim` (without its Darwin part), `lua`, `ncurses`, `readline`, `libedit`
 - **GNU and other tools:** `coreutils`, `grep`, `sed`, `gawk`, `findutils`, `file`, `gettext`, `libiconv`,  
   `gmp`, `mpfr`, `libffi`, `xxhash`, `lmdb`, `redis`
 - **Version control:** `git`, `libgit2` (also with SecureTransport)
-- **File system events:** the `git` fsmonitor daemon, `fswatch`
+- **File system events:** the `git` fsmonitor daemon, `fswatch`, `efsw` (a program watches a directory)
 - **IOKit device families:** `htop` (its disk I/O meter reads `IOKit/storage`), `hidapi` (`hidtest`),  
-  `libusb` (`listdevs`, `testlibusb` and its tests `set_option`, `init_context`)
+  `libusb` (`listdevs`, `testlibusb` and its tests `set_option`, `init_context`), `dfu-util`,  
+  `libfido2` (`fido2-token`; IOKit HID), `osx-cpu-temp` (SMC)
+- **OpenGL:** `glew` (a program makes a context with the software renderer and calls `glewInit`)
 - **Games (OpenGL):** `Cube 2: Sauerbraten` (with the SDL2 frameworks of SDL's releases; shows its menu and plays a map)
 - **Rust crates** (Rust 1.100, OSXCross as the linker; the crates declare what they use of the frameworks):
   - `winit` (opens a window)
