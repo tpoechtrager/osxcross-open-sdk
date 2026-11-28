@@ -173,6 +173,11 @@ readline    readline.c    c    -                          -lreadline            
 iopm        iopm.c        c    -                          -framework,CoreFoundation,-framework,IOKit full
 iokit_families iokit_families.c c -                       -framework,CoreFoundation,-framework,IOKit full
 iokit_usb    iokit_usb.c   c    -                          -framework,CoreFoundation,-framework,IOKit full
+darwin      darwin.c      c    -                          -                                     core
+dispatch    dispatch.c    c    -                          -                                     core
+iconv       iconv.c       c    -                          -liconv                               core
+fsevents    fsevents.c    c    -                          -framework,CoreServices,-framework,CoreFoundation full
+xpc_conn    xpc_conn.c    c    -                          -                                     full
 opengl      opengl.c      c    -                          -framework,OpenGL                     full
 "
 
