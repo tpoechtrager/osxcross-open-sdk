@@ -31,7 +31,9 @@ Not a source, because it is made from Apple's SDKs or binaries (the license of t
   (darling-docs, "Generating stubs").
 - nixpkgs' Apple SDK packages: `pkgs/os-specific/darwin/apple-sdk/default.nix` downloads Apple's `DevSDK_OSX1012.pkg`
   from swcdn.apple.com and copies its headers; lists such as `impure_deps.nix` are generated on a Mac.
-- Header dumps, crash reports, `otool` or `dyld` output, ipsw diffs: they are read from Apple's binaries.
+- Header dumps (`class-dump`), ipsw diffs and symbol lists read from Apple's binaries: they copy Apple's
+  declarations as a whole. Single paths and names that a public project shows from its own build (an install
+  name in `otool -L` output, a dyld message, a crash report) are facts and allowed as a source.
 - A project that only includes Apple's headers, such as Godot, OBS Studio or SDL with `<Carbon/Carbon.h>`
   (it shows that a name is used, not its declaration).
 
