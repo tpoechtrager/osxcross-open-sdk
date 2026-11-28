@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # The static checks of the scripts: tests/lint.sh
 #   bash -n of the generator, shellcheck (warnings and errors) of every shell
-#   script, and a syntax check of every Python file (nothing is written)
+#   script, a syntax check of every Python file and the links and anchors of the
+#   Markdown files of the root and docs/ (nothing is written)
 HERE=$(cd "$(dirname "$0")" && pwd)
 cd "$HERE/.." || exit 2
 rc=0
@@ -19,5 +20,6 @@ for f in sys.argv[1:]:
     with open(f) as fh:
         compile(fh.read(), f, "exec")
 ' helpers/*.py tools/*.py tests/*.py tests/unit/*.py || rc=1
+python3 -I tests/md_links.py . || rc=1
 [ "$rc" = 0 ] && echo "tests/lint.sh: ok"
 exit $rc

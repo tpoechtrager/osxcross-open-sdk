@@ -178,6 +178,10 @@ Mac with `--ssh HOST` where possible.
     projects that only Apple has (xnu, dyld, Libsystem, IOKitUser) need no prefix.
 - A URL is written as a Markdown link with a readable text (`[File System Events](https://...)`), not as bare text;
   a pattern with a placeholder (`.../<name>`) stays a code span.
+- After a change of a Markdown file, check that no link or anchor is broken: every `*.md` of the root and of
+  `docs/` (`README.md`, `AGENTS.md`, `docs/*.md`), not only the changed file, because a renamed heading breaks
+  the links of other files (`#getting-the-open-sdk`, `SOURCES.md#iokit-device-families`). `tests/lint.sh` checks it
+  (`tests/md_links.py`).
 - Where the SDK made by this generator is meant, write "Open SDK" ("the full Open SDK", "not in the Open SDK"),
   so it cannot be taken for Apple's SDK or any other SDK.
 - `docs/TESTED.md`: a new entry looks like the ones there, as short as possible, with only
